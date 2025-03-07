@@ -4,3 +4,4 @@
 *.pth
 stable-diffusion-webui-forge-main/
 model/
+test_replicate.py
