@@ -133,8 +133,8 @@ class Predictor(BasePredictor):
             "torch==2.2.0",
             "torchvision==0.17.0",
             "torchaudio==2.2.0",
-            "pydantic>=2.0.0",  # Устанавливаем pydantic версии 2.0.0 или выше для поддержки RootModel
-            "gradio==3.50.2"    # Фиксируем версию gradio для совместимости
+            "pydantic==2.4.2",  # Устанавливаем конкретную версию pydantic, которая содержит RootModel
+            "gradio==3.41.2"    # Используем более старую версию gradio, которая совместима с pydantic 2.4.2
         ]
         
         for package in python_packages:
@@ -529,3 +529,4 @@ with launch_utils.startup_timer.subcategory("prepare environment"):
             outputs.append(output)
 
         return outputs
+
