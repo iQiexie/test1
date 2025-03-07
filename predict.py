@@ -132,7 +132,9 @@ class Predictor(BasePredictor):
             # Используем стабильные версии PyTorch вместо nightly
             "torch==2.2.0",
             "torchvision==0.17.0",
-            "torchaudio==2.2.0"
+            "torchaudio==2.2.0",
+            "pydantic>=2.0.0",  # Устанавливаем pydantic версии 2.0.0 или выше для поддержки RootModel
+            "gradio==3.50.2"    # Фиксируем версию gradio для совместимости
         ]
         
         for package in python_packages:
