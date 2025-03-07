@@ -129,10 +129,10 @@ class Predictor(BasePredictor):
             "pydash==8.0.3",
             "opencv-python==4.10.0.84",
             "gguf==0.14.0",  # Обновляем до последней версии, которая содержит атрибут Q2_K
-            "https://download.pytorch.org/whl/nightly/cu124/torch-2.6.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl",
-            "https://download.pytorch.org/whl/nightly/cu124/torchaudio-2.5.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl",
-            "https://download.pytorch.org/whl/nightly/cu124/torchvision-0.20.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl",
-            "https://download.pytorch.org/whl/nightly/pytorch_triton-3.1.0%2B5fe38ffd73-cp311-cp311-linux_x86_64.whl"
+            # Используем стабильные версии PyTorch вместо nightly
+            "torch==2.2.0",
+            "torchvision==0.17.0",
+            "torchaudio==2.2.0"
         ]
         
         for package in python_packages:
