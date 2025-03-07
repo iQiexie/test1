@@ -44,10 +44,29 @@ build:
     # Установка yq
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     
+    # Клонирование репозиториев
     - git clone https://github.com/lllyasviel/stable-diffusion-webui-forge /stable-diffusion-webui-forge-main
     - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
     - git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
     - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
+    
+    # Проверка структуры директорий
+    - echo "Корневая директория:"
+    - ls -la /
+    - echo "Директория /stable-diffusion-webui-forge-main:"
+    - ls -la /stable-diffusion-webui-forge-main
+    - echo "Директория /stable-diffusion-webui-forge-main/modules:"
+    - ls -la /stable-diffusion-webui-forge-main/modules
+    - echo "Директория /cog-sd-webui:"
+    - ls -la /cog-sd-webui
+    - echo "Содержимое файла init_env.py:"
+    - cat /cog-sd-webui/init_env.py
+    
+    # Создаем символическую ссылку для модулей
+    - ln -sf /stable-diffusion-webui-forge-main/modules /cog-sd-webui/modules
+    - ln -sf /stable-diffusion-webui-forge-main/backend /cog-sd-webui/backend
+    
+    # Запускаем скрипт
     - python /cog-sd-webui/init_env.py --skip-torch-cuda-test
 
 # predict.py defines how predictions are run on your model
