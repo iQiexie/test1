@@ -2,20 +2,130 @@
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
 
 build:
-  # Минимальные настройки для быстрой сборки контейнера
+  # Настройки GPU и CUDA
   gpu: true
   cuda: "12.4"
+
+  # Версия Python
   python_version: "3.11"
-  
-  # Минимальный набор пакетов для запуска Cog
+
+  # Python пакеты
   python_packages:
+    # Основные библиотеки
     - "numpy<2"
-    - "requests"
-    - "pillow"
-    - "gitpython"
-    - "pip"
-    - "setuptools"
-    - "wheel"
+    - "einops==0.8.0"
+    - "fire==0.6.0"
+    
+    # Hugging Face
+    - "huggingface-hub==0.25.0"
+    - "safetensors==0.4.3"
+    - "sentencepiece==0.2.0"
+    - "transformers==4.43.3"
+    - "tokenizers==0.19.1"
+    
+    # Дополнительные зависимости
+    - "protobuf==5.27.2"
+    - "diffusers==0.32.2"
+    - "loguru==0.7.2"
+    - "pybase64==1.4.0"
+    - "pydash==8.0.3"
+    - "opencv-python==4.10.0.84"
+    - "gguf==0.6.0"
+    
+    # PyTorch и связанные пакеты
+    - "https://download.pytorch.org/whl/nightly/cu124/torch-2.6.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/cu124/torchaudio-2.5.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/cu124/torchvision-0.20.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/pytorch_triton-3.1.0%2B5fe38ffd73-cp311-cp311-linux_x86_64.whl"
+
+  # commands run after the environment is setup
+  run:
+      # Установка pget
+    - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
+    # Установка yq
+    - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    
+    # Клонирование репозиториев
+    - git clone https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main
+    - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
+    - git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
+    - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
+    
+    # Проверка структуры директорий
+    - echo "Корневая директория:"
+    - ls -la /
+    - echo "Директория /stable-diffusion-webui-forge-main:"
+    - ls -la /stable-diffusion-webui-forge-main
+    - echo "Директория /stable-diffusion-webui-forge-main/modules:"
+    - ls -la /stable-diffusion-webui-forge-main/modules
+    - echo "Директория /cog-sd-webui:"
+    - ls -la /cog-sd-webui
+    - echo "Содержимое файла init_env.py:"
+    - cat /cog-sd-webui/init_env.py
+    
+    # Создаем символические ссылки для всех директорий и файлов
+    - echo "Создание символических ссылок для всех директорий и файлов"
+    - ln -sf /stable-diffusion-webui-forge-main/backend /cog-sd-webui/backend
+    - ln -sf /stable-diffusion-webui-forge-main/embeddings /cog-sd-webui/embeddings
+    - ln -sf /stable-diffusion-webui-forge-main/extensions /cog-sd-webui/extensions
+    - ln -sf /stable-diffusion-webui-forge-main/extensions-builtin /cog-sd-webui/extensions-builtin
+    - ln -sf /stable-diffusion-webui-forge-main/html /cog-sd-webui/html
+    - ln -sf /stable-diffusion-webui-forge-main/javascript /cog-sd-webui/javascript
+    - ln -sf /stable-diffusion-webui-forge-main/k_diffusion /cog-sd-webui/k_diffusion
+    - ln -sf /stable-diffusion-webui-forge-main/localizations /cog-sd-webui/localizations
+    - ln -sf /stable-diffusion-webui-forge-main/models /cog-sd-webui/models
+    - ln -sf /stable-diffusion-webui-forge-main/modules /cog-sd-webui/modules
+    - ln -sf /stable-diffusion-webui-forge-main/modules_forge /cog-sd-webui/modules_forge
+    - ln -sf /stable-diffusion-webui-forge-main/packages_3rdparty /cog-sd-webui/packages_3rdparty
+    - ln -sf /stable-diffusion-webui-forge-main/scripts /cog-sd-webui/scripts
+    - ln -sf /stable-diffusion-webui-forge-main/.eslintignore /cog-sd-webui/.eslintignore
+    - ln -sf /stable-diffusion-webui-forge-main/.eslintrc.js /cog-sd-webui/.eslintrc.js
+    - ln -sf /stable-diffusion-webui-forge-main/.git-blame-ignore-revs /cog-sd-webui/.git-blame-ignore-revs
+    - ln -sf /stable-diffusion-webui-forge-main/.gitignore /cog-sd-webui/.gitignore
+    - ln -sf /stable-diffusion-webui-forge-main/.pylintrc /cog-sd-webui/.pylintrc
+    - ln -sf /stable-diffusion-webui-forge-main/_typos.toml /cog-sd-webui/_typos.toml
+    - ln -sf /stable-diffusion-webui-forge-main/CHANGELOG.md /cog-sd-webui/CHANGELOG.md
+    - ln -sf /stable-diffusion-webui-forge-main/CITATION.cff /cog-sd-webui/CITATION.cff
+    - ln -sf /stable-diffusion-webui-forge-main/CODEOWNERS /cog-sd-webui/CODEOWNERS
+    - ln -sf /stable-diffusion-webui-forge-main/download_supported_configs.py /cog-sd-webui/download_supported_configs.py
+    - ln -sf /stable-diffusion-webui-forge-main/environment-wsl2.yaml /cog-sd-webui/environment-wsl2.yaml
+    - ln -sf /stable-diffusion-webui-forge-main/launch.py /cog-sd-webui/launch.py
+    - ln -sf /stable-diffusion-webui-forge-main/LICENSE.txt /cog-sd-webui/LICENSE.txt
+    - ln -sf /stable-diffusion-webui-forge-main/NEWS.md /cog-sd-webui/NEWS.md
+    - ln -sf /stable-diffusion-webui-forge-main/package.json /cog-sd-webui/package.json
+    - ln -sf /stable-diffusion-webui-forge-main/pyproject.toml /cog-sd-webui/pyproject.toml
+    - ln -sf /stable-diffusion-webui-forge-main/README.md /cog-sd-webui/README.md
+    - ln -sf /stable-diffusion-webui-forge-main/requirements_versions.txt /cog-sd-webui/requirements_versions.txt
+    - ln -sf /stable-diffusion-webui-forge-main/script.js /cog-sd-webui/script.js
+    - ln -sf /stable-diffusion-webui-forge-main/spaces.py /cog-sd-webui/spaces.py
+    - ln -sf /stable-diffusion-webui-forge-main/style.css /cog-sd-webui/style.css
+    - ln -sf /stable-diffusion-webui-forge-main/styles_integrated.csv /cog-sd-webui/styles_integrated.csv
+    - ln -sf /stable-diffusion-webui-forge-main/webui-macos-env.sh /cog-sd-webui/webui-macos-env.sh
+    - ln -sf /stable-diffusion-webui-forge-main/webui.bat /cog-sd-webui/webui.bat
+    - ln -sf /stable-diffusion-webui-forge-main/webui.py /cog-sd-webui/webui.py
+    - ln -sf /stable-diffusion-webui-forge-main/webui.sh /cog-sd-webui/webui.sh
+    
+    # Создаем файл init_env.py без маркеров конфликта Git
+    - echo "Создание файла init_env.py без маркеров конфликта Git"
+    - echo "import sys" > /cog-sd-webui/init_env.py
+    - echo "import os" >> /cog-sd-webui/init_env.py
+    - echo "" >> /cog-sd-webui/init_env.py
+    - echo 'print("Current working directory:", os.getcwd())' >> /cog-sd-webui/init_env.py
+    - echo 'print("sys.path before:", sys.path)' >> /cog-sd-webui/init_env.py
+    - echo "" >> /cog-sd-webui/init_env.py
+    - echo 'sys.path.extend(["/stable-diffusion-webui-forge-main"])' >> /cog-sd-webui/init_env.py
+    - echo "" >> /cog-sd-webui/init_env.py
+    - echo 'print("sys.path after:", sys.path)' >> /cog-sd-webui/init_env.py
+    - echo 'print("Checking if directory exists:", os.path.exists("/stable-diffusion-webui-forge-main"))' >> /cog-sd-webui/init_env.py
+    - echo 'print("Listing directory:", os.listdir("/stable-diffusion-webui-forge-main") if os.path.exists("/stable-diffusion-webui-forge-main") else "Directory does not exist")' >> /cog-sd-webui/init_env.py
+    - echo "" >> /cog-sd-webui/init_env.py
+    - echo "from modules import launch_utils" >> /cog-sd-webui/init_env.py
+    - echo "" >> /cog-sd-webui/init_env.py
+    - echo 'with launch_utils.startup_timer.subcategory("prepare environment"):' >> /cog-sd-webui/init_env.py
+    - echo "    launch_utils.prepare_environment()" >> /cog-sd-webui/init_env.py
+    
+    # Запускаем скрипт
+    - python /cog-sd-webui/init_env.py --skip-torch-cuda-test
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

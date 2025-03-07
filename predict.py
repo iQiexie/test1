@@ -25,31 +25,6 @@ def download_base_weights(url: str, dest: Path):
     subprocess.check_call(["pget", url, dest], close_fds=False)
     print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
-def install_package(package_name):
-    """
-    Устанавливает Python пакет с помощью pip.
-    
-    Args:
-        package_name: Имя пакета для установки
-    """
-    print(f"Installing {package_name}")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
-    print(f"Installed {package_name}")
-
-def run_command(command, shell=False):
-    """
-    Выполняет команду в системе.
-    
-    Args:
-        command: Команда для выполнения (строка или список)
-        shell: Использовать ли shell для выполнения команды
-    """
-    print(f"Running command: {command}")
-    if isinstance(command, list) and shell:
-        command = " ".join(command)
-    subprocess.check_call(command, shell=shell)
-    print(f"Command completed: {command}")
-
 class Predictor(BasePredictor):
     def _move_model_to_sdwebui_dir(self):
        
@@ -100,162 +75,13 @@ class Predictor(BasePredictor):
         
         return lora_paths
 
-    def setup_environment(self):
-        """
-        Настраивает окружение: устанавливает зависимости, клонирует репозитории,
-        создает директории и символические ссылки.
-        """
-        print("=== Начало настройки окружения ===")
-        
-        # Установка системных утилит
-        print("Установка системных утилит...")
-        run_command("curl -o /usr/local/bin/pget -L https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64 && chmod +x /usr/local/bin/pget", shell=True)
-        run_command("curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq", shell=True)
-        
-        # Установка Python пакетов
-        print("Установка Python пакетов...")
-        python_packages = [
-            "einops==0.8.0",
-            "fire==0.6.0",
-            "huggingface-hub==0.25.0",
-            "safetensors==0.4.3",
-            "sentencepiece==0.2.0",
-            "transformers==4.43.3",
-            "tokenizers==0.19.1",
-            "protobuf==5.27.2",
-            "diffusers==0.32.2",
-            "loguru==0.7.2",
-            "pybase64==1.4.0",
-            "pydash==8.0.3",
-            "opencv-python==4.10.0.84",
-            "gguf==0.14.0",  # Обновляем до последней версии, которая содержит атрибут Q2_K
-            # Используем стабильные версии PyTorch вместо nightly
-            "torch==2.2.0",
-            "torchvision==0.17.0",
-            "torchaudio==2.2.0",
-            "pydantic==2.4.2",  # Устанавливаем конкретную версию pydantic, которая содержит RootModel
-            "gradio==3.41.2"    # Используем более старую версию gradio, которая совместима с pydantic 2.4.2
-        ]
-        
-        for package in python_packages:
-            install_package(package)
-        
-        # Клонирование репозиториев
-        print("Клонирование репозиториев...")
-        run_command("git clone https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main", shell=True)
-        run_command("git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui", shell=True)
-        
-        # Создание необходимых директорий
-        print("Создание необходимых директорий...")
-        os.makedirs("/stable-diffusion-webui-forge-main/models/Stable-diffusion", exist_ok=True)
-        os.makedirs("/stable-diffusion-webui-forge-main/models/Lora", exist_ok=True)
-        os.makedirs("/stable-diffusion-webui-forge-main/embeddings", exist_ok=True)
-        
-        # Создание символических ссылок
-        print("Создание символических ссылок...")
-        symlinks = [
-            ("/stable-diffusion-webui-forge-main/backend", "/cog-sd-webui/backend"),
-            ("/stable-diffusion-webui-forge-main/embeddings", "/cog-sd-webui/embeddings"),
-            ("/stable-diffusion-webui-forge-main/extensions", "/cog-sd-webui/extensions"),
-            ("/stable-diffusion-webui-forge-main/extensions-builtin", "/cog-sd-webui/extensions-builtin"),
-            ("/stable-diffusion-webui-forge-main/html", "/cog-sd-webui/html"),
-            ("/stable-diffusion-webui-forge-main/javascript", "/cog-sd-webui/javascript"),
-            ("/stable-diffusion-webui-forge-main/k_diffusion", "/cog-sd-webui/k_diffusion"),
-            ("/stable-diffusion-webui-forge-main/localizations", "/cog-sd-webui/localizations"),
-            ("/stable-diffusion-webui-forge-main/models", "/cog-sd-webui/models"),
-            ("/stable-diffusion-webui-forge-main/modules", "/cog-sd-webui/modules"),
-            ("/stable-diffusion-webui-forge-main/modules_forge", "/cog-sd-webui/modules_forge"),
-            ("/stable-diffusion-webui-forge-main/packages_3rdparty", "/cog-sd-webui/packages_3rdparty"),
-            ("/stable-diffusion-webui-forge-main/scripts", "/cog-sd-webui/scripts"),
-            ("/stable-diffusion-webui-forge-main/.eslintignore", "/cog-sd-webui/.eslintignore"),
-            ("/stable-diffusion-webui-forge-main/.eslintrc.js", "/cog-sd-webui/.eslintrc.js"),
-            ("/stable-diffusion-webui-forge-main/.git-blame-ignore-revs", "/cog-sd-webui/.git-blame-ignore-revs"),
-            ("/stable-diffusion-webui-forge-main/.gitignore", "/cog-sd-webui/.gitignore"),
-            ("/stable-diffusion-webui-forge-main/.pylintrc", "/cog-sd-webui/.pylintrc"),
-            ("/stable-diffusion-webui-forge-main/_typos.toml", "/cog-sd-webui/_typos.toml"),
-            ("/stable-diffusion-webui-forge-main/CHANGELOG.md", "/cog-sd-webui/CHANGELOG.md"),
-            ("/stable-diffusion-webui-forge-main/CITATION.cff", "/cog-sd-webui/CITATION.cff"),
-            ("/stable-diffusion-webui-forge-main/CODEOWNERS", "/cog-sd-webui/CODEOWNERS"),
-            ("/stable-diffusion-webui-forge-main/download_supported_configs.py", "/cog-sd-webui/download_supported_configs.py"),
-            ("/stable-diffusion-webui-forge-main/environment-wsl2.yaml", "/cog-sd-webui/environment-wsl2.yaml"),
-            ("/stable-diffusion-webui-forge-main/launch.py", "/cog-sd-webui/launch.py"),
-            ("/stable-diffusion-webui-forge-main/LICENSE.txt", "/cog-sd-webui/LICENSE.txt"),
-            ("/stable-diffusion-webui-forge-main/NEWS.md", "/cog-sd-webui/NEWS.md"),
-            ("/stable-diffusion-webui-forge-main/package.json", "/cog-sd-webui/package.json"),
-            ("/stable-diffusion-webui-forge-main/pyproject.toml", "/cog-sd-webui/pyproject.toml"),
-            ("/stable-diffusion-webui-forge-main/README.md", "/cog-sd-webui/README.md"),
-            ("/stable-diffusion-webui-forge-main/requirements_versions.txt", "/cog-sd-webui/requirements_versions.txt"),
-            ("/stable-diffusion-webui-forge-main/script.js", "/cog-sd-webui/script.js"),
-            ("/stable-diffusion-webui-forge-main/spaces.py", "/cog-sd-webui/spaces.py"),
-            ("/stable-diffusion-webui-forge-main/style.css", "/cog-sd-webui/style.css"),
-            ("/stable-diffusion-webui-forge-main/styles_integrated.csv", "/cog-sd-webui/styles_integrated.csv"),
-            ("/stable-diffusion-webui-forge-main/webui-macos-env.sh", "/cog-sd-webui/webui-macos-env.sh"),
-            ("/stable-diffusion-webui-forge-main/webui.bat", "/cog-sd-webui/webui.bat"),
-            ("/stable-diffusion-webui-forge-main/webui.py", "/cog-sd-webui/webui.py"),
-            ("/stable-diffusion-webui-forge-main/webui.sh", "/cog-sd-webui/webui.sh")
-        ]
-        
-        for src, dst in symlinks:
-            try:
-                if os.path.exists(dst):
-                    os.remove(dst)
-                os.symlink(src, dst)
-                print(f"Создана символическая ссылка: {src} -> {dst}")
-            except Exception as e:
-                print(f"Ошибка при создании символической ссылки {src} -> {dst}: {e}")
-        
-        # Создание init_env.py
-        print("Создание init_env.py...")
-        init_env_content = """import sys
-import os
-
-print("Current working directory:", os.getcwd())
-print("sys.path before:", sys.path)
-
-sys.path.extend(["/stable-diffusion-webui-forge-main"])
-
-print("sys.path after:", sys.path)
-print("Checking if directory exists:", os.path.exists("/stable-diffusion-webui-forge-main"))
-print("Listing directory:", os.listdir("/stable-diffusion-webui-forge-main") if os.path.exists("/stable-diffusion-webui-forge-main") else "Directory does not exist")
-
-from modules import launch_utils
-
-with launch_utils.startup_timer.subcategory("prepare environment"):
-    launch_utils.prepare_environment()
-"""
-        with open("/cog-sd-webui/init_env.py", "w") as f:
-            f.write(init_env_content)
-        
-        # Запуск init_env.py
-        print("Запуск init_env.py...")
-        run_command(["python", "/cog-sd-webui/init_env.py", "--skip-torch-cuda-test"])
-        
-        print("=== Окружение настроено успешно ===")
-
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
-        # Настраиваем окружение (устанавливаем зависимости, клонируем репозитории и т.д.)
-        self.setup_environment()
-        
-        # Загружаем модель
         self._move_model_to_sdwebui_dir()
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
         from modules import timer
-        
-        # Патч для pydantic v2, добавляем RootModel если его нет
-        try:
-            print("Проверка наличия RootModel в pydantic...")
-            from pydantic import RootModel
-            print("RootModel найден в pydantic")
-        except ImportError:
-            print("RootModel не найден в pydantic, применяем патч...")
-            import pydantic
-            from pydantic import TypeAdapter
-            print("Добавляем RootModel как алиас для TypeAdapter")
-            pydantic.RootModel = TypeAdapter
-            sys.modules['pydantic'].RootModel = TypeAdapter
         
         # Безопасный импорт memory_management
         try:
@@ -264,6 +90,12 @@ with launch_utils.startup_timer.subcategory("prepare environment"):
         except ImportError as e:
             print(f"Предупреждение: Не удалось импортировать memory_management: {e}")
             self.has_memory_management = False
+        
+        # moved env preparation to build time to reduce the warm-up time
+        # from modules import launch_utils
+
+        # with launch_utils.startup_timer.subcategory("prepare environment"):
+        #     launch_utils.prepare_environment()
 
         from modules import initialize_util
         from modules import initialize
@@ -542,4 +374,3 @@ with launch_utils.startup_timer.subcategory("prepare environment"):
             outputs.append(output)
 
         return outputs
-
