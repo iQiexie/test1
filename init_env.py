@@ -1,6 +1,6 @@
 import sys
 
-sys.path.extend(["/stable-diffusion-webui-forge"])
+sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 from modules import launch_utils
 
