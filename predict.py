@@ -244,6 +244,19 @@ with launch_utils.startup_timer.subcategory("prepare environment"):
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
         from modules import timer
         
+        # Патч для pydantic v2, добавляем RootModel если его нет
+        try:
+            print("Проверка наличия RootModel в pydantic...")
+            from pydantic import RootModel
+            print("RootModel найден в pydantic")
+        except ImportError:
+            print("RootModel не найден в pydantic, применяем патч...")
+            import pydantic
+            from pydantic import TypeAdapter
+            print("Добавляем RootModel как алиас для TypeAdapter")
+            pydantic.RootModel = TypeAdapter
+            sys.modules['pydantic'].RootModel = TypeAdapter
+        
         # Безопасный импорт memory_management
         try:
             from backend import memory_management
