@@ -3,24 +3,36 @@
 
 import os, sys, json
 import shutil
+import time
+import subprocess  # Для запуска внешних процессов
 
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 from cog import BasePredictor, BaseModel, Input, Path
-
+def download_base_weights(url: str, dest: Path):
+    """
+    Загружает базовые веса модели.
+    
+    Args:
+        url: URL для загрузки весов
+        dest: Путь для сохранения весов
+    """
+    start = time.time()  # Засекаем время начала загрузки
+    print("downloading url: ", url)
+    print("downloading to: ", dest)
+    # Используем pget для эффективной загрузки файлов
+    subprocess.check_call(["pget", "-xf", url, dest], close_fds=False)
+    print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
 class Predictor(BasePredictor):
     def _move_model_to_sdwebui_dir(self):
-        source_dir = "model"
+       
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
-        # Get a list of all files in the source directory
-        files = os.listdir(source_dir)
-
-        # Move each file from the source directory to the target directory
-        for file in files:
-            source_file = os.path.join(source_dir, file)
-            target_file = os.path.join(target_dir, file)
-            shutil.move(source_file, target_file)
+        download_base_weights(
+            "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
+             os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+            )
+       
 
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
@@ -202,7 +214,6 @@ class Predictor(BasePredictor):
 
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
-            StableDiffusionImg2ImgProcessingAPI,
         )
 
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
