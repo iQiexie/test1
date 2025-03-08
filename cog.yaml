@@ -1,6 +1,6 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
-# Build timestamp: 2025-03-08:16-40 (обновляйте эту строку при каждой сборке, чтобы избежать кэширования)
+# Build timestamp: 2025-03-08:16-45 (обновляйте эту строку при каждой сборке, чтобы избежать кэширования)
 
 build:
   # Настройки GPU и CUDA
@@ -31,6 +31,7 @@ build:
     - "pybase64==1.4.0"
     - "pydash==8.0.3"
     - "opencv-python==4.10.0.84"
+    - "gguf==0.6.0"
     - "gguf==0.14.0"
     
     # PyTorch и связанные пакеты
@@ -51,12 +52,11 @@ build:
     - rm -rf /stable-diffusion-webui-forge-main || true
     - rm -rf /cog-sd-webui || true
     
-    # Клонирование с уникальным параметром для обхода кэша Docker
-    - echo "Клонирование репозиториев с уникальным параметром (timestamp: $(date +%s))..."
-    - git clone --depth=1 https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main
-    - cd /stable-diffusion-webui-forge-main && git fetch --unshallow && git pull origin main --force && cd /
-    - git clone --depth=1 https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
-    - cd /cog-sd-webui && git fetch --unshallow && git pull origin main --force && cd /
+    # Клонирование репозиториев
+    - git clone https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main
+    - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
+    - git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
+    - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     
     # Проверка структуры директорий
     - echo "Корневая директория:"
@@ -140,3 +140,5 @@ build:
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
+
+
