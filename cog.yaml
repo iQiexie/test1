@@ -31,7 +31,6 @@ build:
     - "pybase64==1.4.0"
     - "pydash==8.0.3"
     - "opencv-python==4.10.0.84"
-    - "gguf==0.6.0"
     - "gguf==0.14.0"
     
     # PyTorch и связанные пакеты
