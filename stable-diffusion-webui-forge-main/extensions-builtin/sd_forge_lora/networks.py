@@ -13,6 +13,7 @@ from backend.patcher.lora import model_lora_keys_clip, model_lora_keys_unet, loa
 
 
 def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filename='default', online_mode=False):
+    raise RuntimeError("TESTTEST TESTTEST TESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTEST")
     model_flag = type(model.model).__name__ if model is not None else 'default'
 
     unet_keys = model_lora_keys_unet(model.model) if model is not None else {}
