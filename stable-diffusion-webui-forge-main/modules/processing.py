@@ -813,6 +813,7 @@ def manage_model_and_prompt_cache(p: StableDiffusionProcessing):
 
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
+    print("Processing images")
     """applies settings overrides (if any) before processing images, then restores settings as applicable."""
     if p.scripts is not None:
         p.scripts.before_process(p)
@@ -839,6 +840,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
         sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
 
         with profiling.Profiler():
+            print("Running process_images_inner")
             res = process_images_inner(p)
 
     finally:
@@ -908,6 +910,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     infotexts = []
     output_images = []
+    print("Doing some torch.inference_mode():")
     with torch.inference_mode():
         with devices.autocast():
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
@@ -951,7 +954,9 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             p.parse_extra_network_prompts()
 
+            print(f"Must call extra_networks.activate(p, p.extra_network_data)")
             if not p.disable_extra_networks:
+                print("Calling extra_networks.activate(p, p.extra_network_data)")
                 extra_networks.activate(p, p.extra_network_data)
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()

@@ -489,12 +489,17 @@ class Api:
                     start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
-                        processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
+                        print("Instead scripts.scripts_txt2img.run starting process_images(p)")
+                        processed = process_images(p)
+                        # processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
+                        print("Starting process_images(p)")
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
                     process_extra_images(processed)
                     finish_task(task_id)
+                except Exception as e:
+                    print(F"Failed to process images: {e}")
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
@@ -563,7 +568,7 @@ class Api:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
-                        p.script_args = tuple(script_args) # Need to pass args as tuple here
+                        p.script_args = tuple(script_args)
                         processed = process_images(p)
                     process_extra_images(processed)
                     finish_task(task_id)

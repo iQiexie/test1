@@ -122,6 +122,7 @@ def txt2img_upscale_function(id_task: str, request: gr.Request, gallery, gallery
 
 
 def txt2img_function(id_task: str, request: gr.Request, *args):
+    print(f"\n\n\n\n\n\n\n\n\nLOOK HERE{args=}\n\n\n\n\n\n\n\n")
     p = txt2img_create_processing(id_task, request, *args)
 
     with closing(p):
