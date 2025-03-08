@@ -298,6 +298,8 @@ class Predictor(BasePredictor):
         if lora_urls and lora_urls.strip():
             self._download_loras(lora_urls)
 
+        from modules.extra_networks import ExtraNetworkParams
+
         payload = {
             # "init_images": [encoded_image],
             "prompt": prompt,
@@ -318,6 +320,7 @@ class Predictor(BasePredictor):
             "hr_scale": hr_scale,
             "distilled_cfg_scale": distilled_guidance_scale,  # Добавляем параметр distilled_cfg_scale для Flux
             "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
+            "extra_network_data": {"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
         }
         
         # Нет необходимости добавлять их в payload отдельно
