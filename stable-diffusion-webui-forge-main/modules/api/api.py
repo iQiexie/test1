@@ -505,6 +505,7 @@ class Api:
                     print(f"Failed to process images: {e}")
                     traceback.print_tb(e.__traceback__)
                     print("\n\n\n\nend traceback")
+                    raise e
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
