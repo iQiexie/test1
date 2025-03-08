@@ -82,7 +82,7 @@ class Predictor(BasePredictor):
                 
                 # Проверяем, существует ли уже файл
                 if os.path.exists(lora_path):
-                    print(f"LoRA файл уже существует: {lora_path}")
+                    print(f"ТОЧНО ПОСЛЕДНЯЯ ВЕРСИЯ LoRA файл уже существует: {lora_path}")
                     lora_paths.append(lora_path)
                 else:
                     # Если файл не существует, загружаем его
