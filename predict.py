@@ -74,19 +74,55 @@ class Predictor(BasePredictor):
                 if not filename or filename == "":
                     filename = f"lora_{i+1}.safetensors"
                 
-                # Убедимся, что файл имеет расширение .safetensors
-                if not filename.endswith(".safetensors"):
+                # Определяем тип файла по расширению
+                is_tar = filename.endswith(".tar")
+                
+                # Если это не .tar и не .safetensors, добавляем расширение .safetensors
+                if not is_tar and not filename.endswith(".safetensors"):
                     filename += ".safetensors"
                 
-                lora_path = os.path.join(target_dir, filename)
+                download_path = os.path.join(target_dir, filename)
                 
-                # Проверяем, существует ли уже файл
+                # Проверяем, существует ли уже файл .safetensors
+                lora_path = download_path
+                if is_tar:
+                    # Для .tar файлов, проверяем, существует ли уже извлеченный .safetensors файл
+                    lora_name = os.path.splitext(filename)[0]
+                    lora_path = os.path.join(target_dir, f"{lora_name}.safetensors")
+                
                 if os.path.exists(lora_path):
                     print(f"LoRA файл уже существует: {lora_path}")
                     lora_paths.append(lora_path)
                 else:
                     # Если файл не существует, загружаем его
-                    download_base_weights(url, lora_path)
+                    download_base_weights(url, download_path)
+                    
+                    # Если это .tar файл, извлекаем его
+                    if is_tar:
+                        try:
+                            import tarfile
+                            print(f"Распаковка .tar файла: {download_path}")
+                            with tarfile.open(download_path) as tar:
+                                # Ищем .safetensors файл в архиве
+                                safetensor_members = [m for m in tar.getmembers() if m.name.endswith('.safetensors')]
+                                if safetensor_members:
+                                    # Извлекаем первый найденный .safetensors файл
+                                    member = safetensor_members[0]
+                                    # Переименовываем файл при извлечении
+                                    member.name = os.path.basename(lora_path)
+                                    tar.extract(member, path=target_dir)
+                                    print(f"Извлечен файл {member.name} из архива")
+                                    # Удаляем .tar файл после извлечения
+                                    os.remove(download_path)
+                                else:
+                                    print(f"В архиве {download_path} не найдены .safetensors файлы")
+                                    # Если .safetensors файл не найден, используем исходный .tar файл
+                                    lora_path = download_path
+                        except Exception as e:
+                            print(f"Ошибка при распаковке .tar файла: {e}")
+                            # В случае ошибки используем исходный .tar файл
+                            lora_path = download_path
+                    
                     lora_paths.append(lora_path)
                     print(f"LoRA {i+1} успешно загружена: {lora_path}")
             except Exception as e:
@@ -108,7 +144,6 @@ class Predictor(BasePredictor):
         # Импортируем необходимые модули
         from modules import shared
         import torch
-        from backend.patcher.lora import load_lora
         
         # Получаем текущую модель
         current_sd = shared.sd_model
@@ -116,57 +151,141 @@ class Predictor(BasePredictor):
             print("Модель не загружена, невозможно применить LoRA")
             return
             
-        # Выгружаем текущие LoRA, если они загружены
-        current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
-        current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
-        
-        # Применяем множитель масштаба к каждому масштабу (если нужно)
-        lora_scale_multiplier = 1.0  # Можно настроить при необходимости
-        lora_scales = [scale * lora_scale_multiplier for scale in lora_scales]
-        
-        # Загружаем все LoRA с соответствующими масштабами
-        for filename, strength in zip(lora_weights_list, lora_scales):
+        # Проверяем, что модель загружена и готова к работе
+        if not hasattr(current_sd, 'forge_objects'):
+            print("Модель не полностью загружена, перезагружаем...")
+            from modules import sd_models
+            # Принудительно загружаем модель Flux
+            sd_models.reload_model_weights(no_reload=False)
+            # Обновляем ссылку на модель
+            current_sd = shared.sd_model
+            
+            # Если модель все еще не загружена правильно, используем LoRA через промпт
+            if not hasattr(current_sd, 'forge_objects'):
+                print("Не удалось загрузить модель с поддержкой LoRA, добавляем LoRA через промпт")
+                # Возвращаем имена LoRA для добавления в промпт
+                lora_names = []
+                for filename in lora_weights_list:
+                    lora_name = os.path.splitext(os.path.basename(filename))[0]
+                    lora_names.append(lora_name)
+                return lora_names
+            
+        # Пробуем использовать load_networks из extensions_builtin.sd_forge_lora.networks
+        try:
+            from extensions_builtin.sd_forge_lora.networks import load_networks, list_available_networks
+            
+            # Подготавливаем имена и множители для LoRA
+            lora_names = []
+            for filename in lora_weights_list:
+                lora_name = os.path.splitext(os.path.basename(filename))[0]
+                lora_names.append(lora_name)
+                
+            # Обновляем список доступных LoRA
+            list_available_networks()
+                
+            # Применяем множитель масштаба к каждому масштабу (если нужно)
+            lora_scale_multiplier = 1.0  # Можно настроить при необходимости
+            unet_multipliers = [scale * lora_scale_multiplier for scale in lora_scales]
+            te_multipliers = [scale * lora_scale_multiplier for scale in lora_scales]
+            
+            # Загружаем все LoRA с соответствующими масштабами
+            load_networks(lora_names, te_multipliers, unet_multipliers)
+            print(f"Применено {len(lora_names)} LoRA напрямую к модели через load_networks")
+            return None
+            
+        except Exception as e:
+            print(f"Ошибка при загрузке LoRA через load_networks: {e}")
+            print("Пробуем альтернативный метод загрузки LoRA...")
+            
+        # Если load_networks не сработал, пробуем использовать прямой метод
+        try:
+            # Проверяем наличие forge_objects_original
+            if not hasattr(current_sd, 'forge_objects_original'):
+                # Если нет, создаем копию текущих объектов
+                try:
+                    current_sd.forge_objects_original = current_sd.forge_objects.shallow_copy()
+                    print("Создана резервная копия оригинальных объектов модели")
+                except Exception as e:
+                    print(f"Не удалось создать копию объектов модели: {e}")
+                    # Возвращаем имена LoRA для добавления в промпт
+                    lora_names = []
+                    for filename in lora_weights_list:
+                        lora_name = os.path.splitext(os.path.basename(filename))[0]
+                        lora_names.append(lora_name)
+                    return lora_names
+            
+            # Выгружаем текущие LoRA, если они загружены
             try:
-                # Загружаем LoRA state dict
-                from extensions_builtin.sd_forge_lora.networks import load_lora_state_dict
-                lora_sd = load_lora_state_dict(filename)
-                
-                # Получаем ключи модели для UNet и CLIP
-                from backend.patcher.lora import model_lora_keys_unet, model_lora_keys_clip
-                unet_keys = model_lora_keys_unet(current_sd.forge_objects.unet.model)
-                clip_keys = model_lora_keys_clip(current_sd.forge_objects.clip.cond_stage_model)
-                
-                # Загружаем LoRA для UNet и CLIP
-                lora_unet, lora_unmatch = load_lora(lora_sd, unet_keys)
-                lora_clip, lora_unmatch = load_lora(lora_unmatch, clip_keys)
-                
-                # Применяем LoRA к UNet
-                if len(lora_unet) > 0:
-                    new_unet = current_sd.forge_objects.unet.clone()
-                    loaded_keys = new_unet.add_patches(filename=filename, patches=lora_unet, strength_patch=strength, online_mode=False)
-                    skipped_keys = [item for item in lora_unet if item not in loaded_keys]
-                    if len(skipped_keys) > 12:
-                        print(f'[LORA] Mismatch {filename} for UNet with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
-                    else:
-                        print(f'[LORA] Loaded {filename} for UNet with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
-                        current_sd.forge_objects.unet = new_unet
-                
-                # Применяем LoRA к CLIP
-                if len(lora_clip) > 0:
-                    new_clip = current_sd.forge_objects.clip.clone()
-                    loaded_keys = new_clip.add_patches(filename=filename, patches=lora_clip, strength_patch=strength, online_mode=False)
-                    skipped_keys = [item for item in lora_clip if item not in loaded_keys]
-                    if len(skipped_keys) > 12:
-                        print(f'[LORA] Mismatch {filename} for CLIP with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
-                    else:
-                        print(f'[LORA] Loaded {filename} for CLIP with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
-                        current_sd.forge_objects.clip = new_clip
-                        
+                current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
+                current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
+                print("Выгружены предыдущие LoRA")
             except Exception as e:
-                print(f"Ошибка при загрузке LoRA {filename}: {e}")
+                print(f"Не удалось выгрузить предыдущие LoRA: {e}")
+            
+            # Применяем множитель масштаба к каждому масштабу (если нужно)
+            lora_scale_multiplier = 1.0  # Можно настроить при необходимости
+            lora_scales = [scale * lora_scale_multiplier for scale in lora_scales]
+            
+            # Импортируем необходимые функции
+            from backend.patcher.lora import load_lora, model_lora_keys_unet, model_lora_keys_clip
+            from extensions_builtin.sd_forge_lora.networks import load_lora_state_dict
+            
+            # Загружаем все LoRA с соответствующими масштабами
+            for filename, strength in zip(lora_weights_list, lora_scales):
+                try:
+                    # Загружаем LoRA state dict
+                    lora_sd = load_lora_state_dict(filename)
+                    
+                    # Получаем ключи модели для UNet и CLIP
+                    unet_keys = model_lora_keys_unet(current_sd.forge_objects.unet.model)
+                    clip_keys = model_lora_keys_clip(current_sd.forge_objects.clip.cond_stage_model)
+                    
+                    # Загружаем LoRA для UNet и CLIP
+                    lora_unet, lora_unmatch = load_lora(lora_sd, unet_keys)
+                    lora_clip, lora_unmatch = load_lora(lora_unmatch, clip_keys)
+                    
+                    # Применяем LoRA к UNet
+                    if len(lora_unet) > 0:
+                        new_unet = current_sd.forge_objects.unet.clone()
+                        loaded_keys = new_unet.add_patches(filename=filename, patches=lora_unet, strength_patch=strength, online_mode=False)
+                        skipped_keys = [item for item in lora_unet if item not in loaded_keys]
+                        if len(skipped_keys) > 12:
+                            print(f'[LORA] Mismatch {filename} for UNet with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
+                        else:
+                            print(f'[LORA] Loaded {filename} for UNet with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
+                            current_sd.forge_objects.unet = new_unet
+                    
+                    # Применяем LoRA к CLIP
+                    if len(lora_clip) > 0:
+                        new_clip = current_sd.forge_objects.clip.clone()
+                        loaded_keys = new_clip.add_patches(filename=filename, patches=lora_clip, strength_patch=strength, online_mode=False)
+                        skipped_keys = [item for item in lora_clip if item not in loaded_keys]
+                        if len(skipped_keys) > 12:
+                            print(f'[LORA] Mismatch {filename} for CLIP with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
+                        else:
+                            print(f'[LORA] Loaded {filename} for CLIP with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
+                            current_sd.forge_objects.clip = new_clip
+                            
+                except Exception as e:
+                    print(f"Ошибка при загрузке LoRA {filename}: {e}")
+                    
+            # Сохраняем состояние после применения LoRA
+            try:
+                current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
+                print("Сохранено состояние после применения LoRA")
+                return None
+            except Exception as e:
+                print(f"Не удалось сохранить состояние после применения LoRA: {e}")
                 
-        # Сохраняем состояние после применения LoRA
-        current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
+        except Exception as e:
+            print(f"Ошибка при прямом применении LoRA: {e}")
+            
+        # Если все методы не сработали, возвращаем имена LoRA для добавления в промпт
+        lora_names = []
+        for filename in lora_weights_list:
+            lora_name = os.path.splitext(os.path.basename(filename))[0]
+            lora_names.append(lora_name)
+        return lora_names
 
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
@@ -211,8 +330,16 @@ class Predictor(BasePredictor):
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', 'Automatic (fp16 LoRA)')
         
-        # Устанавливаем чекпоинт
+        # Устанавливаем чекпоинт и убеждаемся, что FakeInitialModel не используется
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
+        
+        # Проверяем, загружена ли модель и является ли она FakeInitialModel
+        if shared.sd_model is None or not hasattr(shared.sd_model, 'forge_objects'):
+            print("Загружаем Flux модель напрямую...")
+            from modules import sd_models
+            # Принудительно загружаем модель Flux
+            sd_models.reload_model_weights(no_reload=False)
+            print("Модель Flux успешно загружена")
         
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
@@ -389,9 +516,16 @@ class Predictor(BasePredictor):
                 # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
                 lora_weight_values = [0.7] * len(lora_files)
             
-            # Применяем LoRA напрямую к модели вместо добавления в промпт
-            self.handle_multiple_loras(lora_files, lora_weight_values)
-            print(f"Применено {len(lora_files)} LoRA напрямую к модели")
+            # Применяем LoRA напрямую к модели или получаем имена для добавления в промпт
+            lora_names = self.handle_multiple_loras(lora_files, lora_weight_values)
+            
+            # Если handle_multiple_loras вернул список имен LoRA, добавляем их в промпт
+            if lora_names is not None:
+                for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
+                    prompt = f"{prompt} <lora:{name}:{weight}>"
+                    print(f"Добавляем LoRA {name} с весом {weight} в промпт")
+            else:
+                print(f"Применено {len(lora_files)} LoRA напрямую к модели")
         
         payload = {
             # "init_images": [encoded_image],
