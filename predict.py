@@ -313,29 +313,20 @@ class Predictor(BasePredictor):
                 sys.path.append(forge_path)
             
             # Импортируем модули LoRA
-            from extensions_builtin.sd_forge_lora import networks
-            from extensions_builtin.sd_forge_lora import network
+            from modules_forge.extensions_builtin.sd_forge_lora import networks
+            from modules_forge.extensions_builtin.sd_forge_lora import network
             
             # Принудительно обновляем список доступных LoRA
             networks.list_available_networks()
             
-            # Выводим список доступных LoRA для отладки
-            print("Доступные LoRA:", list(networks.available_networks.keys()))
+            # Выводим список доступных LoRA из папки
+            lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"
+            if os.path.exists(lora_dir):
+                lora_files_in_dir = [f for f in os.listdir(lora_dir) if f.endswith('.safetensors')]
+                print("Доступные LoRA в папке:", lora_files_in_dir)
+            else:
+                print("Папка Lora не найдена:", lora_dir)
             
-            # Проверяем, есть ли в промпте теги LoRA
-            lora_pattern = re.compile(r'<lora:[^:]+:[^>]+>')
-            has_lora_tags = bool(lora_pattern.search(prompt))
-            
-            # Если нет тегов LoRA в промпте, добавляем их автоматически
-            if not has_lora_tags and lora_files:
-                for lora_path in lora_files:
-                    lora_name = os.path.basename(lora_path)
-                    if lora_name.endswith('.safetensors'):
-                        lora_name = lora_name[:-12]  # Удаляем расширение .safetensors
-                    
-                    # Добавляем LoRA в промпт
-                    prompt = f"<lora:{lora_name}:1.0> {prompt}"
-                    print(f"Автоматически добавлена LoRA в промпт: <lora:{lora_name}:1.0>")
         
         payload = {
             # "init_images": [encoded_image],
