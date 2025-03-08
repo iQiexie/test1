@@ -343,7 +343,8 @@ class Predictor(BasePredictor):
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
         )
-        
+
+        print(f"Финальный пейлоад: {payload=}")
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
         # generate
         resp = self.api.text2imgapi(req)
