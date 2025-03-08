@@ -129,7 +129,7 @@ def activate(p, extra_network_data):
 
     activated = []
 
-    print(f"{extra_network_data=}, {p=}")
+    print(f"{extra_network_data['lora'].dict()=}")
     raise RuntimeError(
         "TESTTEST TESTTEST TESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTEST"
         )
