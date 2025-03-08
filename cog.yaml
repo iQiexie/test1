@@ -30,7 +30,7 @@ build:
     - "pybase64==1.4.0"
     - "pydash==8.0.3"
     - "opencv-python==4.10.0.84"
-    - "gguf==0.6.0"
+    - "gguf==0.14.0"
     
     # PyTorch и связанные пакеты
     - "https://download.pytorch.org/whl/nightly/cu124/torch-2.6.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
@@ -126,6 +126,10 @@ build:
     
     # Запускаем скрипт
     - python /cog-sd-webui/init_env.py --skip-torch-cuda-test
+    
+    # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
+    - mkdir -p /stable-diffusion-webui-forge-main/models/Stable-diffusion
+    - pget "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" /stable-diffusion-webui-forge-main/models/Stable-diffusion/flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

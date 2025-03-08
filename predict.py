@@ -27,13 +27,25 @@ def download_base_weights(url: str, dest: Path):
 
 class Predictor(BasePredictor):
     def _move_model_to_sdwebui_dir(self):
-       
+        """
+        Проверяет наличие модели и загружает ее, если она отсутствует.
+        Модель должна быть предварительно загружена во время сборки в cog.yaml.
+        """
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
+        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+        
+        # Проверяем, существует ли уже файл модели
+        if os.path.exists(model_path):
+            print(f"Модель уже загружена: {model_path}")
+            return
+        
+        # Если модель не найдена, загружаем ее
+        print("Модель не найдена, загружаем...")
+        os.makedirs(target_dir, exist_ok=True)
         download_base_weights(
             "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
-             os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
-            )
-       
+            model_path
+        )
     def _download_loras(self, lora_urls):
         """
         Загружает LoRA файлы по указанным URL.
@@ -115,8 +127,8 @@ class Predictor(BasePredictor):
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
         
-        # Устанавливаем unet тип на 'bnb-nf4 (fp16 LoRA)' для максимальной производительности с Flux
-        shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4 (fp16 LoRA)')
+        # Устанавливаем unet тип на 'Automatic' для Flux
+        shared.opts.set('forge_unet_storage_dtype', 'Automatic')
         
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
