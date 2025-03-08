@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import re
+import traceback
+
 import torch
 import network
 import functools
@@ -13,6 +15,13 @@ from backend.patcher.lora import model_lora_keys_clip, model_lora_keys_unet, loa
 
 
 def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filename='default', online_mode=False):
+    print("test print")
+    try:
+        raise RuntimeError(
+            "TESTTEST TESTTEST TESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTEST"
+        )
+    except Exception as e:
+        traceback.print_tb(e.__traceback__)
     raise RuntimeError("TESTTEST TESTTEST TESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTEST")
     model_flag = type(model.model).__name__ if model is not None else 'default'
 
