@@ -45,9 +45,11 @@ build:
     # Установка yq
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     
-    # Клонирование репозиториев
+    # Клонирование репозиториев с принудительным обновлением
     - git clone https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main
+    - cd /stable-diffusion-webui-forge-main && git pull origin main && cd /
     - git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
+    - cd /cog-sd-webui && git pull origin main && cd /
     
     # Проверка структуры директорий
     - echo "Корневая директория:"
