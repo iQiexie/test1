@@ -134,9 +134,6 @@ class Predictor(BasePredictor):
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
         
-        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
-        shared.opts.set('forge_unet_storage_dtype', 'Automatic (fp16 LoRA)')
-        
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
         
@@ -299,25 +296,26 @@ class Predictor(BasePredictor):
         # return postprocess(output)
         # Загружаем и применяем LoRA файлы, если они указаны
         lora_names = []
-        lora_weights = []
-        
+
         if lora_urls and lora_urls.strip():
             lora_files = self._download_loras(lora_urls)
-            
+
             # Нам не нужно импортировать модули LoRA, так как мы будем использовать только теги в промпте
             # WebUI автоматически обработает эти теги и применит LoRA к модели
-            
+
             # Выводим список доступных LoRA из папки
             lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"
-            if os.path.exists(lora_dir):
+            if not os.path.exists(lora_dir):
+                print("Папка Lora не найдена:", lora_dir)
+            else:
                 lora_files_in_dir = [f for f in os.listdir(lora_dir) if f.endswith('.safetensors')]
                 print("Доступные LoRA в папке:", lora_files_in_dir)
-                
+
                 # Получаем имена LoRA файлов без расширения
                 for lora_file in lora_files:
                     lora_name = os.path.splitext(os.path.basename(lora_file))[0]
                     lora_names.append(lora_name)
-                
+
                 # Парсим веса LoRA
                 if lora_weights and lora_weights.strip():
                     weights = [float(w.strip()) for w in lora_weights.split(',') if w.strip()]
@@ -328,15 +326,14 @@ class Predictor(BasePredictor):
                 else:
                     # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
                     lora_weight_values = [0.7] * len(lora_names)
-                
+
                 # Добавляем LoRA в промпт напрямую
                 for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
                     prompt = f"{prompt} <lora:{name}:{weight}>"
                     print(f"Применяем LoRA {name} с весом {weight}")
-            else:
-                print("Папка Lora не найдена:", lora_dir)
-            
-        
+
+        print(f"Итоговый промпт: {prompt=}")
+
         payload = {
             # "init_images": [encoded_image],
             "prompt": prompt,
@@ -359,7 +356,6 @@ class Predictor(BasePredictor):
             "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
         }
         
-        # LoRA уже добавлены в промпт в формате <lora:имя_файла:вес>
         # Нет необходимости добавлять их в payload отдельно
 
         alwayson_scripts = {}
