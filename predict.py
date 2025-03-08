@@ -79,9 +79,16 @@ class Predictor(BasePredictor):
                     filename += ".safetensors"
                 
                 lora_path = os.path.join(target_dir, filename)
-                download_base_weights(url, lora_path)
-                lora_paths.append(lora_path)
-                print(f"LoRA {i+1} успешно загружена: {lora_path}")
+                
+                # Проверяем, существует ли уже файл
+                if os.path.exists(lora_path):
+                    print(f"LoRA файл уже существует: {lora_path}")
+                    lora_paths.append(lora_path)
+                else:
+                    # Если файл не существует, загружаем его
+                    download_base_weights(url, lora_path)
+                    lora_paths.append(lora_path)
+                    print(f"LoRA {i+1} успешно загружена: {lora_path}")
             except Exception as e:
                 print(f"Ошибка при загрузке LoRA {i+1}: {e}")
         
@@ -127,8 +134,8 @@ class Predictor(BasePredictor):
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
         
-        # Устанавливаем unet тип на 'Automatic' для Flux
-        shared.opts.set('forge_unet_storage_dtype', 'Automatic')
+        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
+        shared.opts.set('forge_unet_storage_dtype', 'Automatic (fp16 LoRA)')
         
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
@@ -290,36 +297,37 @@ class Predictor(BasePredictor):
         # processed_input = preprocess(image)
         # output = self.model(processed_image, scale)
         # return postprocess(output)
-        # Загружаем LoRA файлы, если они указаны
-        lora_files = self._download_loras(lora_urls)
-        
-        # Парсим веса LoRA
-        lora_weights_list = []
-        if lora_weights and lora_weights.strip():
-            try:
-                lora_weights_list = [float(w.strip()) for w in lora_weights.split(",") if w.strip()]
-            except ValueError:
-                print("Ошибка при парсинге весов LoRA. Используем значения по умолчанию (1.0)")
-                lora_weights_list = []
-        
-        # Если количество весов не соответствует количеству LoRA, используем значение 1.0 для всех
-        if len(lora_weights_list) != len(lora_files):
-            lora_weights_list = [1.0] * len(lora_files)
-        
-        # Создаем строку с LoRA для промпта в формате <lora:имя_файла:вес>
-        lora_prompt_parts = []
-        for i, (lora_path, weight) in enumerate(zip(lora_files, lora_weights_list)):
-            lora_name = os.path.basename(lora_path)
-            # Удаляем расширение .safetensors из имени файла
-            if lora_name.endswith('.safetensors'):
-                lora_name = lora_name[:-12]
-            lora_prompt_parts.append(f"<lora:{lora_name}:{weight:.2f}>")
-            print(f"Добавляем LoRA в промпт: <lora:{lora_name}:{weight:.2f}>")
-        
-        # Добавляем LoRA в начало промпта
-        lora_prompt = " ".join(lora_prompt_parts)
-        if lora_prompt:
-            prompt = f"{lora_prompt} {prompt}"
+        # Загружаем LoRA файлы, если они указаны, но не добавляем их автоматически в промпт
+        # Пользователь сам добавит их в промпт через <lora:имя_файла:вес>
+        if lora_urls and lora_urls.strip():
+            lora_files = self._download_loras(lora_urls)
+            
+            # Импортируем необходимые модули
+            import os
+            import re
+            from extensions_builtin.sd_forge_lora import networks
+            from extensions_builtin.sd_forge_lora import network
+            
+            # Принудительно обновляем список доступных LoRA
+            networks.list_available_networks()
+            
+            # Выводим список доступных LoRA для отладки
+            print("Доступные LoRA:", list(networks.available_networks.keys()))
+            
+            # Проверяем, есть ли в промпте теги LoRA
+            lora_pattern = re.compile(r'<lora:[^:]+:[^>]+>')
+            has_lora_tags = bool(lora_pattern.search(prompt))
+            
+            # Если нет тегов LoRA в промпте, добавляем их автоматически
+            if not has_lora_tags and lora_files:
+                for lora_path in lora_files:
+                    lora_name = os.path.basename(lora_path)
+                    if lora_name.endswith('.safetensors'):
+                        lora_name = lora_name[:-12]  # Удаляем расширение .safetensors
+                    
+                    # Добавляем LoRA в промпт
+                    prompt = f"<lora:{lora_name}:1.0> {prompt}"
+                    print(f"Автоматически добавлена LoRA в промпт: <lora:{lora_name}:1.0>")
         
         payload = {
             # "init_images": [encoded_image],
