@@ -1,5 +1,6 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+# Build timestamp: 2025-03-08:16-45 (обновляйте эту строку при каждой сборке, чтобы избежать кэширования)
 
 build:
   # Настройки GPU и CUDA
@@ -45,11 +46,16 @@ build:
     # Установка yq
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     
-    # Клонирование репозиториев с принудительным обновлением
+    # Принудительное удаление и клонирование репозиториев для избежания кэширования
+    - echo "Удаление существующих репозиториев для избежания кэширования..."
+    - rm -rf /stable-diffusion-webui-forge-main || true
+    - rm -rf /cog-sd-webui || true
+    
+    # Клонирование репозиториев
     - git clone https://github.com/SergeiShapovalov/stable-diffusion-webui-forge-main /stable-diffusion-webui-forge-main
-    - cd /stable-diffusion-webui-forge-main && git pull origin main && cd /
+    - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
     - git clone https://github.com/SergeiShapovalov/cog-sd-webui-main /cog-sd-webui
-    - cd /cog-sd-webui && git pull origin main && cd /
+    - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     
     # Проверка структуры директорий
     - echo "Корневая директория:"
@@ -133,3 +139,5 @@ build:
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
+
+
