@@ -340,6 +340,7 @@ class Predictor(BasePredictor):
             "denoising_strength": denoising_strength if enable_hr else None,
             "hr_scale": hr_scale,
             "distilled_cfg_scale": distilled_guidance_scale,  # Добавляем параметр distilled_cfg_scale для Flux
+            "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
         }
         
         # LoRA уже добавлены в промпт в формате <lora:имя_файла:вес>
