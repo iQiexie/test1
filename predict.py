@@ -297,8 +297,10 @@ class Predictor(BasePredictor):
         # processed_input = preprocess(image)
         # output = self.model(processed_image, scale)
         # return postprocess(output)
-        # Загружаем LoRA файлы, если они указаны, но не добавляем их автоматически в промпт
-        # Пользователь сам добавит их в промпт через <lora:имя_файла:вес>
+        # Загружаем и применяем LoRA файлы, если они указаны
+        lora_names = []
+        lora_weights = []
+        
         if lora_urls and lora_urls.strip():
             lora_files = self._download_loras(lora_urls)
             
@@ -338,6 +340,43 @@ class Predictor(BasePredictor):
             if os.path.exists(lora_dir):
                 lora_files_in_dir = [f for f in os.listdir(lora_dir) if f.endswith('.safetensors')]
                 print("Доступные LoRA в папке:", lora_files_in_dir)
+                
+                # Получаем имена LoRA файлов без расширения
+                for lora_file in lora_files:
+                    lora_name = os.path.splitext(os.path.basename(lora_file))[0]
+                    lora_names.append(lora_name)
+                
+                # Парсим веса LoRA
+                if lora_weights and lora_weights.strip():
+                    weights = [float(w.strip()) for w in lora_weights.split(',') if w.strip()]
+                    # Если количество весов не соответствует количеству LoRA, используем значение по умолчанию 0.7
+                    if len(weights) < len(lora_names):
+                        weights.extend([0.7] * (len(lora_names) - len(weights)))
+                    lora_weight_values = weights[:len(lora_names)]  # Обрезаем лишние веса, если их больше чем LoRA
+                else:
+                    # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
+                    lora_weight_values = [0.7] * len(lora_names)
+                
+                # Проверяем, что LoRA существуют в списке доступных сетей
+                valid_lora_names = []
+                valid_lora_weights = []
+                
+                for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
+                    if name in networks.available_networks or name in networks.available_network_aliases:
+                        valid_lora_names.append(name)
+                        valid_lora_weights.append(weight)
+                        # Добавляем LoRA в промпт
+                        prompt = f"{prompt} <lora:{name}:{weight}>"
+                        print(f"Применяем LoRA {name} с весом {weight}")
+                    else:
+                        print(f"LoRA {name} не найдена в списке доступных сетей, пропускаем")
+                
+                # Загружаем LoRA в модель, если есть валидные LoRA
+                if valid_lora_names:
+                    networks.load_networks(valid_lora_names, valid_lora_weights, valid_lora_weights, [None] * len(valid_lora_names))
+                    print(f"Загружено {len(valid_lora_names)} LoRA в модель")
+                else:
+                    print("Нет валидных LoRA для загрузки в модель")
             else:
                 print("Папка Lora не найдена:", lora_dir)
             
