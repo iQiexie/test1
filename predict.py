@@ -305,6 +305,14 @@ class Predictor(BasePredictor):
             # Импортируем необходимые модули
             import os
             import re
+            import sys
+            
+            # Добавляем путь к stable-diffusion-webui-forge-main в sys.path, если его там нет
+            forge_path = "/stable-diffusion-webui-forge-main"
+            if forge_path not in sys.path:
+                sys.path.append(forge_path)
+            
+            # Импортируем модули LoRA
             from extensions_builtin.sd_forge_lora import networks
             from extensions_builtin.sd_forge_lora import network
             
