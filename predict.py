@@ -93,80 +93,6 @@ class Predictor(BasePredictor):
                 print(f"Ошибка при загрузке LoRA {i+1}: {e}")
         
         return lora_paths
-        
-    def handle_multiple_loras(self, lora_weights_list, lora_scales):
-        """
-        Обрабатывает загрузку и применение нескольких LoRA-весов к модели.
-        
-        Args:
-            lora_weights_list: Список путей к LoRA-весам
-            lora_scales: Список масштабов для LoRA
-        """
-        if not lora_weights_list:
-            return
-            
-        # Импортируем необходимые модули
-        from modules import shared
-        import torch
-        from backend.patcher.lora import load_lora
-        
-        # Получаем текущую модель
-        current_sd = shared.sd_model
-        if current_sd is None:
-            print("Модель не загружена, невозможно применить LoRA")
-            return
-            
-        # Выгружаем текущие LoRA, если они загружены
-        current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
-        current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
-        
-        # Применяем множитель масштаба к каждому масштабу (если нужно)
-        lora_scale_multiplier = 1.0  # Можно настроить при необходимости
-        lora_scales = [scale * lora_scale_multiplier for scale in lora_scales]
-        
-        # Загружаем все LoRA с соответствующими масштабами
-        for filename, strength in zip(lora_weights_list, lora_scales):
-            try:
-                # Загружаем LoRA state dict
-                from extensions_builtin.sd_forge_lora.networks import load_lora_state_dict
-                lora_sd = load_lora_state_dict(filename)
-                
-                # Получаем ключи модели для UNet и CLIP
-                from backend.patcher.lora import model_lora_keys_unet, model_lora_keys_clip
-                unet_keys = model_lora_keys_unet(current_sd.forge_objects.unet.model)
-                clip_keys = model_lora_keys_clip(current_sd.forge_objects.clip.cond_stage_model)
-                
-                # Загружаем LoRA для UNet и CLIP
-                lora_unet, lora_unmatch = load_lora(lora_sd, unet_keys)
-                lora_clip, lora_unmatch = load_lora(lora_unmatch, clip_keys)
-                
-                # Применяем LoRA к UNet
-                if len(lora_unet) > 0:
-                    new_unet = current_sd.forge_objects.unet.clone()
-                    loaded_keys = new_unet.add_patches(filename=filename, patches=lora_unet, strength_patch=strength, online_mode=False)
-                    skipped_keys = [item for item in lora_unet if item not in loaded_keys]
-                    if len(skipped_keys) > 12:
-                        print(f'[LORA] Mismatch {filename} for UNet with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
-                    else:
-                        print(f'[LORA] Loaded {filename} for UNet with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
-                        current_sd.forge_objects.unet = new_unet
-                
-                # Применяем LoRA к CLIP
-                if len(lora_clip) > 0:
-                    new_clip = current_sd.forge_objects.clip.clone()
-                    loaded_keys = new_clip.add_patches(filename=filename, patches=lora_clip, strength_patch=strength, online_mode=False)
-                    skipped_keys = [item for item in lora_clip if item not in loaded_keys]
-                    if len(skipped_keys) > 12:
-                        print(f'[LORA] Mismatch {filename} for CLIP with {len(skipped_keys)} keys mismatched in {len(loaded_keys)} keys')
-                    else:
-                        print(f'[LORA] Loaded {filename} for CLIP with {len(loaded_keys)} keys at weight {strength} (skipped {len(skipped_keys)} keys)')
-                        current_sd.forge_objects.clip = new_clip
-                        
-            except Exception as e:
-                print(f"Ошибка при загрузке LoRA {filename}: {e}")
-                
-        # Сохраняем состояние после применения LoRA
-        current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
 
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
@@ -372,26 +298,44 @@ class Predictor(BasePredictor):
         # output = self.model(processed_image, scale)
         # return postprocess(output)
         # Загружаем и применяем LoRA файлы, если они указаны
-        lora_files = []
-        lora_weight_values = []
+        lora_names = []
+        lora_weights = []
         
         if lora_urls and lora_urls.strip():
             lora_files = self._download_loras(lora_urls)
             
-            # Парсим веса LoRA
-            if lora_weights and lora_weights.strip():
-                weights = [float(w.strip()) for w in lora_weights.split(',') if w.strip()]
-                # Если количество весов не соответствует количеству LoRA, используем значение по умолчанию 0.7
-                if len(weights) < len(lora_files):
-                    weights.extend([0.7] * (len(lora_files) - len(weights)))
-                lora_weight_values = weights[:len(lora_files)]  # Обрезаем лишние веса, если их больше чем LoRA
-            else:
-                # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
-                lora_weight_values = [0.7] * len(lora_files)
+            # Нам не нужно импортировать модули LoRA, так как мы будем использовать только теги в промпте
+            # WebUI автоматически обработает эти теги и применит LoRA к модели
             
-            # Применяем LoRA напрямую к модели вместо добавления в промпт
-            self.handle_multiple_loras(lora_files, lora_weight_values)
-            print(f"Применено {len(lora_files)} LoRA напрямую к модели")
+            # Выводим список доступных LoRA из папки
+            lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"
+            if os.path.exists(lora_dir):
+                lora_files_in_dir = [f for f in os.listdir(lora_dir) if f.endswith('.safetensors')]
+                print("Доступные LoRA в папке:", lora_files_in_dir)
+                
+                # Получаем имена LoRA файлов без расширения
+                for lora_file in lora_files:
+                    lora_name = os.path.splitext(os.path.basename(lora_file))[0]
+                    lora_names.append(lora_name)
+                
+                # Парсим веса LoRA
+                if lora_weights and lora_weights.strip():
+                    weights = [float(w.strip()) for w in lora_weights.split(',') if w.strip()]
+                    # Если количество весов не соответствует количеству LoRA, используем значение по умолчанию 0.7
+                    if len(weights) < len(lora_names):
+                        weights.extend([0.7] * (len(lora_names) - len(weights)))
+                    lora_weight_values = weights[:len(lora_names)]  # Обрезаем лишние веса, если их больше чем LoRA
+                else:
+                    # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
+                    lora_weight_values = [0.7] * len(lora_names)
+                
+                # Добавляем LoRA в промпт напрямую
+                for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
+                    prompt = f"{prompt} <lora:{name}:{weight}>"
+                    print(f"Применяем LoRA {name} с весом {weight}")
+            else:
+                print("Папка Lora не найдена:", lora_dir)
+            
         
         payload = {
             # "init_images": [encoded_image],
@@ -415,8 +359,8 @@ class Predictor(BasePredictor):
             "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
         }
         
-        # LoRA уже загружены напрямую в модель через handle_multiple_loras
-        # Нет необходимости добавлять их в payload или промпт
+        # LoRA уже добавлены в промпт в формате <lora:имя_файла:вес>
+        # Нет необходимости добавлять их в payload отдельно
 
         alwayson_scripts = {}
 
