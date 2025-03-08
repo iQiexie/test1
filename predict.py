@@ -285,54 +285,15 @@ class Predictor(BasePredictor):
             description="Ссылки на LoRA файлы, разделенные запятыми (например, https://example.com/lora1.safetensors,https://example.com/lora2.safetensors)",
             default="",
         ),
-        lora_weights: str = Input(
-            description="Веса для каждой LoRA от 0 до 1, разделенные запятыми (например, 0.7,0.5). Должно соответствовать количеству LoRA",
-            default="",
-        ),
     ) -> list[Path]:
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
         # output = self.model(processed_image, scale)
         # return postprocess(output)
         # Загружаем и применяем LoRA файлы, если они указаны
-        lora_names = []
 
         if lora_urls and lora_urls.strip():
-            lora_files = self._download_loras(lora_urls)
-
-            # Нам не нужно импортировать модули LoRA, так как мы будем использовать только теги в промпте
-            # WebUI автоматически обработает эти теги и применит LoRA к модели
-
-            # Выводим список доступных LoRA из папки
-            lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"
-            if not os.path.exists(lora_dir):
-                print("Папка Lora не найдена:", lora_dir)
-            else:
-                lora_files_in_dir = [f for f in os.listdir(lora_dir) if f.endswith('.safetensors')]
-                print("Доступные LoRA в папке:", lora_files_in_dir)
-
-                # Получаем имена LoRA файлов без расширения
-                for lora_file in lora_files:
-                    lora_name = os.path.splitext(os.path.basename(lora_file))[0]
-                    lora_names.append(lora_name)
-
-                # Парсим веса LoRA
-                if lora_weights and lora_weights.strip():
-                    weights = [float(w.strip()) for w in lora_weights.split(',') if w.strip()]
-                    # Если количество весов не соответствует количеству LoRA, используем значение по умолчанию 0.7
-                    if len(weights) < len(lora_names):
-                        weights.extend([0.7] * (len(lora_names) - len(weights)))
-                    lora_weight_values = weights[:len(lora_names)]  # Обрезаем лишние веса, если их больше чем LoRA
-                else:
-                    # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
-                    lora_weight_values = [0.7] * len(lora_names)
-
-                # Добавляем LoRA в промпт напрямую
-                for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
-                    prompt = f"{prompt} <lora:{name}:{weight}>"
-                    print(f"Применяем LoRA {name} с весом {weight}")
-
-        print(f"Итоговый промпт: {prompt=}")
+            self._download_loras(lora_urls)
 
         payload = {
             # "init_images": [encoded_image],
