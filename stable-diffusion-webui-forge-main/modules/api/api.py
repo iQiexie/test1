@@ -1,6 +1,8 @@
 import base64
 import io
 import os
+import traceback
+
 import time
 import datetime
 import uvicorn
@@ -500,7 +502,9 @@ class Api:
                     process_extra_images(processed)
                     finish_task(task_id)
                 except Exception as e:
-                    print(F"Failed to process images: {e}")
+                    print(f"Failed to process images: {e}")
+                    traceback.print_tb(e.__traceback__)
+                    print("\n\n\n\nend traceback")
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
