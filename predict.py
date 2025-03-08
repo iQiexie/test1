@@ -183,10 +183,10 @@ class Predictor(BasePredictor):
             default="",
         ),
         width: int = Input(
-            description="Width of output image", ge=1, le=1024, default=512
+            description="Width of output image", ge=1, le=1280, default=768
         ),
         height: int = Input(
-            description="Height of output image", ge=1, le=1024, default=768
+            description="Height of output image", ge=1, le=1280, default=1280
         ),
         num_outputs: int = Input(
             description="Number of images to output", ge=1, le=4, default=1
@@ -230,7 +230,7 @@ class Predictor(BasePredictor):
             default="Simple",
         ),
         num_inference_steps: int = Input(
-            description="Number of denoising steps", ge=1, le=100, default=20
+            description="Number of denoising steps", ge=1, le=50, default=15
         ),
         guidance_scale: float = Input(
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
@@ -304,36 +304,8 @@ class Predictor(BasePredictor):
         if lora_urls and lora_urls.strip():
             lora_files = self._download_loras(lora_urls)
             
-            # Импортируем необходимые модули
-            import os
-            import re
-            import sys
-            
-            # Добавляем путь к stable-diffusion-webui-forge-main в sys.path, если его там нет
-            forge_path = "/stable-diffusion-webui-forge-main"
-            if forge_path not in sys.path:
-                sys.path.append(forge_path)
-            
-            # Добавляем путь к директории extensions-builtin в sys.path
-            extensions_path = "/stable-diffusion-webui-forge-main/extensions-builtin"
-            if extensions_path not in sys.path:
-                sys.path.append(extensions_path)
-                
-            # Импортируем все необходимые модули LoRA (без UI модулей)
-            from sd_forge_lora import networks
-            from sd_forge_lora import network
-            from sd_forge_lora import lora
-            from sd_forge_lora import lora_logger
-            from sd_forge_lora import preload
-            from sd_forge_lora import extra_networks_lora
-            
-            try:
-                from sd_forge_lora.scripts import lora_script
-            except ImportError:
-                print("Не удалось импортировать lora_script из scripts")
-            
-            # Обновляем список доступных LoRA
-            networks.list_available_networks()
+            # Нам не нужно импортировать модули LoRA, так как мы будем использовать только теги в промпте
+            # WebUI автоматически обработает эти теги и применит LoRA к модели
             
             # Выводим список доступных LoRA из папки
             lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"
@@ -357,26 +329,10 @@ class Predictor(BasePredictor):
                     # Если веса не указаны, используем значение по умолчанию 0.7 для всех LoRA
                     lora_weight_values = [0.7] * len(lora_names)
                 
-                # Проверяем, что LoRA существуют в списке доступных сетей
-                valid_lora_names = []
-                valid_lora_weights = []
-                
+                # Добавляем LoRA в промпт напрямую
                 for i, (name, weight) in enumerate(zip(lora_names, lora_weight_values)):
-                    if name in networks.available_networks or name in networks.available_network_aliases:
-                        valid_lora_names.append(name)
-                        valid_lora_weights.append(weight)
-                        # Добавляем LoRA в промпт
-                        prompt = f"{prompt} <lora:{name}:{weight}>"
-                        print(f"Применяем LoRA {name} с весом {weight}")
-                    else:
-                        print(f"LoRA {name} не найдена в списке доступных сетей, пропускаем")
-                
-                # Загружаем LoRA в модель, если есть валидные LoRA
-                if valid_lora_names:
-                    networks.load_networks(valid_lora_names, valid_lora_weights, valid_lora_weights, [None] * len(valid_lora_names))
-                    print(f"Загружено {len(valid_lora_names)} LoRA в модель")
-                else:
-                    print("Нет валидных LoRA для загрузки в модель")
+                    prompt = f"{prompt} <lora:{name}:{weight}>"
+                    print(f"Применяем LoRA {name} с весом {weight}")
             else:
                 print("Папка Lora не найдена:", lora_dir)
             
