@@ -30,6 +30,7 @@ def register_default_extra_networks():
 
 class ExtraNetworkParams:
     def __init__(self, items=None):
+        print(f"\n\n\n\n\n\n\n\n\nLOOK HERE{items=}\n\n\n\n\n\n\n\n")
         self.items = items or []
         self.positional = []
         self.named = {}
@@ -129,7 +130,10 @@ def activate(p, extra_network_data):
 
     activated = []
 
-    print(f"{extra_network_data['lora'].dict()=}")
+    print(f"\n\n\n\n\n\n")
+    print(f"{extra_network_data['lora'][0].items=}")
+    print(f"{extra_network_data['lora'][0].positional=}")
+    print(f"{extra_network_data['lora'][0].named=}")
     raise RuntimeError(
         "TESTTEST TESTTEST TESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTESTTESTTEST TESTTEST"
         )
