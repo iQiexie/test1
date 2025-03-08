@@ -312,11 +312,25 @@ class Predictor(BasePredictor):
             if forge_path not in sys.path:
                 sys.path.append(forge_path)
             
-            # Импортируем модули LoRA
-            from modules_forge.extensions_builtin.sd_forge_lora import networks
-            from modules_forge.extensions_builtin.sd_forge_lora import network
+            # Добавляем путь к директории extensions-builtin в sys.path
+            extensions_path = "/stable-diffusion-webui-forge-main/extensions-builtin"
+            if extensions_path not in sys.path:
+                sys.path.append(extensions_path)
+                
+            # Импортируем все необходимые модули LoRA (без UI модулей)
+            from sd_forge_lora import networks
+            from sd_forge_lora import network
+            from sd_forge_lora import lora
+            from sd_forge_lora import lora_logger
+            from sd_forge_lora import preload
+            from sd_forge_lora import extra_networks_lora
             
-            # Принудительно обновляем список доступных LoRA
+            try:
+                from sd_forge_lora.scripts import lora_script
+            except ImportError:
+                print("Не удалось импортировать lora_script из scripts")
+            
+            # Обновляем список доступных LoRA
             networks.list_available_networks()
             
             # Выводим список доступных LoRA из папки
