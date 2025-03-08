@@ -136,6 +136,9 @@ class Predictor(BasePredictor):
         
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
+
+        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
+        shared.opts.set('forge_unet_storage_dtype', 'Automatic (fp16 LoRA)')
         
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
