@@ -36,7 +36,7 @@ class Predictor(BasePredictor):
         
         # Проверяем, существует ли уже файл модели
         if os.path.exists(model_path):
-            print(f"Модель уже загружена: {model_path}")
+            print(f"Модель уже загружена!!: {model_path}")
             return
         
         # Если модель не найдена, загружаем ее
