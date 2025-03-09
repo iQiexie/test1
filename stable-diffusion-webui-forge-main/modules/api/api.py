@@ -502,7 +502,9 @@ class Api:
                     for script in script_runner.alwayson_scripts:
                         if hasattr(script, 'filename') and 'lora' in script.filename.lower():
                             print(f"Found LoRA script: {script.filename}")
-                    
+                    import extra_networks_lora
+                    extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data)
+
                     # Set script args
                     if selectable_scripts is not None:
                         p.script_args = script_args
