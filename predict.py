@@ -419,6 +419,10 @@ class Predictor(BasePredictor):
             description="Ссылки на LoRA файлы, разделенные запятыми (например, https://example.com/lora1.safetensors,https://example.com/lora2.safetensors)",
             default="",
         ),
+        lora_scales: list[float] = Input(
+            description="Lora scales",
+            default=0.8,
+        ),
     ) -> list[Path]:
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
@@ -488,14 +492,14 @@ class Predictor(BasePredictor):
         
         # Add all LoRA files with their weights to extra_network_data
         lora_args = []
-        for url in lora_urls:
+        for url, scale in zip(lora_urls, lora_scales):
             lora_name = url.split('/')[-1].split('.')[0]
-            extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
+            extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, str(scale)]))
             print(f"Adding lora: {lora_name=}")
 
             # Each LoRA needs a name and a weight
             lora_args.append(lora_name)  # Name
-            lora_args.append(1.0)  # Weight (default to 1.0)
+            lora_args.append(scale)  # Weight (default to 1.0)
 
         # Use the correct script name: "lora" instead of "sd_forge_lora"
         alwayson_scripts["lora"] = {"args": lora_args}
