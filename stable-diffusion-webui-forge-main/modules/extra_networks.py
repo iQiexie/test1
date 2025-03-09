@@ -110,7 +110,9 @@ def lookup_extra_networks(extra_network_data):
 
     for extra_network_name, extra_network_args in list(extra_network_data.items()):
         extra_network = extra_network_registry.get(extra_network_name, None)
+        print(f"Searching for: {extra_network_name=}, {extra_network_args=}; {extra_network_registry=}, {extra_network=}")
         alias = extra_network_aliases.get(extra_network_name, None)
+        print(f"Searching for alias: {extra_network_name=}; {extra_network_aliases=}, {alias=}")
 
         if alias is not None and extra_network is None:
             extra_network = alias
@@ -145,12 +147,16 @@ def activate(p, extra_network_data):
     for extra_network, extra_network_args in lookup_extra_networks(extra_network_data).items():
         try:
             extra_network.activate(p, extra_network_args)
+            print(f"Extra network activated: {extra_network=}, {extra_network.__dict__=}")
             activated.append(extra_network)
         except Exception as e:
+            print(f"activating extra network {extra_network=} with arguments {extra_network_args=}")
             errors.display(e, f"activating extra network {extra_network.name} with arguments {extra_network_args}")
+            raise e
 
     for extra_network_name, extra_network in extra_network_registry.items():
         if extra_network in activated:
+            print(f"Skipping already activated extra network: {extra_network=}")
             continue
 
         try:
@@ -158,6 +164,7 @@ def activate(p, extra_network_data):
         except Exception as e:
             errors.display(e, f"activating extra network {extra_network_name}")
 
+    print(f"Network: {p.scripts=}")
     if p.scripts is not None:
         p.scripts.after_extra_networks_activate(p, batch_number=p.iteration, prompts=p.prompts, seeds=p.seeds, subseeds=p.subseeds, extra_network_data=extra_network_data)
 

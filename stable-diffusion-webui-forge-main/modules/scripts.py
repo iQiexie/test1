@@ -177,6 +177,7 @@ class Script:
         pass
 
     def after_extra_networks_activate(self, p, *args, **kwargs):
+        print("Called after_extra_networks_activate 179")
         """
         Called after extra networks activation, before conds calculation
         allow modification of the network after extra networks activation been applied
@@ -870,6 +871,7 @@ class ScriptRunner:
                 errors.report(f"Error running before_process_init_images: {script.filename}", exc_info=True)
 
     def after_extra_networks_activate(self, p, **kwargs):
+        print("Called after_extra_networks_activate 873")
         for script in self.ordered_scripts('after_extra_networks_activate'):
             try:
                 script_args = p.script_args[script.args_from:script.args_to]
