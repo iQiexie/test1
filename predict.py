@@ -559,7 +559,7 @@ class Predictor(BasePredictor):
         
         # Now check if the model has forge_objects attribute
         if hasattr(shared.sd_model, 'forge_objects'):
-            print("Model has forge_objects, proceeding with LoRA...")
+            print(f"Model has forge_objects, proceeding with LoRA... {shared.sd_model=}")
             resp = self.api.text2imgapi(
                 txt2imgreq=req,
                 extra_network_data=extra_network_data

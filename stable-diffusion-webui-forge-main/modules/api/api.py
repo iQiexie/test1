@@ -540,7 +540,7 @@ class Api:
                     
                     # Now check if the model has forge_objects attribute
                     if hasattr(shared.sd_model, 'forge_objects'):
-                        print("Model has forge_objects, activating LoRA...")
+                        print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
                         import extra_networks_lora
                         extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
                     else:
