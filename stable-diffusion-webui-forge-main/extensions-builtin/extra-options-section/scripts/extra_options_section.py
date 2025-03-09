@@ -69,6 +69,9 @@ class ExtraOptionsSection(scripts.Script):
         return self.comps
 
     def before_process(self, p, *args):
+        if (not self.setting_names) or (not args):
+            return
+
         for name, value in zip(self.setting_names, args):
             if name not in p.override_settings:
                 p.override_settings[name] = value
