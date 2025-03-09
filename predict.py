@@ -333,7 +333,6 @@ class Predictor(BasePredictor):
             "hr_scale": hr_scale,
             "distilled_cfg_scale": distilled_guidance_scale,  # Добавляем параметр distilled_cfg_scale для Flux
             "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
-            "extra_network_data": {"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
         }
         
         # Нет необходимости добавлять их в payload отдельно
@@ -360,7 +359,10 @@ class Predictor(BasePredictor):
         print(f"Финальный пейлоад: {payload=}")
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
         # generate
-        resp = self.api.text2imgapi(req)
+        resp = self.api.text2imgapi(
+            txt2imgreq=req,
+            extra_network_data={"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
+        )
         info = json.loads(resp.info)
 
         from PIL import Image

@@ -444,7 +444,7 @@ class Api:
 
         return params
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data = None):
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
 
@@ -477,7 +477,9 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
-        args['extra_network_data'] = txt2imgreq.extra_network_data
+
+        if extra_network_data:
+            args['extra_network_data'] = extra_network_data
 
         add_task_to_queue(task_id)
         print(f"new {args=}")
