@@ -481,6 +481,8 @@ class Api:
 
         add_task_to_queue(task_id)
         print(f"new {args=}")
+        from modules import shared
+        print(f"{shared=}")
         print(f"new {shared.sd_model=}")
 
         with self.queue_lock:

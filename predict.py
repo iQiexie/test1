@@ -499,19 +499,6 @@ class Predictor(BasePredictor):
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
         
-        # Directly use the ExtraNetworkParams for LoRA without relying on alwayson_scripts
-        # This is the most reliable way to use LoRA with the API
-        if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts:
-            # Remove the LoRA script from alwayson_scripts to avoid conflicts
-            if 'lora' in req.alwayson_scripts:
-                del req.alwayson_scripts['lora']
-            if 'sd_forge_lora' in req.alwayson_scripts:
-                del req.alwayson_scripts['sd_forge_lora']
-            
-            # If alwayson_scripts is empty, remove it
-            if not req.alwayson_scripts:
-                req.alwayson_scripts = None
-        
         # Now check if the model has forge_objects attribute
         if hasattr(shared.sd_model, 'forge_objects'):
             print("Model has forge_objects, proceeding with LoRA...")
