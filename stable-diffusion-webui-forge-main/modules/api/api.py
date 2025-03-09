@@ -39,6 +39,7 @@ def script_name_to_index(name, scripts):
     try:
         return [script.title().lower() for script in scripts].index(name.lower())
     except Exception as e:
+        print(f"Script '{name}' not found")
         raise HTTPException(status_code=422, detail=f"Script '{name}' not found") from e
 
 
