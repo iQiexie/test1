@@ -65,32 +65,95 @@ class Predictor(BasePredictor):
             return []
 
         import os
+        import tarfile
+        import tempfile
+        import shutil
+        import re
+        
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
         os.makedirs(target_dir, exist_ok=True)
         
         lora_paths = []
         for i, url in enumerate(lora_urls_list):
             try:
-                # Извлекаем имя файла из URL или используем индекс, если не удалось
-                filename = os.path.basename(url.split("?")[0])
-                if not filename or filename == "":
-                    filename = f"lora_{i+1}.safetensors"
+                # Проверяем, является ли URL ссылкой на .tar архив
+                is_tar_archive = url.endswith('.tar') or '/trained_model.tar' in url
                 
-                # Убедимся, что файл имеет расширение .safetensors
-                if not filename.endswith(".safetensors"):
-                    filename += ".safetensors"
-                
-                lora_path = os.path.join(target_dir, filename)
-                
-                # Проверяем, существует ли уже файл
-                if os.path.exists(lora_path):
-                    print(f"ТОЧНО ПОСЛЕДНЯЯ ВЕРСИЯ LoRA файл уже существует: {lora_path}")
-                    lora_paths.append(lora_path)
+                if is_tar_archive:
+                    # Извлекаем ID из URL для .tar архивов (например, из replicate.delivery)
+                    # Пример: https://replicate.delivery/xezq/h1097z5f1FXycCDn31BYqb4fi1o5nfqExf0ZmozqArxFobaRB/trained_model.tar
+                    match = re.search(r'/([a-zA-Z0-9]{40,})/trained_model\.tar', url)
+                    if match:
+                        lora_id = match.group(1)
+                        filename = f"{lora_id}.safetensors"
+                    else:
+                        # Если не удалось извлечь ID, используем индекс
+                        filename = f"lora_tar_{i+1}.safetensors"
+                    
+                    lora_path = os.path.join(target_dir, filename)
+                    
+                    # Проверяем, существует ли уже файл
+                    if os.path.exists(lora_path):
+                        print(f"LoRA файл уже существует: {lora_path}")
+                        lora_paths.append(lora_path)
+                    else:
+                        # Создаем временную директорию для распаковки архива
+                        with tempfile.TemporaryDirectory() as temp_dir:
+                            # Загружаем .tar архив во временный файл
+                            tar_path = os.path.join(temp_dir, "archive.tar")
+                            download_base_weights(url, tar_path)
+                            
+                            # Распаковываем архив
+                            with tarfile.open(tar_path) as tar:
+                                tar.extractall(path=temp_dir)
+                            
+                            # Ищем lora.safetensors в распакованной структуре
+                            # Ожидаемый путь: output/flux_train_replicate/lora.safetensors
+                            lora_file_path = None
+                            
+                            # Проверяем наличие ожидаемой структуры
+                            expected_path = os.path.join(temp_dir, "output", "flux_train_replicate", "lora.safetensors")
+                            if os.path.exists(expected_path):
+                                lora_file_path = expected_path
+                            else:
+                                # Если ожидаемой структуры нет, ищем .safetensors файл рекурсивно
+                                for root, _, files in os.walk(temp_dir):
+                                    for file in files:
+                                        if file.endswith('.safetensors'):
+                                            lora_file_path = os.path.join(root, file)
+                                            break
+                                    if lora_file_path:
+                                        break
+                            
+                            if lora_file_path:
+                                # Копируем найденный файл в целевую директорию с нужным именем
+                                shutil.copy2(lora_file_path, lora_path)
+                                lora_paths.append(lora_path)
+                                print(f"LoRA {i+1} успешно извлечена из архива и сохранена: {lora_path}")
+                            else:
+                                print(f"Ошибка: не удалось найти .safetensors файл в архиве {url}")
                 else:
-                    # Если файл не существует, загружаем его
-                    download_base_weights(url, lora_path)
-                    lora_paths.append(lora_path)
-                    print(f"LoRA {i+1} успешно загружена: {lora_path}")
+                    # Стандартная обработка для не-tar файлов
+                    # Извлекаем имя файла из URL или используем индекс, если не удалось
+                    filename = os.path.basename(url.split("?")[0])
+                    if not filename or filename == "":
+                        filename = f"lora_{i+1}.safetensors"
+                    
+                    # Убедимся, что файл имеет расширение .safetensors
+                    if not filename.endswith(".safetensors"):
+                        filename += ".safetensors"
+                    
+                    lora_path = os.path.join(target_dir, filename)
+                    
+                    # Проверяем, существует ли уже файл
+                    if os.path.exists(lora_path):
+                        print(f"LoRA файл уже существует: {lora_path}")
+                        lora_paths.append(lora_path)
+                    else:
+                        # Если файл не существует, загружаем его
+                        download_base_weights(url, lora_path)
+                        lora_paths.append(lora_path)
+                        print(f"LoRA {i+1} успешно загружена: {lora_path}")
             except Exception as e:
                 print(f"Ошибка при загрузке LoRA {i+1}: {e}")
 
