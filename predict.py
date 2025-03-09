@@ -417,11 +417,11 @@ class Predictor(BasePredictor):
         ),
         lora_urls: list[str] = Input(
             description="Ссылки на LoRA файлы, разделенные запятыми (например, https://example.com/lora1.safetensors,https://example.com/lora2.safetensors)",
-            default="",
+            default=[],
         ),
         lora_scales: list[float] = Input(
             description="Lora scales",
-            default=0.8,
+            default=[0.8],
         ),
     ) -> list[Path]:
         """Run a single prediction on the model"""
