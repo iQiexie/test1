@@ -52,7 +52,7 @@ build:
 
     # Клонирование репозиториев
     - git clone https://github.com/iQiexie/test1 /stable-diffusion-webui-forge-main
-    - /stable-diffusion-webui-forge-main/stable-diffusion-webui-forge-main/* /stable-diffusion-webui-forge-main/
+    - mv /stable-diffusion-webui-forge-main/stable-diffusion-webui-forge-main/* /stable-diffusion-webui-forge-main/
     - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
     - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     
