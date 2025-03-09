@@ -451,7 +451,7 @@ class Predictor(BasePredictor):
         if lora_files:
             for lora_name in lora_files:
                 extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
-                print(f"LOOK HEREitems=[{lora_name}, '1']")
+                print(f"LOOK HERE items=[{lora_name}, '1']")
         
         # Import the necessary modules for script registration
         from modules import scripts
