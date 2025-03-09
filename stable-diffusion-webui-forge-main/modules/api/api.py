@@ -493,6 +493,16 @@ class Api:
                 try:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
+                    
+                    # Make sure scripts are initialized
+                    script_runner.initialize_scripts(is_img2img=False)
+                    
+                    # Ensure LoRA script is loaded and activated
+                    for script in script_runner.alwayson_scripts:
+                        if hasattr(script, 'filename') and 'lora' in script.filename.lower():
+                            print(f"Found LoRA script: {script.filename}")
+                    
+                    # Set script args
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         print("Instead scripts.scripts_txt2img.run starting process_images(p)")

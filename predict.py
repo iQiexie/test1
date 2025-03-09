@@ -352,6 +352,29 @@ class Predictor(BasePredictor):
 
         alwayson_scripts = {}
 
+        # Add LoRA to alwayson_scripts
+        if lora_urls and lora_urls.strip():
+            # Get the LoRA filenames without path and extension
+            lora_files = []
+            target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
+            for file in os.listdir(target_dir):
+                if file.endswith(".safetensors"):
+                    lora_name = os.path.splitext(file)[0]
+                    lora_files.append(lora_name)
+            
+            if lora_files:
+                # Format the LoRA arguments properly for the script
+                lora_args = []
+                for lora_name in lora_files:
+                    # Each LoRA needs a name and a weight
+                    lora_args.append(lora_name)  # Name
+                    lora_args.append(1.0)        # Weight (default to 1.0)
+                
+                alwayson_scripts["sd_forge_lora"] = {
+                    "args": lora_args
+                }
+                print(f"Added LoRA files to alwayson_scripts: {lora_args}")
+
         if enable_adetailer:
             alwayson_scripts["ADetailer"] = {
                 "args": [
@@ -372,9 +395,9 @@ class Predictor(BasePredictor):
         print(f"Финальный пейлоад: {payload=}")
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
         # generate
+        # We're now using alwayson_scripts instead of extra_network_data
         resp = self.api.text2imgapi(
-            txt2imgreq=req,
-            extra_network_data={"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
+            txt2imgreq=req
         )
         info = json.loads(resp.info)
 
