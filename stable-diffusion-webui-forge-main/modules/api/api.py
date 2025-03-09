@@ -479,6 +479,8 @@ class Api:
         args.pop('save_images', None)
 
         add_task_to_queue(task_id)
+        print(f"new {args=}")
+        print(f"new {shared.sd_mode=}")
 
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
@@ -496,7 +498,7 @@ class Api:
                         processed = process_images(p)
                         # processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
-                        print("Starting process_images(p)")
+                        print(f"Starting process_images(p). {p.extra_network_data=}")
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
                     process_extra_images(processed)
