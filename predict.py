@@ -126,6 +126,9 @@ class Predictor(BasePredictor):
         os.makedirs(lora_dir, exist_ok=True)
         sys.argv.extend(["--lora-dir", lora_dir])
         
+        # Ensure the LoRA extension is loaded
+        sys.path.append("/stable-diffusion-webui-forge-main/extensions-builtin/sd_forge_lora")
+        
         from modules import timer
         
         # Безопасный импорт memory_management
@@ -198,8 +201,53 @@ class Predictor(BasePredictor):
 
         from modules.api.api import Api
         from modules.call_queue import queue_lock
-
-        self.api = Api(app, queue_lock)
+        
+        # Create a custom API class that patches the script handling functions
+        class CustomApi(Api):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                
+                # Patch the get_script function to handle LoRA scripts
+                original_get_script = self.get_script
+                
+                def patched_get_script(script_name, script_runner):
+                    try:
+                        return original_get_script(script_name, script_runner)
+                    except Exception as e:
+                        # If the script is not found and it's the LoRA script, handle it specially
+                        if script_name in ["lora", "sd_forge_lora"]:
+                            print(f"LoRA script '{script_name}' not found in standard scripts, using extra_network_data instead")
+                            return None
+                        raise e
+                
+                self.get_script = patched_get_script
+                
+                # Patch the init_script_args function to handle missing scripts
+                original_init_script_args = self.init_script_args
+                
+                def patched_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, *, input_script_args=None):
+                    try:
+                        return original_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, input_script_args=input_script_args)
+                    except Exception as e:
+                        # If there's an error with alwayson_scripts, try to continue without them
+                        if hasattr(request, 'alwayson_scripts') and request.alwayson_scripts:
+                            print(f"Error initializing alwayson_scripts: {e}")
+                            # Remove problematic scripts
+                            for script_name in list(request.alwayson_scripts.keys()):
+                                if script_name in ["lora", "sd_forge_lora"]:
+                                    print(f"Removing problematic script: {script_name}")
+                                    del request.alwayson_scripts[script_name]
+                            
+                            # Try again without the problematic scripts
+                            if not request.alwayson_scripts:
+                                request.alwayson_scripts = None
+                            
+                            return original_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, input_script_args=input_script_args)
+                        raise e
+                
+                self.init_script_args = patched_init_script_args
+        
+        self.api = CustomApi(app, queue_lock)
 
     def predict(
         self,
@@ -352,7 +400,7 @@ class Predictor(BasePredictor):
 
         alwayson_scripts = {}
 
-        # Add LoRA to alwayson_scripts
+        # Add LoRA to both alwayson_scripts and extra_network_data
         if lora_urls and lora_urls.strip():
             # Get the LoRA filenames without path and extension
             lora_files = []
@@ -370,7 +418,8 @@ class Predictor(BasePredictor):
                     lora_args.append(lora_name)  # Name
                     lora_args.append(1.0)        # Weight (default to 1.0)
                 
-                alwayson_scripts["sd_forge_lora"] = {
+                # Use the correct script name: "lora" instead of "sd_forge_lora"
+                alwayson_scripts["lora"] = {
                     "args": lora_args
                 }
                 print(f"Added LoRA files to alwayson_scripts: {lora_args}")
@@ -395,10 +444,41 @@ class Predictor(BasePredictor):
         print(f"Финальный пейлоад: {payload=}")
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
         # generate
-        # We're now using alwayson_scripts instead of extra_network_data
+        # Use both extra_network_data and alwayson_scripts to handle LoRA models
+        extra_network_data = {"lora": []}
+        
+        # Add all LoRA files with their weights to extra_network_data
+        if lora_files:
+            for lora_name in lora_files:
+                extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
+                print(f"LOOK HEREitems=[{lora_name}, '1']")
+        
+        # Import the necessary modules for script registration
+        from modules import scripts
+        
+        # Make sure the LoRA script is initialized
+        if not hasattr(scripts.scripts_txt2img, 'selectable_scripts'):
+            scripts.scripts_txt2img.initialize_scripts(False)
+        
+        # Print available scripts for debugging
+        print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
+        
+        # Directly use the ExtraNetworkParams for LoRA without relying on alwayson_scripts
+        # This is the most reliable way to use LoRA with the API
+        if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts:
+            # Remove the LoRA script from alwayson_scripts to avoid conflicts
+            if 'lora' in req.alwayson_scripts:
+                del req.alwayson_scripts['lora']
+            if 'sd_forge_lora' in req.alwayson_scripts:
+                del req.alwayson_scripts['sd_forge_lora']
+            
+            # If alwayson_scripts is empty, remove it
+            if not req.alwayson_scripts:
+                req.alwayson_scripts = None
+        
         resp = self.api.text2imgapi(
             txt2imgreq=req,
-            extra_network_data={"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
+            extra_network_data=extra_network_data
         )
         info = json.loads(resp.info)
 
