@@ -63,7 +63,8 @@ class Predictor(BasePredictor):
         lora_urls_list = [url.strip() for url in lora_urls.split(",") if url.strip()]
         if not lora_urls_list:
             return []
-            
+
+        import os
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
         os.makedirs(target_dir, exist_ok=True)
         
