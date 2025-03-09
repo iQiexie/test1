@@ -498,12 +498,47 @@ class Api:
                     # Make sure scripts are initialized
                     script_runner.initialize_scripts(is_img2img=False)
                     
-                    # Ensure LoRA script is loaded and activated
-                    for script in script_runner.alwayson_scripts:
-                        if hasattr(script, 'filename') and 'lora' in script.filename.lower():
-                            print(f"Found LoRA script: {script.filename}")
-                    import extra_networks_lora
-                    extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
+                    # Ensure model is properly loaded before using LoRA
+                    from modules import sd_models, shared
+                    from backend.diffusion_engine.flux import Flux
+                    
+                    # Check if the model is a FakeInitialModel and needs to be loaded
+                    if isinstance(shared.sd_model, sd_models.FakeInitialModel):
+                        print("Model is FakeInitialModel, loading Flux model...")
+                        
+                        # Set the checkpoint to the Flux model specifically
+                        flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+                        shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
+                        shared.opts.set('forge_preset', 'flux')
+                        shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
+                        
+                        # Find the Flux checkpoint
+                        flux_checkpoint = None
+                        for checkpoint in sd_models.checkpoints_list.values():
+                            if checkpoint.filename.endswith(flux_checkpoint_name):
+                                flux_checkpoint = checkpoint
+                                break
+                        
+                        if flux_checkpoint is not None:
+                            # Set up forge loading parameters
+                            sd_models.model_data.forge_loading_parameters = {
+                                'checkpoint_info': flux_checkpoint,
+                                'unet_storage_dtype': 'bnb-nf4',  # Use the same setting as in predict.py
+                                'additional_modules': []
+                            }
+                            # Load the model
+                            sd_models.forge_model_reload()
+                            print(f"Flux model loaded: {type(shared.sd_model)}")
+                        else:
+                            print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
+                    
+                    # Now check if the model has forge_objects attribute
+                    if hasattr(shared.sd_model, 'forge_objects'):
+                        print("Model has forge_objects, activating LoRA...")
+                        import extra_networks_lora
+                        extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
+                    else:
+                        print("Warning: Model does not have forge_objects attribute, skipping LoRA activation")
 
                     # Set script args
                     if selectable_scripts is not None:

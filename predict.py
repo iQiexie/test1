@@ -463,6 +463,39 @@ class Predictor(BasePredictor):
         # Print available scripts for debugging
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
         
+        # Ensure the model is properly loaded before using LoRA
+        from modules import sd_models, shared
+        
+        # Check if the model is a FakeInitialModel and needs to be loaded
+        if isinstance(shared.sd_model, sd_models.FakeInitialModel):
+            print("Model is FakeInitialModel, loading Flux model...")
+            
+            # Set the checkpoint to the Flux model specifically
+            flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+            shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
+            shared.opts.set('forge_preset', 'flux')
+            shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
+            
+            # Find the Flux checkpoint
+            flux_checkpoint = None
+            for checkpoint in sd_models.checkpoints_list.values():
+                if checkpoint.filename.endswith(flux_checkpoint_name):
+                    flux_checkpoint = checkpoint
+                    break
+            
+            if flux_checkpoint is not None:
+                # Set up forge loading parameters
+                sd_models.model_data.forge_loading_parameters = {
+                    'checkpoint_info': flux_checkpoint,
+                    'unet_storage_dtype': 'bnb-nf4',  # Use the same setting as in setup
+                    'additional_modules': []
+                }
+                # Load the model
+                sd_models.forge_model_reload()
+                print(f"Flux model loaded: {type(shared.sd_model)}")
+            else:
+                print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
+        
         # Directly use the ExtraNetworkParams for LoRA without relying on alwayson_scripts
         # This is the most reliable way to use LoRA with the API
         if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts:
@@ -476,10 +509,20 @@ class Predictor(BasePredictor):
             if not req.alwayson_scripts:
                 req.alwayson_scripts = None
         
-        resp = self.api.text2imgapi(
-            txt2imgreq=req,
-            extra_network_data=extra_network_data
-        )
+        # Now check if the model has forge_objects attribute
+        if hasattr(shared.sd_model, 'forge_objects'):
+            print("Model has forge_objects, proceeding with LoRA...")
+            resp = self.api.text2imgapi(
+                txt2imgreq=req,
+                extra_network_data=extra_network_data
+            )
+        else:
+            print("Warning: Model does not have forge_objects attribute, proceeding without LoRA")
+            # Remove LoRA from extra_network_data to avoid errors
+            resp = self.api.text2imgapi(
+                txt2imgreq=req,
+                extra_network_data=None
+            )
         info = json.loads(resp.info)
 
         from PIL import Image

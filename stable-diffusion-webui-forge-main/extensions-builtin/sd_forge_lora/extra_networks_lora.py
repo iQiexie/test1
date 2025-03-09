@@ -12,6 +12,17 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
     remove_symbols = str.maketrans('', '', ":,")
 
     def activate(self, p, params_list):
+        # Check if the model is properly initialized
+        from modules import sd_models
+        
+        if isinstance(shared.sd_model, sd_models.FakeInitialModel):
+            print("Warning: Model is FakeInitialModel, cannot apply LoRA")
+            return
+            
+        if not hasattr(shared.sd_model, 'forge_objects'):
+            print("Warning: Model does not have forge_objects attribute, cannot apply LoRA")
+            return
+            
         additional = shared.opts.sd_lora
 
         self.errors.clear()
@@ -44,7 +55,11 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             unet_multipliers.append(unet_multiplier)
             dyn_dims.append(dyn_dim)
 
-        networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
+        try:
+            networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
+        except Exception as e:
+            print(f"Error loading networks: {e}")
+            self.errors["load_networks"] = str(e)
 
         if shared.opts.lora_add_hashes_to_infotext:
             if not getattr(p, "is_hr_pass", False) or not hasattr(p, "lora_hashes"):

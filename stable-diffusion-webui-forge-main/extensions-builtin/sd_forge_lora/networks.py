@@ -72,6 +72,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     if current_sd is None:
         return
 
+    print(f"{current_sd=}")
+
     loaded_networks.clear()
 
     unavailable_networks = []
@@ -101,8 +103,12 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
 
     online_mode = dynamic_args.get('online_lora', False)
 
-    if current_sd.forge_objects.unet.model.storage_dtype in [torch.float32, torch.float16, torch.bfloat16]:
-        online_mode = False
+    # Check if the model has forge_objects attribute
+    if hasattr(current_sd, 'forge_objects') and hasattr(current_sd.forge_objects, 'unet') and hasattr(current_sd.forge_objects.unet, 'model') and hasattr(current_sd.forge_objects.unet.model, 'storage_dtype'):
+        if current_sd.forge_objects.unet.model.storage_dtype in [torch.float32, torch.float16, torch.bfloat16]:
+            online_mode = False
+    else:
+        print("Warning: Model does not have proper forge_objects structure, using default online_mode")
 
     compiled_lora_targets = []
     for a, b, c in zip(networks_on_disk, unet_multipliers, te_multipliers):
@@ -114,6 +120,12 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         return
 
     current_sd.current_lora_hash = compiled_lora_targets_hash
+    
+    # Check if the model has the necessary forge_objects attributes
+    if not hasattr(current_sd, 'forge_objects') or not hasattr(current_sd, 'forge_objects_original'):
+        print("Warning: Model does not have proper forge_objects structure, skipping LoRA application")
+        return
+    
     current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
     current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
 
@@ -123,7 +135,8 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
             current_sd.forge_objects.unet, current_sd.forge_objects.clip, lora_sd, strength_model, strength_clip,
             filename=filename, online_mode=online_mode)
 
-    current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
+    if hasattr(current_sd, 'forge_objects_after_applying_lora'):
+        current_sd.forge_objects_after_applying_lora = current_sd.forge_objects.shallow_copy()
     return
 
 
