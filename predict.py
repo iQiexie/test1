@@ -47,7 +47,7 @@ class Predictor(BasePredictor):
             model_path
         )
 
-    def _download_loras(self, lora_urls):
+    def _download_loras(self, lora_urls: list[str]):
         """
         Загружает LoRA файлы по указанным URL.
         
@@ -57,13 +57,7 @@ class Predictor(BasePredictor):
         Returns:
             Список путей к загруженным LoRA файлам
         """
-        if not lora_urls or lora_urls.strip() == "":
-            return []
             
-        lora_urls_list = [url.strip() for url in lora_urls.split(",") if url.strip()]
-        if not lora_urls_list:
-            return []
-
         import os
         import tarfile
         import tempfile
@@ -74,7 +68,7 @@ class Predictor(BasePredictor):
         os.makedirs(target_dir, exist_ok=True)
         
         lora_paths = []
-        for i, url in enumerate(lora_urls_list):
+        for i, url in enumerate(lora_urls):
             try:
                 # Проверяем, является ли URL ссылкой на .tar архив
                 is_tar_archive = url.endswith('.tar') or '/trained_model.tar' in url
@@ -421,7 +415,7 @@ class Predictor(BasePredictor):
             description="ADetailer (не рекомендуется для Flux моделей)",
             default=False,
         ),
-        lora_urls: str = Input(
+        lora_urls: list[str] = Input(
             description="Ссылки на LoRA файлы, разделенные запятыми (например, https://example.com/lora1.safetensors,https://example.com/lora2.safetensors)",
             default="",
         ),
@@ -432,7 +426,7 @@ class Predictor(BasePredictor):
         # return postprocess(output)
         # Загружаем и применяем LoRA файлы, если они указаны
 
-        if lora_urls and lora_urls.strip():
+        if lora_urls:
             self._download_loras(lora_urls)
 
         from modules.extra_networks import ExtraNetworkParams
@@ -460,18 +454,14 @@ class Predictor(BasePredictor):
         }
         
         # Нет необходимости добавлять их в payload отдельно
-
         alwayson_scripts = {}
 
-        # Add LoRA to both alwayson_scripts and extra_network_data
-        if lora_urls and lora_urls.strip():
-            # Get the LoRA filenames without path and extension
-            lora_files = []
-            target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
-            for file in os.listdir(target_dir):
-                if file.endswith(".safetensors"):
-                    lora_name = os.path.splitext(file)[0]
-                    lora_files.append(lora_name)
+        lora_files = []
+        target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
+        for file in os.listdir(target_dir):
+            if file.endswith(".safetensors"):
+                lora_name = os.path.splitext(file)[0]
+                lora_files.append(lora_name)
 
         if enable_adetailer:
             alwayson_scripts["ADetailer"] = {
@@ -498,7 +488,7 @@ class Predictor(BasePredictor):
         
         # Add all LoRA files with their weights to extra_network_data
         lora_args = []
-        for url in lora_urls.split(','):
+        for url in lora_urls:
             lora_name = url.split('/')[-1].split('.')[0]
             extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
             print(f"Adding lora: {lora_name=}")
