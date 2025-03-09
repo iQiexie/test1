@@ -477,6 +477,7 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
+        args['extra_network_data'] = txt2imgreq.extra_network_data
 
         add_task_to_queue(task_id)
         print(f"new {args=}")
@@ -484,6 +485,7 @@ class Api:
 
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
+                print(f"with closing(StableDiffusionProcessingTxt2Img {p.extra_network_data=}")
                 p.is_api = True
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_txt2img_grids
