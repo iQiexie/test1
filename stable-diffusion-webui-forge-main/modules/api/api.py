@@ -478,16 +478,13 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        if extra_network_data:
-            args['extra_network_data'] = extra_network_data
-
         add_task_to_queue(task_id)
         print(f"new {args=}")
         print(f"new {shared.sd_model=}")
 
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
-                print(f"with closing(StableDiffusionProcessingTxt2Img {p.extra_network_data=}")
+                print(f"with closing(StableDiffusionProcessingTxt2Img {p.extra_network_data=}. {extra_network_data=}")
                 p.is_api = True
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_txt2img_grids
@@ -499,12 +496,12 @@ class Api:
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         print("Instead scripts.scripts_txt2img.run starting process_images(p)")
-                        processed = process_images(p)
+                        processed = process_images(p, extra_network_data)
                         # processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
-                        print(f"Starting process_images(p). {p.extra_network_data=}")
+                        print(f"Starting process_images(p). {extra_network_data=}")
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
-                        processed = process_images(p)
+                        processed = process_images(p, extra_network_data)
                     process_extra_images(processed)
                     finish_task(task_id)
                 except Exception as e:

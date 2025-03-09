@@ -131,6 +131,7 @@ def activate(p, extra_network_data):
     activated = []
 
     print(f"\n\n\n\n\n\n")
+    print(f"{extra_network_data=}")
     print(f"{extra_network_data['lora'][0].items=}")
     print(f"{extra_network_data['lora'][0].positional=}")
     print(f"{extra_network_data['lora'][0].named=}")

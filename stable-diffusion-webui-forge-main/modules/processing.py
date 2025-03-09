@@ -812,8 +812,8 @@ def manage_model_and_prompt_cache(p: StableDiffusionProcessing):
     need_global_unload = False
 
 
-def process_images(p: StableDiffusionProcessing) -> Processed:
-    print(f"Processing images. {p.extra_network_data=}")
+def process_images(p: StableDiffusionProcessing, extra_network_data=None) -> Processed:
+    print(f"Processing images. {p.extra_network_data=}, {extra_network_data=}")
     """applies settings overrides (if any) before processing images, then restores settings as applicable."""
     if p.scripts is not None:
         print("Applied before_process before")
@@ -846,7 +846,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
         with profiling.Profiler():
             print("Running process_images_inner")
-            res = process_images_inner(p)
+            res = process_images_inner(p, extra_network_data)
 
     finally:
         # restore original options
@@ -856,9 +856,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     return res
 
 
-def process_images_inner(p: StableDiffusionProcessing) -> Processed:
+def process_images_inner(p: StableDiffusionProcessing, extra_network_data = None) -> Processed:
     """this is the main loop that both txt2img and img2img use; it calls func_init once inside all the scopes and func_sample once per batch"""
-    print(f"process_images_inner: {p.__dict__=}")
+    print(f"process_images_inner: {p.__dict__=}, {extra_network_data=}")
 
     if isinstance(p.prompt, list):
         assert(len(p.prompt) > 0)
@@ -963,7 +963,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
             print(f"Must call extra_networks.activate(p, p.extra_network_data)")
             if not p.disable_extra_networks:
                 print("Calling extra_networks.activate(p, p.extra_network_data)")
-                extra_networks.activate(p, p.extra_network_data)
+                extra_networks.activate(p, extra_network_data)
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()
 
