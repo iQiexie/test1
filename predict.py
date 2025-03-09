@@ -511,7 +511,7 @@ class Predictor(BasePredictor):
         extra_network_data = {"lora": []}
         
         # Add all LoRA files with their weights to extra_network_data
-        for url in lora_urls:
+        for url in lora_urls.split(','):
             lora_name = url.split('/')[-1].split('.')[0]
             extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
             print(f"Adding lora: {lora_name=}")
