@@ -472,20 +472,6 @@ class Predictor(BasePredictor):
                 if file.endswith(".safetensors"):
                     lora_name = os.path.splitext(file)[0]
                     lora_files.append(lora_name)
-            
-            if lora_files:
-                # Format the LoRA arguments properly for the script
-                lora_args = []
-                for lora_name in lora_files:
-                    # Each LoRA needs a name and a weight
-                    lora_args.append(lora_name)  # Name
-                    lora_args.append(1.0)        # Weight (default to 1.0)
-                
-                # Use the correct script name: "lora" instead of "sd_forge_lora"
-                alwayson_scripts["lora"] = {
-                    "args": lora_args
-                }
-                print(f"Added LoRA files to alwayson_scripts: {lora_args}")
 
         if enable_adetailer:
             alwayson_scripts["ADetailer"] = {
@@ -511,10 +497,19 @@ class Predictor(BasePredictor):
         extra_network_data = {"lora": []}
         
         # Add all LoRA files with their weights to extra_network_data
+        lora_args = []
         for url in lora_urls.split(','):
             lora_name = url.split('/')[-1].split('.')[0]
             extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, "1"]))
             print(f"Adding lora: {lora_name=}")
+
+            # Each LoRA needs a name and a weight
+            lora_args.append(lora_name)  # Name
+            lora_args.append(1.0)  # Weight (default to 1.0)
+
+        # Use the correct script name: "lora" instead of "sd_forge_lora"
+        alwayson_scripts["lora"] = {"args": lora_args}
+        print(f"Added LoRA files to alwayson_scripts: {lora_args}")
         
         # Import the necessary modules for script registration
         from modules import scripts
