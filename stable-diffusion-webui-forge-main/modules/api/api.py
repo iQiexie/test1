@@ -510,7 +510,8 @@ class Api:
                         flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
                         shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
                         shared.opts.set('forge_preset', 'flux')
-                        shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
+                        
+                        # Don't set forge_unet_storage_dtype directly, instead set it in the forge_loading_parameters
                         
                         # Find the Flux checkpoint
                         flux_checkpoint = None
@@ -520,12 +521,15 @@ class Api:
                                 break
                         
                         if flux_checkpoint is not None:
-                            # Set up forge loading parameters
+                            # Set up forge loading parameters - don't use string for dtype
                             sd_models.model_data.forge_loading_parameters = {
                                 'checkpoint_info': flux_checkpoint,
-                                'unet_storage_dtype': 'bnb-nf4',  # Use the same setting as in predict.py
                                 'additional_modules': []
                             }
+                            
+                            # Set the dynamic args directly instead of using the string
+                            from backend.args import dynamic_args
+                            dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
                             # Load the model
                             sd_models.forge_model_reload()
                             print(f"Flux model loaded: {type(shared.sd_model)}")
