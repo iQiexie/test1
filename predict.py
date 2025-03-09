@@ -397,7 +397,8 @@ class Predictor(BasePredictor):
         # generate
         # We're now using alwayson_scripts instead of extra_network_data
         resp = self.api.text2imgapi(
-            txt2imgreq=req
+            txt2imgreq=req,
+            extra_network_data={"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
         )
         info = json.loads(resp.info)
 
