@@ -104,7 +104,12 @@ class ControlNetForForgeOfficial(scripts.Script):
             ControlNetUnit.from_dict(unit) if isinstance(unit, dict) else unit
             for unit in units
         ]
-        assert all(isinstance(unit, ControlNetUnit) for unit in units)
+
+        try:
+            assert all(isinstance(unit, ControlNetUnit) for unit in units)
+        except AssertionError as e:
+            print(f"failed to assert {units=}")
+            raise e
         enabled_units = [x for x in units if x.enabled]
         return enabled_units
 
