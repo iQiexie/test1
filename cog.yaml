@@ -78,9 +78,6 @@ build:
     # Запускаем скрипт
     - python /stable-diffusion-webui-forge-main/init_env.py --skip-torch-cuda-test
     
-    # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
-    - mkdir -p /stable-diffusion-webui-forge-main/models/Stable-diffusion
-    - pget "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" /stable-diffusion-webui-forge-main/models/Stable-diffusion/flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

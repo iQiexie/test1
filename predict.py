@@ -96,7 +96,20 @@ class Predictor(BasePredictor):
 
     def setup(self) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
-        self._move_model_to_sdwebui_dir()
+        # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
+        target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
+        os.makedirs(target_dir, exist_ok=True)
+        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+        
+        # Проверяем, существует ли уже файл модели
+        if not os.path.exists(model_path):
+            print(f"Загружаем модель Flux...")
+            download_base_weights(
+                "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
+                model_path
+            )
+        else:
+            print(f"Модель Flux уже загружена: {model_path}")
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
