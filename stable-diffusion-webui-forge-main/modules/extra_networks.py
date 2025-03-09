@@ -135,6 +135,13 @@ def activate(p, extra_network_data):
     print(f"{extra_network_data['lora'][0].items=}")
     print(f"{extra_network_data['lora'][0].positional=}")
     print(f"{extra_network_data['lora'][0].named=}")
+
+    target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
+    import os
+    files = [os.path.join(target_dir, f) for f in os.listdir(target_dir) if
+             os.path.isfile(os.path.join(target_dir, f))]
+    print(files)
+
     for extra_network, extra_network_args in lookup_extra_networks(extra_network_data).items():
         try:
             extra_network.activate(p, extra_network_args)

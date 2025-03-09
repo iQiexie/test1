@@ -46,6 +46,7 @@ class Predictor(BasePredictor):
             "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
             model_path
         )
+
     def _download_loras(self, lora_urls):
         """
         Загружает LoRA файлы по указанным URL.
@@ -91,6 +92,11 @@ class Predictor(BasePredictor):
                     print(f"LoRA {i+1} успешно загружена: {lora_path}")
             except Exception as e:
                 print(f"Ошибка при загрузке LoRA {i+1}: {e}")
+
+        import os
+        files = [os.path.join(target_dir, f) for f in os.listdir(target_dir) if
+                 os.path.isfile(os.path.join(target_dir, f))]
+        print(files)
         
         return lora_paths
 
@@ -113,6 +119,12 @@ class Predictor(BasePredictor):
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
+        
+        # Set the LoRA directory path
+        lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"  # You can change this path if needed
+        os.makedirs(lora_dir, exist_ok=True)
+        sys.argv.extend(["--lora-dir", lora_dir])
+        
         from modules import timer
         
         # Безопасный импорт memory_management

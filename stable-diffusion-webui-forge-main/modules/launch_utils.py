@@ -512,6 +512,7 @@ def configure_for_tests():
 
 def configure_forge_reference_checkout(a1111_home: Path):
     """Set model paths based on an existing A1111 checkout."""
+    print("running configure_forge_reference_checkout")
     class ModelRef(NamedTuple):
         arg_name: str
         relative_path: str
@@ -537,6 +538,7 @@ def configure_forge_reference_checkout(a1111_home: Path):
             # Do not override existing dir setting.
             continue
 
+        print(f"Path did found!! {target_path} for argument {ref.arg_name}")
         sys.argv.append(ref.arg_name)
         sys.argv.append(str(target_path))
 
