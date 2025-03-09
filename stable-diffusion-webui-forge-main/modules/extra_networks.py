@@ -108,6 +108,9 @@ def lookup_extra_networks(extra_network_data):
 
     res = {}
 
+    if extra_network_data is None:
+        return {}
+
     for extra_network_name, extra_network_args in list(extra_network_data.items()):
         extra_network = extra_network_registry.get(extra_network_name, None)
         print(f"Searching for: {extra_network_name=}, {extra_network_args=}; {extra_network_registry=}, {extra_network=}")
