@@ -162,7 +162,34 @@ class Predictor(BasePredictor):
         
         return lora_paths
 
+    def download_models(self):
+        target_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+        os.makedirs(target_dir, exist_ok=True)
+
+        print("Downloading: clip_l")
+        download_base_weights(
+            "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
+            os.path.join(target_dir, "clip_l.safetensors"),
+        )
+
+        print("Downloading: t5xxl_fp16")
+        download_base_weights(
+            "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            os.path.join(target_dir, "t5xxl_fp16.safetensors"),
+        )
+
+        target_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+        os.makedirs(target_dir, exist_ok=True)
+
+        print("Downloading: ae")
+        download_base_weights(
+            "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            os.path.join(target_dir, "ae.safetensors"),
+        )
+
     def setup(self) -> None:
+        self.download_models()
+
         print("Starting setup...")
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
