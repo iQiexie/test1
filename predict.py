@@ -30,7 +30,7 @@ def download_base_weights(url: str, dest: Path):
     print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
 class Predictor(BasePredictor):
-    def _move_model_to_sdwebui_dir(self):
+    def _move_model_to_sdwebui_dir(self, checkpoint_url):
         """
         Проверяет наличие модели и загружает ее, если она отсутствует.
         Модель должна быть предварительно загружена во время сборки в cog.yaml.
@@ -47,7 +47,7 @@ class Predictor(BasePredictor):
         print("Модель не найдена, загружаем...")
         os.makedirs(target_dir, exist_ok=True)
         download_base_weights(
-            FLUX_CHECKPOINT_URL,
+            checkpoint_url,
             model_path
         )
 
@@ -189,7 +189,9 @@ class Predictor(BasePredictor):
             os.path.join(target_dir, "ae.safetensors"),
         )
 
-    def setup(self) -> None:
+    def setup(self, checkpoint_url: str = None) -> None:
+        if not checkpoint_url:
+            checkpoint_url = FLUX_CHECKPOINT_URL
         print("Starting setup...")
         
         # Download text encoders and VAE if they don't exist
@@ -214,7 +216,7 @@ class Predictor(BasePredictor):
         if not os.path.exists(model_path):
             print(f"Загружаем модель Flux...")
             download_base_weights(
-                FLUX_CHECKPOINT_URL,
+                checkpoint_url,
                 model_path
             )
         else:
@@ -472,7 +474,15 @@ class Predictor(BasePredictor):
             description="Lora scales",
             default=[0.8],
         ),
+        flux_checkpoint_url: str | None = Input(
+            description="Flux checkpoint URL",
+            default=None
+        ),
+
     ) -> list[Path]:
+        if flux_checkpoint_url:
+            self.setup(checkpoint_url=flux_checkpoint_url)
+
         # Set up directories for text encoder and VAE
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
         vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
