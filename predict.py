@@ -174,7 +174,7 @@ class Predictor(BasePredictor):
         if not os.path.exists(model_path):
             print(f"Загружаем модель Flux...")
             download_base_weights(
-                "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
+                FLUX_CHECKPOINT_URL,
                 model_path
             )
         else:
