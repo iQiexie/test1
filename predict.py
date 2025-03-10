@@ -5,7 +5,7 @@ import os, sys, json
 import shutil
 import time
 import subprocess  # Для запуска внешних процессов
-
+from modules_forge.main_entry import forge_unet_storage_dtype_options
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 from cog import BasePredictor, BaseModel, Input, Path
@@ -159,6 +159,7 @@ class Predictor(BasePredictor):
         return lora_paths
 
     def setup(self) -> None:
+        print("Starting setup...")
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
@@ -213,18 +214,6 @@ class Predictor(BasePredictor):
         initialize.check_versions()
 
         initialize.initialize()
-        
-        # Импортируем shared после initialize.initialize()
-        from modules import shared
-        
-        # Устанавливаем forge_preset на 'flux'
-        shared.opts.set('forge_preset', 'flux')
-        
-        # Устанавливаем чекпоинт
-        shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
-
-        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
-        shared.opts.set('forge_unet_storage_dtype', 'Automatic (fp16 LoRA)')
         
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
@@ -399,6 +388,11 @@ class Predictor(BasePredictor):
             ],
             default="Latent",
         ),
+        forge_unet_storage_dtype: str = Input(
+            description="forge_unet_storage_dtype",
+            choices=forge_unet_storage_dtype_options.keys(),
+            default="Automatic",
+        ),
         hr_steps: int = Input(
             description="Inference steps for Hires. fix", ge=0, le=100, default=20
         ),
@@ -429,6 +423,18 @@ class Predictor(BasePredictor):
         # output = self.model(processed_image, scale)
         # return postprocess(output)
         # Загружаем и применяем LoRA файлы, если они указаны
+
+        # Импортируем shared после initialize.initialize()
+        from modules import shared
+
+        # Устанавливаем forge_preset на 'flux'
+        shared.opts.set('forge_preset', 'flux')
+
+        # Устанавливаем чекпоинт
+        shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
+
+        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
+        shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
 
         if lora_urls:
             self._download_loras(lora_urls)
