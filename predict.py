@@ -476,11 +476,11 @@ class Predictor(BasePredictor):
         ),
         flux_checkpoint_url: str | None = Input(
             description="Flux checkpoint URL",
-            default=None
+            default=""
         ),
 
     ) -> list[Path]:
-        if flux_checkpoint_url:
+        if len(flux_checkpoint_url) > 2:
             self.setup(checkpoint_url=flux_checkpoint_url)
 
         # Set up directories for text encoder and VAE
