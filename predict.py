@@ -189,7 +189,7 @@ class Predictor(BasePredictor):
             os.path.join(target_dir, "ae.safetensors"),
         )
 
-    def setup(self, checkpoint_url: str = None) -> None:
+    def setup(self, checkpoint_url: str = None, force: bool = False) -> None:
         if not checkpoint_url:
             checkpoint_url = FLUX_CHECKPOINT_URL
         print("Starting setup...")
@@ -213,7 +213,7 @@ class Predictor(BasePredictor):
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
         
         # Проверяем, существует ли уже файл модели
-        if not os.path.exists(model_path):
+        if not os.path.exists(model_path) and force is False:
             print(f"Загружаем модель Flux...")
             download_base_weights(
                 checkpoint_url,
@@ -481,7 +481,7 @@ class Predictor(BasePredictor):
 
     ) -> list[Path]:
         if len(flux_checkpoint_url) > 2:
-            self.setup(checkpoint_url=flux_checkpoint_url)
+            self.setup(checkpoint_url=flux_checkpoint_url, force=True)
 
         # Set up directories for text encoder and VAE
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
