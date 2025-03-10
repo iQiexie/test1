@@ -185,7 +185,7 @@ class Predictor(BasePredictor):
 
         print("Downloading: ae")
         download_base_weights(
-            "https://huggingface.co/comfyanonymous/flux_vae/resolve/main/ae.safetensors?download=true",
+            "https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
             os.path.join(target_dir, "ae.safetensors"),
         )
 
@@ -680,7 +680,7 @@ class Predictor(BasePredictor):
                     print("Attempting to download missing VAE...")
                     os.makedirs(vae_dir, exist_ok=True)
                     download_base_weights(
-                        "https://huggingface.co/comfyanonymous/flux_vae/resolve/main/ae.safetensors?download=true",
+                        "https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
                         vae_path
                     )
                     if os.path.exists(vae_path):
