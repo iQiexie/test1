@@ -193,6 +193,9 @@ class Predictor(BasePredictor):
         if not checkpoint_url:
             checkpoint_url = FLUX_CHECKPOINT_URL
 
+        import sys
+        import os
+
         if manual:
             import sys
             import os
