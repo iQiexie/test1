@@ -474,7 +474,7 @@ class Predictor(BasePredictor):
             description="Lora scales",
             default=[0.8],
         ),
-        flux_checkpoint_url: str | None = Input(
+        flux_checkpoint_url: str = Input(
             description="Flux checkpoint URL",
             default=""
         ),
