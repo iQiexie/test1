@@ -5,7 +5,6 @@ import os, sys, json
 import shutil
 import time
 import subprocess  # Для запуска внешних процессов
-from modules_forge.main_entry import forge_unet_storage_dtype_options
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 from cog import BasePredictor, BaseModel, Input, Path
@@ -390,7 +389,18 @@ class Predictor(BasePredictor):
         ),
         forge_unet_storage_dtype: str = Input(
             description="forge_unet_storage_dtype",
-            choices=forge_unet_storage_dtype_options.keys(),
+            choices=[
+                'Automatic',
+                'Automatic (fp16 LoRA)',
+                'bnb-nf4',
+                'bnb-nf4 (fp16 LoRA)',
+                'float8-e4m3fn',
+                'float8-e4m3fn (fp16 LoRA)',
+                'bnb-fp4',
+                'bnb-fp4 (fp16 LoRA)',
+                'float8-e5m2',
+                'float8-e5m2 (fp16 LoRA)',
+            ],
             default="Automatic",
         ),
         hr_steps: int = Input(
