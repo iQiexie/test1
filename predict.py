@@ -196,7 +196,7 @@ class Predictor(BasePredictor):
         import sys
         import os
 
-        if manual:
+        if not manual:
             import sys
             import os
 
