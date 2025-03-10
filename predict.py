@@ -480,8 +480,10 @@ class Predictor(BasePredictor):
         ),
 
     ) -> list[Path]:
-        if len(flux_checkpoint_url) > 2:
-            self.setup(checkpoint_url=flux_checkpoint_url, force=True)
+        self.setup(
+            checkpoint_url=flux_checkpoint_url or FLUX_CHECKPOINT_URL,
+            force=bool(flux_checkpoint_url),
+        )
 
         # Set up directories for text encoder and VAE
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
