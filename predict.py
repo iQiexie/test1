@@ -8,6 +8,11 @@ import subprocess  # Для запуска внешних процессов
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 from cog import BasePredictor, BaseModel, Input, Path
+
+
+FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3"
+
+
 def download_base_weights(url: str, dest: Path):
     """
     Загружает базовые веса модели.
@@ -31,7 +36,7 @@ class Predictor(BasePredictor):
         Модель должна быть предварительно загружена во время сборки в cog.yaml.
         """
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
-        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+        model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
         
         # Проверяем, существует ли уже файл модели
         if os.path.exists(model_path):
@@ -42,7 +47,7 @@ class Predictor(BasePredictor):
         print("Модель не найдена, загружаем...")
         os.makedirs(target_dir, exist_ok=True)
         download_base_weights(
-            "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
+            FLUX_CHECKPOINT_URL,
             model_path
         )
 
@@ -163,7 +168,7 @@ class Predictor(BasePredictor):
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
-        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+        model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
         
         # Проверяем, существует ли уже файл модели
         if not os.path.exists(model_path):
@@ -441,7 +446,7 @@ class Predictor(BasePredictor):
         shared.opts.set('forge_preset', 'flux')
 
         # Устанавливаем чекпоинт
-        shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
+        shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
 
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
@@ -539,7 +544,7 @@ class Predictor(BasePredictor):
             print("Model is FakeInitialModel, loading Flux model...")
             
             # Set the checkpoint to the Flux model specifically
-            flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+            flux_checkpoint_name = "flux_checkpoint.safetensors"
             shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
             shared.opts.set('forge_preset', 'flux')
             # Don't set forge_unet_storage_dtype directly, instead set it in the forge_loading_parameters
