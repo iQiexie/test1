@@ -185,14 +185,25 @@ class Predictor(BasePredictor):
 
         print("Downloading: ae")
         download_base_weights(
-            "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            "https://huggingface.co/comfyanonymous/flux_vae/resolve/main/ae.safetensors?download=true",
             os.path.join(target_dir, "ae.safetensors"),
         )
 
     def setup(self) -> None:
-        self.download_models()
-
         print("Starting setup...")
+        
+        # Download text encoders and VAE if they don't exist
+        text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+        vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+        
+        # Check if files exist and download if needed
+        if not os.path.exists(os.path.join(text_encoder_dir, "clip_l.safetensors")) or \
+           not os.path.exists(os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")) or \
+           not os.path.exists(os.path.join(vae_dir, "ae.safetensors")):
+            print("Downloading required model components...")
+            self.download_models()
+        else:
+            print("All required model components already exist.")
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
@@ -462,13 +473,28 @@ class Predictor(BasePredictor):
             default=[0.8],
         ),
     ) -> list[Path]:
-        _target_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
-        os.makedirs(_target_dir, exist_ok=True)
-        sys.argv.extend(["--text-encoder-dir", _target_dir])
-
-        _target_dir = "/stable-diffusion-webui-forge-main/models/VAE"
-        os.makedirs(_target_dir, exist_ok=True)
-        sys.argv.extend(["--vae-dir", _target_dir])
+        # Set up directories for text encoder and VAE
+        text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+        vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+        
+        # Make sure directories exist
+        os.makedirs(text_encoder_dir, exist_ok=True)
+        os.makedirs(vae_dir, exist_ok=True)
+        
+        # Remove any existing arguments to avoid duplicates
+        for i in range(len(sys.argv)-1, -1, -1):
+            if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
+                if i+1 < len(sys.argv):
+                    sys.argv.pop(i+1)
+                sys.argv.pop(i)
+        
+        # Add the arguments
+        sys.argv.extend(["--text-encoder-dir", text_encoder_dir])
+        sys.argv.extend(["--vae-dir", vae_dir])
+        
+        # Set environment variables as well for extra safety
+        os.environ["FORGE_TEXT_ENCODER_DIR"] = text_encoder_dir
+        os.environ["FORGE_VAE_DIR"] = vae_dir
 
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
@@ -594,17 +620,110 @@ class Predictor(BasePredictor):
                     break
             
             if flux_checkpoint is not None:
+                # Find the text encoder and VAE files
+                text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+                vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+                
+                clip_path = os.path.join(text_encoder_dir, "clip_l.safetensors")
+                t5xxl_path = os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")
+                vae_path = os.path.join(vae_dir, "ae.safetensors")
+                
+                # Print directory contents for debugging
+                print(f"DEBUG: Text encoder directory contents: {os.listdir(text_encoder_dir) if os.path.exists(text_encoder_dir) else 'directory not found'}")
+                print(f"DEBUG: VAE directory contents: {os.listdir(vae_dir) if os.path.exists(vae_dir) else 'directory not found'}")
+                
+                # Check if files exist
+                additional_modules = []
+                if os.path.exists(clip_path):
+                    file_size = os.path.getsize(clip_path) / (1024 * 1024)  # Size in MB
+                    additional_modules.append(clip_path)
+                    print(f"Adding CLIP text encoder: {clip_path} (Size: {file_size:.2f} MB)")
+                else:
+                    print(f"WARNING: CLIP text encoder not found at {clip_path}")
+                    # Try to download it if missing
+                    print("Attempting to download missing CLIP text encoder...")
+                    os.makedirs(text_encoder_dir, exist_ok=True)
+                    download_base_weights(
+                        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
+                        clip_path
+                    )
+                    if os.path.exists(clip_path):
+                        file_size = os.path.getsize(clip_path) / (1024 * 1024)
+                        additional_modules.append(clip_path)
+                        print(f"Successfully downloaded CLIP text encoder: {clip_path} (Size: {file_size:.2f} MB)")
+                    
+                if os.path.exists(t5xxl_path):
+                    file_size = os.path.getsize(t5xxl_path) / (1024 * 1024)
+                    additional_modules.append(t5xxl_path)
+                    print(f"Adding T5XXL text encoder: {t5xxl_path} (Size: {file_size:.2f} MB)")
+                else:
+                    print(f"WARNING: T5XXL text encoder not found at {t5xxl_path}")
+                    # Try to download it if missing
+                    print("Attempting to download missing T5XXL text encoder...")
+                    os.makedirs(text_encoder_dir, exist_ok=True)
+                    download_base_weights(
+                        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+                        t5xxl_path
+                    )
+                    if os.path.exists(t5xxl_path):
+                        file_size = os.path.getsize(t5xxl_path) / (1024 * 1024)
+                        additional_modules.append(t5xxl_path)
+                        print(f"Successfully downloaded T5XXL text encoder: {t5xxl_path} (Size: {file_size:.2f} MB)")
+                    
+                if os.path.exists(vae_path):
+                    file_size = os.path.getsize(vae_path) / (1024 * 1024)
+                    additional_modules.append(vae_path)
+                    print(f"Adding VAE: {vae_path} (Size: {file_size:.2f} MB)")
+                else:
+                    print(f"WARNING: VAE not found at {vae_path}")
+                    # Try to download it if missing
+                    print("Attempting to download missing VAE...")
+                    os.makedirs(vae_dir, exist_ok=True)
+                    download_base_weights(
+                        "https://huggingface.co/comfyanonymous/flux_vae/resolve/main/ae.safetensors?download=true",
+                        vae_path
+                    )
+                    if os.path.exists(vae_path):
+                        file_size = os.path.getsize(vae_path) / (1024 * 1024)
+                        additional_modules.append(vae_path)
+                        print(f"Successfully downloaded VAE: {vae_path} (Size: {file_size:.2f} MB)")
+                
+                print(f"DEBUG: Total additional modules to load: {len(additional_modules)}")
+                
                 # Set up forge loading parameters - don't use string for dtype
                 sd_models.model_data.forge_loading_parameters = {
                     'checkpoint_info': flux_checkpoint,
-                    'additional_modules': []
+                    'additional_modules': additional_modules
                 }
                 
                 # Set the dynamic args directly instead of using the string
                 from backend.args import dynamic_args
                 dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
+                
+                # Add debug info for state dictionaries
+                print(f"DEBUG: About to load model with {len(additional_modules)} additional modules")
+                for i, module_path in enumerate(additional_modules):
+                    try:
+                        from backend.utils import load_torch_file
+                        state_dict = load_torch_file(module_path)
+                        if isinstance(state_dict, dict):
+                            print(f"DEBUG: Module {i+1}: {module_path} - State dict has {len(state_dict)} keys")
+                            # Print some key names for debugging
+                            keys_sample = list(state_dict.keys())[:5]
+                            print(f"DEBUG: Sample keys: {keys_sample}")
+                        else:
+                            print(f"DEBUG: Module {i+1}: {module_path} - State dict is not a dictionary, type: {type(state_dict)}")
+                    except Exception as e:
+                        print(f"DEBUG: Error inspecting module {module_path}: {str(e)}")
+                
                 # Load the model
-                sd_models.forge_model_reload()
+                try:
+                    sd_models.forge_model_reload()
+                    print("DEBUG: Model loaded successfully")
+                except Exception as e:
+                    print(f"ERROR: Failed to load model: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                 print(f"Flux model loaded: {type(shared.sd_model)}")
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
