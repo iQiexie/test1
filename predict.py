@@ -165,6 +165,7 @@ class Predictor(BasePredictor):
     def download_models(self):
         target_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
         os.makedirs(target_dir, exist_ok=True)
+        sys.argv.extend(["--text-encoder-dir", target_dir])
 
         print("Downloading: clip_l")
         download_base_weights(
@@ -180,6 +181,7 @@ class Predictor(BasePredictor):
 
         target_dir = "/stable-diffusion-webui-forge-main/models/VAE"
         os.makedirs(target_dir, exist_ok=True)
+        sys.argv.extend(["--vae-dir", target_dir])
 
         print("Downloading: ae")
         download_base_weights(
