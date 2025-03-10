@@ -462,6 +462,14 @@ class Predictor(BasePredictor):
             default=[0.8],
         ),
     ) -> list[Path]:
+        _target_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+        os.makedirs(_target_dir, exist_ok=True)
+        sys.argv.extend(["--text-encoder-dir", _target_dir])
+
+        _target_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+        os.makedirs(_target_dir, exist_ok=True)
+        sys.argv.extend(["--vae-dir", _target_dir])
+
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
         # output = self.model(processed_image, scale)
