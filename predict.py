@@ -189,9 +189,32 @@ class Predictor(BasePredictor):
             os.path.join(target_dir, "ae.safetensors"),
         )
 
-    def setup(self, checkpoint_url: str = None, force: bool = False) -> None:
+    def setup(self, checkpoint_url: str = None, force: bool = False, manual: bool = False) -> None:
         if not checkpoint_url:
             checkpoint_url = FLUX_CHECKPOINT_URL
+
+        if manual:
+            import sys
+            import os
+
+            print("Current working directory:", os.getcwd())
+            print("sys.path before:", sys.path)
+
+            sys.path.extend(["/stable-diffusion-webui-forge-main"])
+
+            print("sys.path after:", sys.path)
+            print("Checking if directory exists:", os.path.exists("/stable-diffusion-webui-forge-main"))
+            print(
+                "Listing directory:", os.listdir("/stable-diffusion-webui-forge-main") if os.path.exists(
+                    "/stable-diffusion-webui-forge-main"
+                    ) else "Directory does not exist"
+                )
+
+            from modules import launch_utils
+
+            with launch_utils.startup_timer.subcategory("prepare environment"):
+                launch_utils.prepare_environment()
+
         print("Starting setup...")
         
         # Download text encoders and VAE if they don't exist
@@ -620,6 +643,7 @@ class Predictor(BasePredictor):
         self.setup(
             checkpoint_url=flux_checkpoint_url or FLUX_CHECKPOINT_URL,
             force=bool(flux_checkpoint_url),
+            manual=True,
         )
 
         # Set up directories for text encoder and VAE
