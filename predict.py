@@ -10,7 +10,7 @@ sys.path.extend(["/stable-diffusion-webui-forge-main"])
 from cog import BasePredictor, BaseModel, Input, Path
 
 
-FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3"
+FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&token=18b51174c4d9ae0451a3dedce1946ce3"
 
 
 def download_base_weights(url: str, dest: Path):
