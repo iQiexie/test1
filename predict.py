@@ -120,25 +120,21 @@ class Predictor(BasePredictor):
 
         return lora_paths
 
-    def setup(self, flux_checkpoint_url: str = None) -> None:
+    def setup(self, force_download_url: str = None) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 
-        force_download = False
-        if flux_checkpoint_url:
-            force_download = True
-
-        if not flux_checkpoint_url:
-            flux_checkpoint_url = FLUX_CHECKPOINT_URL
-
-        if (not os.path.exists(model_path)) and (not force_download):
-            print(f"Загружаем модель Flux... {force_download=}, {os.path.exists(model_path)=}, {flux_checkpoint_url=}")
-            download_base_weights(url=flux_checkpoint_url, dest=model_path)
+        if not os.path.exists(model_path):
+            print(f"Загружаем модель Flux...")
+            download_base_weights(url=FLUX_CHECKPOINT_URL, dest=model_path)
+        elif force_download_url:
+            print(f"Загружаем модель Flux... {force_download_url=}")
+            download_base_weights(url=force_download_url, dest=model_path)
         else:
-            print(f"Модель Flux уже загружена: {model_path}, {force_download=}, {os.path.exists(model_path)=}, {flux_checkpoint_url=}")
+            print(f"Модель Flux уже загружена: {model_path}, {os.path.exists(model_path)=}, {force_download_url=}")
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
@@ -409,7 +405,7 @@ class Predictor(BasePredictor):
         import base64
         from io import BytesIO
 
-        self.setup(flux_checkpoint_url=debug_flux_checkpoint_url)
+        self.setup(force_download_url=debug_flux_checkpoint_url)
         self._download_loras(lora_urls)
 
         payload = {
