@@ -724,6 +724,36 @@ class Predictor(BasePredictor):
                 lora_name = os.path.splitext(file)[0]
                 lora_files.append(lora_name)
 
+        # Create a proper script_args dictionary for each extension
+        # This ensures each extension gets only the arguments it expects
+        
+        # NeverOOM expects 2 arguments
+        neveroom_args = [False, False]  # unet_enabled, vae_enabled
+        
+        # FreeU expects 7 arguments
+        freeu_args = [False, 1.01, 1.02, 0.99, 0.95, 0.0, 1.0]  # enabled, b1, b2, s1, s2, start, end
+        
+        # Kohya HRFix expects 8 arguments
+        kohya_hrfix_args = [False, 3, 2.0, 0.0, 0.35, True, "bicubic", "bicubic"]  # enabled, block_number, etc.
+        
+        # Latent Modifier expects 21 arguments (simplified here)
+        latent_modifier_args = [False] + [0.0] * 20  # enabled + 20 other parameters with default values
+        
+        # MultiDiffusion expects 6 arguments
+        multidiffusion_args = [False, "MultiDiffusion", 768, 768, 64, 4]  # enabled, method, etc.
+        
+        # Perturbed Attention expects 5 arguments
+        perturbed_attention_args = [False, 1.0, 0.0, 0.0, 1.0]  # enabled, scale, etc.
+        
+        # SAG expects 4 arguments
+        sag_args = [False, 0.5, 2.0, 1.0]  # enabled, scale, blur_sigma, threshold
+        
+        # StyleAlign expects 2 arguments
+        stylealign_args = [False, 1.0]  # shared_attention, strength
+        
+        # ControlNet needs special handling for resize_mode
+        # We'll add a resize_mode attribute to the processing object later
+        
         # Only add ADetailer if enabled, with proper script args structure
         if enable_adetailer:
             # Use a dictionary with proper structure for ADetailer
@@ -775,10 +805,19 @@ class Predictor(BasePredictor):
             alwayson_scripts["ADetailer"] = {
                 "args": [adetailer_args, {"ad_model": "None"}, {"ad_model": "None"}, {"ad_model": "None"}]
             }
-
-        # Add alwayson_scripts to payload if there are any
-        if alwayson_scripts:
-            payload["alwayson_scripts"] = alwayson_scripts
+            
+        # Add script args for each extension
+        alwayson_scripts["forge_never_oom"] = {"args": neveroom_args}
+        alwayson_scripts["forge_freeu"] = {"args": freeu_args}
+        alwayson_scripts["kohya_hrfix"] = {"args": kohya_hrfix_args}
+        alwayson_scripts["forge_latent_modifier"] = {"args": latent_modifier_args}
+        alwayson_scripts["forge_multidiffusion"] = {"args": multidiffusion_args}
+        alwayson_scripts["forge_perturbed_attention"] = {"args": perturbed_attention_args}
+        alwayson_scripts["forge_sag"] = {"args": sag_args}
+        alwayson_scripts["forge_stylealign"] = {"args": stylealign_args}
+        
+        # Add alwayson_scripts to payload
+        payload["alwayson_scripts"] = alwayson_scripts
 
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
@@ -833,12 +872,29 @@ class Predictor(BasePredictor):
             # Make sure req.alwayson_scripts doesn't contain lora to avoid script args mismatch
             if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts and 'lora' in req.alwayson_scripts:
                 del req.alwayson_scripts['lora']
+            
+            # Add a custom process method to handle ControlNet's resize_mode issue
+            from modules.processing import StableDiffusionProcessingTxt2Img
+            
+            # Monkey patch the StableDiffusionProcessingTxt2Img class to add resize_mode attribute
+            original_init = StableDiffusionProcessingTxt2Img.__init__
+            
+            def patched_init(self, *args, **kwargs):
+                original_init(self, *args, **kwargs)
+                # Add resize_mode attribute with default value 0 (INNER_FIT)
+                self.resize_mode = 0
+            
+            # Apply the monkey patch
+            StableDiffusionProcessingTxt2Img.__init__ = patched_init
                 
             # Use only extra_network_data for LoRA handling
             resp = self.api.text2imgapi(
                 txt2imgreq=req,
                 extra_network_data=extra_network_data
             )
+            
+            # Restore the original init method to avoid side effects
+            StableDiffusionProcessingTxt2Img.__init__ = original_init
         else:
             print("Warning: Model does not have forge_objects attribute, proceeding without LoRA")
             # Remove LoRA from extra_network_data to avoid errors
