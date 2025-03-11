@@ -114,6 +114,7 @@ class WeightsDownloadCache:
 
         call_args = ["pget", "-x", url, dest]
         if file:
+            dest = f"{dest}.safetensors"
             call_args = ["pget", url, dest]
 
         st = time.time()
@@ -126,4 +127,4 @@ class WeightsDownloadCache:
             print(e.output)
             self._rm_disk(dest)
             raise e
-        print(f"Downloaded weights in {time.time() - st} seconds")
+        print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
