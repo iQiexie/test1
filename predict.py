@@ -7,9 +7,19 @@ import subprocess  # Для запуска внешних процессов
 import sys
 import time
 from cog import BasePredictor, Input, Path
+from time import perf_counter
+from contextlib import contextmanager
+from typing import Callable
+
+
+@contextmanager
+def catchtime(tag: str) -> Callable[[], float]:
+    start = perf_counter()
+    yield lambda: perf_counter() - start
+    print(f'[Timer: {tag}]: {perf_counter() - start:.3f} seconds')
+
 
 FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&token=18b51174c4d9ae0451a3dedce1946ce3"
-
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 
@@ -31,6 +41,49 @@ def download_base_weights(url: str, dest: Path):
 
 
 class Predictor(BasePredictor):
+    text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+    vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+
+    def _load_clip_etc_download_models(self):
+        print("[load_clip_etc] Downloading required model components...")
+        os.makedirs(self.text_encoder_dir, exist_ok=True)
+        sys.argv.extend(["--text-encoder-dir", self.text_encoder_dir])
+
+        print("[load_clip_etc] Downloading: clip_l")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
+        )
+
+        print("[load_clip_etc] Downloading: t5xxl_fp16")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
+        )
+
+        os.makedirs(self.vae_dir, exist_ok=True)
+        sys.argv.extend(["--vae-dir", self.vae_dir])
+
+        print("[load_clip_etc] Downloading: ae")
+        download_base_weights(
+            url="https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
+            dest=os.path.join(self.vae_dir, "ae.safetensors"),
+        )
+
+    def load_clip_etc(self) -> None:
+        text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+        vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+
+        if (
+            not os.path.exists(os.path.join(text_encoder_dir, "clip_l.safetensors")) or
+            not os.path.exists(os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")) or
+            not os.path.exists(os.path.join(vae_dir, "ae.safetensors"))
+        ):
+            with catchtime(tag="[load_clip_etc] Downloading required model components"):
+                self._load_clip_etc_download_models()
+
+        print("[load_clip_etc] All required model components already exist.")
+
     @staticmethod
     def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
@@ -395,10 +448,9 @@ class Predictor(BasePredictor):
 
         print(f"Финальный пейлоад: {payload=}")
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
-        req = StableDiffusionTxt2ImgProcessingAPI(**payload)
 
-        resp = self.api.text2imgapi(
-            txt2imgreq=req,
+        req = dict(
+            txt2imgreq=StableDiffusionTxt2ImgProcessingAPI(**payload),
             extra_network_data={
                 "lora": [
                     ExtraNetworkParams(
@@ -411,8 +463,18 @@ class Predictor(BasePredictor):
                 ]
             },
         )
-        info = json.loads(resp.info)
 
+        try:
+            resp = self.api.text2imgapi(**req)
+        except AssertionError as e:
+            print(f"Got {e=}. Downloading clip model files")
+            with catchtime(tag="Downloading clip model files"):
+                self.load_clip_etc()
+                self.setup()
+
+            resp = self.api.text2imgapi(**req)
+
+        info = json.loads(resp.info)
         outputs = []
 
         for i, image in enumerate(resp.images):
