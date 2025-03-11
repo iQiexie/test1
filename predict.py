@@ -335,10 +335,6 @@ class Predictor(BasePredictor):
             le=1,
             default=0.5,
         ),
-        enable_adetailer: bool = Input(
-            description="ADetailer (не рекомендуется для Flux моделей)",
-            default=False,
-        ),
         lora_urls: list[str] = Input(
             description="Ссылки на LoRA файлы",
             default=[],
@@ -400,13 +396,6 @@ class Predictor(BasePredictor):
         }
 
         alwayson_scripts = {}
-
-        if enable_adetailer:
-            alwayson_scripts["ADetailer"] = {
-                "args": [
-                    {"ad_model": "face_yolov8n.pt"},
-                ]
-            }
 
         # Добавляем все скрипты в payload, если они есть
         if alwayson_scripts:

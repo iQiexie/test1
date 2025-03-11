@@ -41,7 +41,7 @@ build:
 
   # commands run after the environment is setup
   run:
-    - echo "Cache 100"
+    - echo "Cache 101"
       # Установка pget
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
     # Установка yq
@@ -54,7 +54,6 @@ build:
     # Клонирование репозиториев
     - git clone https://github.com/iQiexie/test1 /stable-diffusion-webui-forge-main
     - mv /stable-diffusion-webui-forge-main/stable-diffusion-webui-forge-main/* /stable-diffusion-webui-forge-main/
-    - git clone https://github.com/Bing-su/adetailer.git /stable-diffusion-webui-forge-main/extensions/adetailer
     - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     
     # Создаем файл init_env.py без маркеров конфликта Git
