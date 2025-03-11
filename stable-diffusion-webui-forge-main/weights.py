@@ -10,7 +10,7 @@ class WeightsDownloadCache:
     def __init__(
         self,
         min_disk_free: int = 10 * (2**30),
-        base_dir: str = "/stable-diffusion-webui-forge-main/models/Lora",
+        base_dir: str = "/src/models/Lora",
     ):
         """
         WeightsDownloadCache is meant to track and download weights files as fast

@@ -22,7 +22,7 @@ def catchtime(tag: str) -> Callable[[], float]:
 
 
 FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3"
-sys.path.extend(["/stable-diffusion-webui-forge-main"])
+sys.path.extend(["/src"])
 
 
 def download_base_weights(url: str, dest: Path):
@@ -77,7 +77,7 @@ class Predictor(BasePredictor):
     def setup(self, force_download_url: str = None) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
-        target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
+        target_dir = "/src/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 

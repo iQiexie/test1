@@ -42,44 +42,12 @@ build:
   # commands run after the environment is setup
   run:
     - echo "Cache 104"
-      # Установка pget
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
-    # Установка yq
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-    
-    # Принудительное удаление и клонирование репозиториев для избежания кэширования
-    - echo "Удаление существующих репозиториев для избежания кэширования..."
-    - rm -rf /stable-diffusion-webui-forge-main || true
+    - git clone https://github.com/iQiexie/test1 /src
+    - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
+    - python /src/init_env.py --skip-torch-cuda-test
 
-    # Клонирование репозиториев
-    - git clone https://github.com/iQiexie/test1 /stable-diffusion-webui-forge-main
-    - mv /stable-diffusion-webui-forge-main/stable-diffusion-webui-forge-main/* /stable-diffusion-webui-forge-main/
-    - wget --content-disposition -P /stable-diffusion-webui-forge-main/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
-    
-    # Создаем файл init_env.py без маркеров конфликта Git
-    - echo "Создание файла init_env.py без маркеров конфликта Git"
-    - echo "import sys" > /stable-diffusion-webui-forge-main/init_env.py
-    - echo "import os" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'print("Current working directory:", os.getcwd())' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'print("sys.path before:", sys.path)' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'sys.path.extend(["/stable-diffusion-webui-forge-main"])' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'print("sys.path after:", sys.path)' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'print("Checking if directory exists:", os.path.exists("/stable-diffusion-webui-forge-main"))' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'print("Listing directory:", os.listdir("/stable-diffusion-webui-forge-main") if os.path.exists("/stable-diffusion-webui-forge-main") else "Directory does not exist")' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "from modules import launch_utils" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "" >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo 'with launch_utils.startup_timer.subcategory("prepare environment"):' >> /stable-diffusion-webui-forge-main/init_env.py
-    - echo "    launch_utils.prepare_environment()" >> /stable-diffusion-webui-forge-main/init_env.py
-    
-    # Запускаем скрипт
-    - python /stable-diffusion-webui-forge-main/init_env.py --skip-torch-cuda-test
-    
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
-
-

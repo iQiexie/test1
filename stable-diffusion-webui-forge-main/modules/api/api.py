@@ -231,8 +231,8 @@ def api_middleware(app: FastAPI):
 
 
 class Api:
-    text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
-    vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+    text_encoder_dir = "/src/models/text_encoder"
+    vae_dir = "/src/models/VAE"
 
     def __init__(self, app: FastAPI, queue_lock: Lock):
         if shared.cmd_opts.api_auth:
