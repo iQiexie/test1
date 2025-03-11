@@ -130,10 +130,14 @@ def activate(p, extra_network_data):
 
     activated = []
 
-    # print(f"\n\n\n\n\n\n")
-    # print(f"{extra_network_data['lora'][0].items=}")
-    # print(f"{extra_network_data['lora'][0].positional=}")
-    # print(f"{extra_network_data['lora'][0].named=}")
+    print(f"\n\n\n\n\n\n")
+    try:
+        print(f"{extra_network_data[0].items=}")
+        print(f"{extra_network_data[0].positional=}")
+        print(f"{extra_network_data[0].named=}")
+    except Exception as e:
+        print(f"Failed to log lora: {extra_network_data=}, {e=}")
+
     for extra_network, extra_network_args in lookup_extra_networks(extra_network_data).items():
         try:
             extra_network.activate(p, extra_network_args)
