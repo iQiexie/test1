@@ -8,6 +8,8 @@ import sys
 import time
 from cog import BasePredictor, Input, Path
 
+FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&token=18b51174c4d9ae0451a3dedce1946ce3"
+
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
 
@@ -65,22 +67,21 @@ class Predictor(BasePredictor):
 
         return lora_paths
 
-    def setup(self) -> None:
+    def setup(self, flux_checkpoint_url: str = None) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 
-        # Проверяем, существует ли уже файл модели
+        if not flux_checkpoint_url:
+            flux_checkpoint_url = FLUX_CHECKPOINT_URL
+
         if not os.path.exists(model_path):
             print(f"Загружаем модель Flux...")
-            download_base_weights(
-                url="https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
-                dest=model_path
-            )
+            download_base_weights(url=flux_checkpoint_url, dest=model_path)
         else:
-            print(f"Модель Flux уже загружена: {model_path}")
+            print(f"Модель Flux уже загружена: {model_path}, {flux_checkpoint_url=}")
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
@@ -335,6 +336,10 @@ class Predictor(BasePredictor):
             description="Lora scales",
             default=[1],
         ),
+        debug_flux_checkpoint_url: str = Input(
+            description="Flux checkpoint URL",
+            default=""
+        ),
     ) -> list[Path]:
         """Run a single prediction on the model"""
         from modules.extra_networks import ExtraNetworkParams
@@ -347,7 +352,7 @@ class Predictor(BasePredictor):
         import base64
         from io import BytesIO
 
-        self.setup()
+        self.setup(flux_checkpoint_url=debug_flux_checkpoint_url)
         self._download_loras(lora_urls)
 
         payload = {
