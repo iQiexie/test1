@@ -714,7 +714,7 @@ class Predictor(BasePredictor):
             # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
         }
 
-        # Нет необходимости добавлять их в payload отдельно
+        # Initialize empty alwayson_scripts
         alwayson_scripts = {}
 
         lora_files = []
@@ -724,16 +724,59 @@ class Predictor(BasePredictor):
                 lora_name = os.path.splitext(file)[0]
                 lora_files.append(lora_name)
 
+        # Only add ADetailer if enabled, with proper script args structure
         if enable_adetailer:
+            # Use a dictionary with proper structure for ADetailer
+            # This matches what the extension expects
+            adetailer_args = {
+                "ad_model": "face_yolov8n.pt",
+                "ad_model_classes": "",
+                "ad_tab_enable": True,
+                "ad_prompt": "",
+                "ad_negative_prompt": "",
+                "ad_confidence": 0.3,
+                "ad_mask_filter_method": "Area",
+                "ad_mask_k": 0,
+                "ad_mask_min_ratio": 0.0,
+                "ad_mask_max_ratio": 1.0,
+                "ad_x_offset": 0,
+                "ad_y_offset": 0,
+                "ad_dilate_erode": 4,
+                "ad_mask_merge_invert": "None",
+                "ad_mask_blur": 4,
+                "ad_denoising_strength": 0.4,
+                "ad_inpaint_only_masked": True,
+                "ad_inpaint_only_masked_padding": 32,
+                "ad_use_inpaint_width_height": False,
+                "ad_inpaint_width": 512,
+                "ad_inpaint_height": 512,
+                "ad_use_steps": False,
+                "ad_steps": 28,
+                "ad_use_cfg_scale": False,
+                "ad_cfg_scale": 7.0,
+                "ad_use_checkpoint": False,
+                "ad_checkpoint": "Use same checkpoint",
+                "ad_use_vae": False,
+                "ad_vae": "Use same VAE",
+                "ad_use_sampler": False,
+                "ad_sampler": "DPM++ 2M",
+                "ad_scheduler": "Use same scheduler",
+                "ad_use_noise_multiplier": False,
+                "ad_noise_multiplier": 1.0,
+                "ad_use_clip_skip": False,
+                "ad_clip_skip": 1,
+                "ad_restore_face": False,
+                "ad_controlnet_model": "None",
+                "ad_controlnet_module": "None",
+                "ad_controlnet_weight": 1.0,
+                "ad_controlnet_guidance_start": 0.0,
+                "ad_controlnet_guidance_end": 1.0
+            }
             alwayson_scripts["ADetailer"] = {
-                "args": [
-                    {
-                        "ad_model": "face_yolov8n.pt",
-                    }
-                ],
+                "args": [adetailer_args, {"ad_model": "None"}, {"ad_model": "None"}, {"ad_model": "None"}]
             }
 
-        # Добавляем все скрипты в payload, если они есть
+        # Add alwayson_scripts to payload if there are any
         if alwayson_scripts:
             payload["alwayson_scripts"] = alwayson_scripts
 
@@ -747,20 +790,20 @@ class Predictor(BasePredictor):
         # Use both extra_network_data and alwayson_scripts to handle LoRA models
         extra_network_data = {"lora": []}
 
-        # Add all LoRA files with their weights to extra_network_data
-        lora_args = []
+        # Handle LoRA files properly - only use extra_network_data, not alwayson_scripts
         for url, scale in zip(lora_urls, lora_scales):
-            lora_name = url.split('/')[-1].split('.')[0]
+            # Extract the LoRA name from the URL
+            if '/' in url:
+                lora_name = url.split('/')[-1].split('.')[0]
+            else:
+                lora_name = url.split('.')[0]
+                
+            # Add to extra_network_data
+            print(f"LOOK HEREitems=['{lora_name}', '{scale}']")
             extra_network_data["lora"].append(ExtraNetworkParams(items=[lora_name, str(scale)]))
-            print(f"Adding lora: {lora_name=}")
-
-            # Each LoRA needs a name and a weight
-            lora_args.append(lora_name)  # Name
-            lora_args.append(scale)  # Weight (default to 1.0)
-
-        # Use the correct script name: "lora" instead of "sd_forge_lora"
-        alwayson_scripts["lora"] = {"args": lora_args}
-        print(f"Added LoRA files to alwayson_scripts: {lora_args}")
+            print(f"Adding lora: lora_name='{lora_name}'")
+        
+        # Don't add LoRA to alwayson_scripts - this causes the script args mismatch
 
         # Import the necessary modules for script registration
         from modules import scripts
@@ -785,7 +828,13 @@ class Predictor(BasePredictor):
 
         # Now check if the model has forge_objects attribute
         if hasattr(shared.sd_model, 'forge_objects'):
-            print(f"Model has forge_objects, proceeding with LoRA... {shared.sd_model=}")
+            print(f"Model has forge_objects, proceeding with LoRA... shared.sd_model={shared.sd_model}")
+            
+            # Make sure req.alwayson_scripts doesn't contain lora to avoid script args mismatch
+            if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts and 'lora' in req.alwayson_scripts:
+                del req.alwayson_scripts['lora']
+                
+            # Use only extra_network_data for LoRA handling
             resp = self.api.text2imgapi(
                 txt2imgreq=req,
                 extra_network_data=extra_network_data
