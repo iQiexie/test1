@@ -70,6 +70,7 @@ class Predictor(BasePredictor):
                 except Exception as e:
                     print(f"Error downloading LoRA weights: {e}")
                     continue
+                print(f"{lora_path=}")
                 lora_paths.append(lora_path)
 
         files = [os.path.join(self.weights_cache.base_dir, f) for f in os.listdir(self.weights_cache.base_dir)]
