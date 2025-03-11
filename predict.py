@@ -113,6 +113,7 @@ class Predictor(BasePredictor):
 
         from modules import initialize_util
         from modules import initialize
+        from modules import timer
 
         startup_timer = timer.startup_timer
         startup_timer.record("launcher")
