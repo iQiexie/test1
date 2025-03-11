@@ -807,14 +807,40 @@ class Predictor(BasePredictor):
             }
             
         # Add script args for each extension - using the exact script names from the available scripts list
-        alwayson_scripts["never oom integrated"] = {"args": neveroom_args}
-        alwayson_scripts["freeu integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": freeu_args}
-        alwayson_scripts["kohya hrfix integrated"] = {"args": kohya_hrfix_args}
-        alwayson_scripts["latentmodifier integrated"] = {"args": latent_modifier_args}
-        alwayson_scripts["multidiffusion integrated"] = {"args": multidiffusion_args}
-        alwayson_scripts["perturbedattentionguidance integrated"] = {"args": perturbed_attention_args}
-        alwayson_scripts["selfattentionguidance integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": sag_args}
-        alwayson_scripts["stylealign integrated"] = {"args": stylealign_args}
+        # Each script gets only the exact number of arguments it expects
+        
+        # Disable all scripts by default to avoid errors
+        # Only enable the ones that are essential for your use case
+        
+        # We'll only enable ADetailer if requested, and disable all other scripts
+        # This is the safest approach to avoid script argument errors
+        
+        # If you need to enable specific scripts later, you can uncomment them and ensure
+        # they have the correct number of arguments
+        
+        # Never OOM expects 2 arguments
+        # alwayson_scripts["never oom integrated"] = {"args": neveroom_args}
+        
+        # FreeU expects 7 arguments
+        # alwayson_scripts["freeu integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": freeu_args}
+        
+        # Kohya HRFix expects 8 arguments
+        # alwayson_scripts["kohya hrfix integrated"] = {"args": kohya_hrfix_args}
+        
+        # Latent Modifier expects 21 arguments
+        # alwayson_scripts["latentmodifier integrated"] = {"args": latent_modifier_args}
+        
+        # MultiDiffusion expects 6 arguments
+        # alwayson_scripts["multidiffusion integrated"] = {"args": multidiffusion_args}
+        
+        # Perturbed Attention expects 5 arguments
+        # alwayson_scripts["perturbedattentionguidance integrated"] = {"args": perturbed_attention_args}
+        
+        # Self-Attention Guidance expects 4 arguments
+        # alwayson_scripts["selfattentionguidance integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": sag_args}
+        
+        # StyleAlign expects 2 arguments
+        # alwayson_scripts["stylealign integrated"] = {"args": stylealign_args}
         
         # Add alwayson_scripts to payload
         payload["alwayson_scripts"] = alwayson_scripts
@@ -873,19 +899,26 @@ class Predictor(BasePredictor):
             if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts and 'lora' in req.alwayson_scripts:
                 del req.alwayson_scripts['lora']
             
-            # Add a custom process method to handle ControlNet's resize_mode issue
-            from modules.processing import StableDiffusionProcessingTxt2Img
+            # Add a more robust method to handle ControlNet's resize_mode issue
+            from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
             
-            # Monkey patch the StableDiffusionProcessingTxt2Img class to add resize_mode attribute
-            original_init = StableDiffusionProcessingTxt2Img.__init__
+            # Monkey patch both processing classes to add resize_mode attribute
+            original_txt2img_init = StableDiffusionProcessingTxt2Img.__init__
+            original_img2img_init = StableDiffusionProcessingImg2Img.__init__
             
-            def patched_init(self, *args, **kwargs):
-                original_init(self, *args, **kwargs)
+            def patched_txt2img_init(self, *args, **kwargs):
+                original_txt2img_init(self, *args, **kwargs)
                 # Add resize_mode attribute with default value 0 (INNER_FIT)
                 self.resize_mode = 0
             
-            # Apply the monkey patch
-            StableDiffusionProcessingTxt2Img.__init__ = patched_init
+            def patched_img2img_init(self, *args, **kwargs):
+                original_img2img_init(self, *args, **kwargs)
+                # Add resize_mode attribute with default value 0 (INNER_FIT)
+                self.resize_mode = 0
+            
+            # Apply the monkey patches
+            StableDiffusionProcessingTxt2Img.__init__ = patched_txt2img_init
+            StableDiffusionProcessingImg2Img.__init__ = patched_img2img_init
                 
             # Use only extra_network_data for LoRA handling
             resp = self.api.text2imgapi(
@@ -893,8 +926,9 @@ class Predictor(BasePredictor):
                 extra_network_data=extra_network_data
             )
             
-            # Restore the original init method to avoid side effects
-            StableDiffusionProcessingTxt2Img.__init__ = original_init
+            # Restore the original init methods to avoid side effects
+            StableDiffusionProcessingTxt2Img.__init__ = original_txt2img_init
+            StableDiffusionProcessingImg2Img.__init__ = original_img2img_init
         else:
             print("Warning: Model does not have forge_objects attribute, proceeding without LoRA")
             # Remove LoRA from extra_network_data to avoid errors
