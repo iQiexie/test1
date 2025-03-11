@@ -178,6 +178,8 @@ class Predictor(BasePredictor):
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
 
+        shared.opts.set('kekekekek', 'lolololol')
+
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
             # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
