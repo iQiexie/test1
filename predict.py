@@ -417,17 +417,20 @@ class Predictor(BasePredictor):
             },
         )
 
-        resp = self.api.text2imgapi(**req)
+        with catchtime(tag="Total Prediction Time"):
+            resp = self.api.text2imgapi(**req)
+
         info = json.loads(resp.info)
         outputs = []
 
-        for i, image in enumerate(resp.images):
-            seed = info["all_seeds"][i]
-            gen_bytes = BytesIO(base64.b64decode(image))
-            gen_data = Image.open(gen_bytes)
-            filename = "{}-{}.png".format(seed, uuid.uuid1())
-            gen_data.save(fp=filename, format="PNG")
-            output = Path(filename)
-            outputs.append(output)
+        with catchtime(tag="Total Encode Time"):
+            for i, image in enumerate(resp.images):
+                seed = info["all_seeds"][i]
+                gen_bytes = BytesIO(base64.b64decode(image))
+                gen_data = Image.open(gen_bytes)
+                filename = "{}-{}.png".format(seed, uuid.uuid1())
+                gen_data.save(fp=filename, format="PNG")
+                output = Path(filename)
+                outputs.append(output)
 
         return outputs

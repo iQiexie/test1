@@ -343,21 +343,6 @@ class Api:
 
         print("[load_clip_etc] All required model components already exist.")
 
-        # Remove any existing arguments to avoid duplicates
-        for i in range(len(sys.argv) - 1, -1, -1):
-            if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
-                if i + 1 < len(sys.argv):
-                    sys.argv.pop(i + 1)
-                sys.argv.pop(i)
-
-        # Add the arguments
-        sys.argv.extend(["--text-encoder-dir", self.text_encoder_dir])
-        sys.argv.extend(["--vae-dir", self.vae_dir])
-
-        # Set environment variables as well for extra safety
-        os.environ["FORGE_TEXT_ENCODER_DIR"] = self.text_encoder_dir
-        os.environ["FORGE_VAE_DIR"] = self.vae_dir
-
         additional_modules = [
             os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
             os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
@@ -589,7 +574,12 @@ class Api:
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
         script_runner = scripts.scripts_txt2img
         infotext_script_args = {}
-        self.apply_infotext(txt2imgreq, "txt2img", script_runner=script_runner, mentioned_script_args=infotext_script_args)
+        self.apply_infotext(
+            txt2imgreq,
+            "txt2img",
+            script_runner=script_runner,
+            mentioned_script_args=infotext_script_args,
+        )
 
         selectable_scripts, selectable_script_idx = self.get_selectable_script(txt2imgreq.script_name, script_runner)
         sampler, scheduler = sd_samplers.get_sampler_and_scheduler(txt2imgreq.sampler_name or txt2imgreq.sampler_index, txt2imgreq.scheduler)
