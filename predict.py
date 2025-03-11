@@ -413,7 +413,7 @@ class Predictor(BasePredictor):
                 "lora": [
                     ExtraNetworkParams(
                         items=[
-                            lora_path.split('/')[-1],
+                            lora_path.split('/')[-1].split('.safetensors')[0],
                             str(lora_scale)
                         ]
                     )
