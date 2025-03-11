@@ -457,7 +457,7 @@ class Api:
 
     @staticmethod
     def load_flux(additional_modules=None) -> None:
-        print("Model is FakeInitialModel, loading Flux model...")
+        print("loading Flux model...")
 
         with catchtime(tag="Set the checkpoint to the Flux model specifically") as t:
             flux_checkpoint_name = "flux_checkpoint.safetensors"
@@ -485,7 +485,7 @@ class Api:
                 from backend.args import dynamic_args
                 dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
                 # Load the model
-                sd_models.forge_model_reload()
+                sd_models.forge_model_reload(force=bool(additional_modules))
                 print(f"Flux model loaded: {type(shared.sd_model)}")
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")

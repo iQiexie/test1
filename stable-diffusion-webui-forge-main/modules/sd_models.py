@@ -470,10 +470,11 @@ def apply_token_merging(sd_model, token_merging_ratio):
 
 
 @torch.inference_mode()
-def forge_model_reload():
+def forge_model_reload(force: bool = False):
     current_hash = str(model_data.forge_loading_parameters)
 
-    if model_data.forge_hash == current_hash:
+    if (model_data.forge_hash == current_hash) and (not force):
+        print(f"Not loading model, because it is cached {force=}, {model_data.forge_loading_parameters=}")
         return model_data.sd_model, False
 
     print('Loading Model: ' + str(model_data.forge_loading_parameters))
