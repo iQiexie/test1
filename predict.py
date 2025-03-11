@@ -357,6 +357,7 @@ class Predictor(BasePredictor):
             default=False
         ),
     ) -> list[Path]:
+        print("Cache version 105")
         """Run a single prediction on the model"""
         from modules.extra_networks import ExtraNetworkParams
         from modules import scripts
@@ -371,7 +372,7 @@ class Predictor(BasePredictor):
         if debug_flux_checkpoint_url:
             self.setup(force_download_url=debug_flux_checkpoint_url)
 
-        self._download_loras(lora_urls)
+        lora_paths = self._download_loras(lora_urls)
 
         payload = {
             "prompt": prompt,
@@ -409,11 +410,11 @@ class Predictor(BasePredictor):
                 "lora": [
                     ExtraNetworkParams(
                         items=[
-                            lora_url.split('/')[-1].split('.safetensors')[0],
+                            lora_path.split('/')[-1],
                             str(lora_scale)
                         ]
                     )
-                    for lora_url, lora_scale in zip(lora_urls, lora_scales)
+                    for lora_path, lora_scale in zip(lora_paths, lora_scales)
                 ]
             },
             additional_modules={
