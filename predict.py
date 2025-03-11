@@ -95,7 +95,7 @@ class Predictor(BasePredictor):
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
-        from modules import timer
+
 
         # Безопасный импорт memory_management
         try:
@@ -350,6 +350,18 @@ class Predictor(BasePredictor):
             description="Flux checkpoint URL",
             default=""
         ),
+        enable_clip_l: bool = Input(
+            description="Enable encoder",
+            default=False
+        ),
+        enable_t5xxl_fp16: bool = Input(
+            description="t5xxl_fp16",
+            default=False
+        ),
+        enable_ae: bool = Input(
+            description="Enable ae",
+            default=False
+        ),
     ) -> list[Path]:
         """Run a single prediction on the model"""
         from modules.extra_networks import ExtraNetworkParams
@@ -414,6 +426,11 @@ class Predictor(BasePredictor):
                     )
                     for lora_url, lora_scale in zip(lora_urls, lora_scales)
                 ]
+            },
+            additional_modules={
+                "clip_l.safetensors": enable_clip_l,
+                "t5xxl_fp16.safetensors": enable_t5xxl_fp16,
+                "ae.safetensors": enable_ae,
             },
         )
 
