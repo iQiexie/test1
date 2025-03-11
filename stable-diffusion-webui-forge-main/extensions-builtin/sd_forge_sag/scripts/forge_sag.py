@@ -1,3 +1,5 @@
+import traceback
+
 import torch
 import gradio as gr
 import math
@@ -194,7 +196,12 @@ class SAGForForge(scripts.Script):
         return enabled, scale, blur_sigma, threshold
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
-        enabled, scale, blur_sigma, threshold = script_args
+        try:
+            enabled, scale, blur_sigma, threshold = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 4)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if not enabled:
             return

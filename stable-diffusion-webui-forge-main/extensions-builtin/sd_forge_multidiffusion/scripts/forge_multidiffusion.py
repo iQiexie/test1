@@ -1,3 +1,5 @@
+import traceback
+
 import gradio as gr
 from modules import scripts
 
@@ -33,7 +35,12 @@ class MultiDiffusionForForge(scripts.Script):
         # This will be called before every sampling.
         # If you use highres fix, this will be called twice.
 
-        enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size = script_args
+        try:
+            enabled, method, tile_width, tile_height, tile_overlap, tile_batch_size = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 6)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if not enabled:
             return

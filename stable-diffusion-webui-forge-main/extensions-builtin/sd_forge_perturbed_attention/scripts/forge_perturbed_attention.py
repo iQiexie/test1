@@ -1,3 +1,5 @@
+import traceback
+
 import gradio as gr
 
 from modules import scripts
@@ -47,7 +49,12 @@ class PerturbedAttentionGuidanceForForge(scripts.Script):
             PerturbedAttentionGuidanceForForge.doPAG = False
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
-        enabled, scale, attenuation, start_step, end_step = script_args
+        try:
+            enabled, scale, attenuation, start_step, end_step = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 5)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if not enabled:
             return

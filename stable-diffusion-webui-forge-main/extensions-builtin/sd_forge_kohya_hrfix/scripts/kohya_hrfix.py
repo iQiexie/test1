@@ -1,3 +1,5 @@
+import traceback
+
 import gradio as gr
 
 from modules import scripts, shared
@@ -76,7 +78,13 @@ class KohyaHRFixForForge(scripts.Script):
         return enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method
 
     def process_before_every_sampling(self, p, *script_args, **kwargs):
-        enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method = script_args
+        try:
+            enabled, block_number, downscale_factor, start_percent, end_percent, downscale_after_skip, downscale_method, upscale_method = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 8)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
+
         block_number = int(block_number)
 
         if not enabled:

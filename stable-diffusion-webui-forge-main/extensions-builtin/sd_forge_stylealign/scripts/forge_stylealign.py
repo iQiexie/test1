@@ -1,3 +1,5 @@
+import traceback
+
 import torch
 import gradio as gr
 
@@ -30,7 +32,12 @@ class StyleAlignForForge(scripts.Script):
         # This will be called before every sampling.
         # If you use highres fix, this will be called twice.
 
-        shared_attention, strength = script_args
+        try:
+            shared_attention, strength = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 2)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if not shared_attention:
             return

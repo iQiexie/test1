@@ -1,3 +1,5 @@
+import traceback
+
 import torch
 import gradio as gr
 
@@ -140,7 +142,12 @@ class FreeUForForge(scripts.Script):
     def process_before_every_sampling(self, p, *script_args, **kwargs):
         # If you use highres fix, this will be called twice.
 
-        freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2, freeu_start, freeu_end = script_args
+        try:
+            freeu_enabled, freeu_b1, freeu_b2, freeu_s1, freeu_s2, freeu_start, freeu_end = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 7)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if not freeu_enabled:
             return

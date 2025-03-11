@@ -1,3 +1,5 @@
+import traceback
+
 import gradio as gr
 
 from modules import scripts
@@ -24,7 +26,12 @@ class NeverOOMForForge(scripts.Script):
         return unet_enabled, vae_enabled
 
     def process(self, p, *script_args, **kwargs):
-        unet_enabled, vae_enabled = script_args
+        try:
+            unet_enabled, vae_enabled = script_args
+        except ValueError as e:
+            print(f"[too many values to unpack (expected 2)] {script_args=}")
+            traceback.print_tb(e.__traceback__)
+            raise e
 
         if unet_enabled:
             print('NeverOOM Enabled for UNet (always maximize offload)')
