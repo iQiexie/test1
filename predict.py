@@ -36,7 +36,7 @@ def download_base_weights(url: str, dest: Path):
     print("downloading to: ", dest)
     # Используем pget для эффективной загрузки файлов
     # Убираем параметр -xf, так как файл не является архивом
-    subprocess.check_call(["pget", url, dest], close_fds=False)
+    subprocess.check_call(["pget", "-n", url, dest], close_fds=False)
     print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
 
