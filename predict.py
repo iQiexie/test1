@@ -10,6 +10,7 @@ from cog import BasePredictor, Input, Path
 from time import perf_counter
 from contextlib import contextmanager
 from typing import Callable
+from weights import WeightsDownloadCache
 
 
 @contextmanager
@@ -41,6 +42,8 @@ def download_base_weights(url: str, dest: Path):
 
 
 class Predictor(BasePredictor):
+    weights_cache = WeightsDownloadCache()
+
     @staticmethod
     def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
@@ -371,7 +374,9 @@ class Predictor(BasePredictor):
         import base64
         from io import BytesIO
 
-        self.setup(force_download_url=debug_flux_checkpoint_url)
+        if debug_flux_checkpoint_url:
+            self.setup(force_download_url=debug_flux_checkpoint_url)
+
         self._download_loras(lora_urls)
 
         payload = {
