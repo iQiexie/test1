@@ -526,10 +526,9 @@ class Api:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
 
-                    if isinstance(shared.sd_model, sd_models.FakeInitialModel):
-                        self.load_flux()
-                    else:
-                        print(f"Flux model already loaded: {type(shared.sd_model)}")
+                    start = datetime.datetime.now()
+                    self.load_flux()
+                    print(f"Loading model took: {(datetime.datetime.now() - start).total_seconds()}")
 
                     if hasattr(shared.sd_model, 'forge_objects'):
                         print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
