@@ -1,14 +1,16 @@
 # Prediction interface for Cog ⚙️
 # https://github.com/replicate/cog/blob/main/docs/python.md
 
-import os, sys, json
-import shutil
-import time
+import json
+import os
 import subprocess  # Для запуска внешних процессов
+import sys
+import time
+from cog import BasePredictor, Input, Path
 
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
-from cog import BasePredictor, BaseModel, Input, Path
+
 def download_base_weights(url: str, dest: Path):
     """
     Загружает базовые веса модели.
@@ -25,6 +27,7 @@ def download_base_weights(url: str, dest: Path):
     subprocess.check_call(["pget", url, dest], close_fds=False)
     print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
+
 class Predictor(BasePredictor):
     def _move_model_to_sdwebui_dir(self):
         """
@@ -33,12 +36,12 @@ class Predictor(BasePredictor):
         """
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
-        
+
         # Проверяем, существует ли уже файл модели
         if os.path.exists(model_path):
             print(f"Модель уже загружена!!: {model_path}")
             return
-        
+
         # Если модель не найдена, загружаем ее
         print("Модель не найдена, загружаем...")
         os.makedirs(target_dir, exist_ok=True)
@@ -46,6 +49,7 @@ class Predictor(BasePredictor):
             "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
             model_path
         )
+
     def _download_loras(self, lora_urls):
         """
         Загружает LoRA файлы по указанным URL.
@@ -58,28 +62,28 @@ class Predictor(BasePredictor):
         """
         if not lora_urls or lora_urls.strip() == "":
             return []
-            
+
         lora_urls_list = [url.strip() for url in lora_urls.split(",") if url.strip()]
         if not lora_urls_list:
             return []
-            
+
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
         os.makedirs(target_dir, exist_ok=True)
-        
+
         lora_paths = []
         for i, url in enumerate(lora_urls_list):
             try:
                 # Извлекаем имя файла из URL или используем индекс, если не удалось
                 filename = os.path.basename(url.split("?")[0])
                 if not filename or filename == "":
-                    filename = f"lora_{i+1}.safetensors"
-                
+                    filename = f"lora_{i + 1}.safetensors"
+
                 # Убедимся, что файл имеет расширение .safetensors
                 if not filename.endswith(".safetensors"):
                     filename += ".safetensors"
-                
+
                 lora_path = os.path.join(target_dir, filename)
-                
+
                 # Проверяем, существует ли уже файл
                 if os.path.exists(lora_path):
                     print(f"ТОЧНО ПОСЛЕДНЯЯ ВЕРСИЯ LoRA файл уже существует: {lora_path}")
@@ -88,10 +92,10 @@ class Predictor(BasePredictor):
                     # Если файл не существует, загружаем его
                     download_base_weights(url, lora_path)
                     lora_paths.append(lora_path)
-                    print(f"LoRA {i+1} успешно загружена: {lora_path}")
+                    print(f"LoRA {i + 1} успешно загружена: {lora_path}")
             except Exception as e:
-                print(f"Ошибка при загрузке LoRA {i+1}: {e}")
-        
+                print(f"Ошибка при загрузке LoRA {i + 1}: {e}")
+
         return lora_paths
 
     def setup(self) -> None:
@@ -100,7 +104,7 @@ class Predictor(BasePredictor):
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
-        
+
         # Проверяем, существует ли уже файл модели
         if not os.path.exists(model_path):
             print(f"Загружаем модель Flux...")
@@ -114,7 +118,7 @@ class Predictor(BasePredictor):
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
         from modules import timer
-        
+
         # Безопасный импорт memory_management
         try:
             from backend import memory_management
@@ -122,7 +126,7 @@ class Predictor(BasePredictor):
         except ImportError as e:
             print(f"Предупреждение: Не удалось импортировать memory_management: {e}")
             self.has_memory_management = False
-        
+
         # moved env preparation to build time to reduce the warm-up time
         # from modules import launch_utils
 
@@ -140,36 +144,38 @@ class Predictor(BasePredictor):
         initialize.check_versions()
 
         initialize.initialize()
-        
+
         # Импортируем shared после initialize.initialize()
         from modules import shared
-        
+
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
-        
+
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
 
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
-        
+
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
             # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
             total_vram = memory_management.total_vram
             inference_memory = int(total_vram * 0.1)  # 10% для вычислений
             model_memory = total_vram - inference_memory
-            
+
             memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
-            print(f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений")
-            
+            print(
+                f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
+                )
+
             # Настройка Swap Method на ASYNC для лучшей производительности
             try:
                 from backend import stream
                 # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
                 stream.stream_activated = True  # True = ASYNC, False = Queue
                 print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
-                
+
                 # Настройка Swap Location на Shared для лучшей производительности
                 memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
                 print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
@@ -249,7 +255,8 @@ class Predictor(BasePredictor):
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
         ),
         distilled_guidance_scale: float = Input(
-            description="Distilled CFG Scale (основной параметр для Flux, рекомендуется 3.5)", ge=0, le=30, default=3.5
+            description="Distilled CFG Scale (основной параметр для Flux, рекомендуется 3.5)", ge=0, le=30,
+            default=3.5
         ),
         seed: int = Input(
             description="Random seed. Leave blank to randomize the seed", default=-1
@@ -327,17 +334,17 @@ class Predictor(BasePredictor):
             "seed": seed,
             "do_not_save_samples": True,
             "sampler_name": sampler,  # Используем выбранный пользователем sampler
-            "scheduler": scheduler,    # Устанавливаем scheduler для Flux
+            "scheduler": scheduler,  # Устанавливаем scheduler для Flux
             "enable_hr": enable_hr,
             "hr_upscaler": hr_upscaler,
             "hr_second_pass_steps": hr_steps,
             "denoising_strength": denoising_strength if enable_hr else None,
             "hr_scale": hr_scale,
-            "distilled_cfg_scale": distilled_guidance_scale,  # Добавляем параметр distilled_cfg_scale для Flux
-            "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
+            "distilled_cfg_scale": distilled_guidance_scale,
+            "hr_additional_modules": [],
             "extra_network_data": {"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]}
         }
-        
+
         # Нет необходимости добавлять их в payload отдельно
 
         alwayson_scripts = {}
