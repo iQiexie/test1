@@ -135,10 +135,10 @@ class Predictor(BasePredictor):
             flux_checkpoint_url = FLUX_CHECKPOINT_URL
 
         if (not os.path.exists(model_path)) and (not force_download):
-            print(f"Загружаем модель Flux... {force_download=}, {os.path.exists(model_path)=}")
+            print(f"Загружаем модель Flux... {force_download=}, {os.path.exists(model_path)=}, {flux_checkpoint_url=}")
             download_base_weights(url=flux_checkpoint_url, dest=model_path)
         else:
-            print(f"Модель Flux уже загружена: {model_path}, {flux_checkpoint_url=}")
+            print(f"Модель Flux уже загружена: {model_path}, {force_download=}, {os.path.exists(model_path)=}, {flux_checkpoint_url=}")
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
