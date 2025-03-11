@@ -103,6 +103,45 @@ class Predictor(BasePredictor):
         os.environ["FORGE_TEXT_ENCODER_DIR"] = text_encoder_dir
         os.environ["FORGE_VAE_DIR"] = vae_dir
 
+        additional_modules = [
+            os.path.join(text_encoder_dir, "clip_l.safetensors"),
+            os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors"),
+            os.path.join(vae_dir, "ae.safetensors"),
+        ]
+
+        from modules import sd_models, shared
+
+        sd_models.model_data.forge_loading_parameters = {
+            'additional_modules': additional_modules
+        }
+
+        # Add debug info for state dictionaries
+        print(f"[load_clip_etc] DEBUG: About to load model with {len(additional_modules)} additional modules")
+        for i, module_path in enumerate(additional_modules):
+            try:
+                from backend.utils import load_torch_file
+                state_dict = load_torch_file(module_path)
+                if isinstance(state_dict, dict):
+                    print(f"[load_clip_etc] DEBUG: Module {i + 1}: {module_path} - State dict has {len(state_dict)} keys")
+                    # Print some key names for debugging
+                    keys_sample = list(state_dict.keys())[:5]
+                    print(f"[load_clip_etc] DEBUG: Sample keys: {keys_sample}")
+                else:
+                    print(
+                        f"[load_clip_etc] DEBUG: Module {i + 1}: {module_path} - State dict is not a dictionary, type: {type(state_dict)}"
+                        )
+            except Exception as e:
+                print(f"[load_clip_etc] DEBUG: Error inspecting module {module_path}: {str(e)}")
+
+            try:
+                sd_models.forge_model_reload()
+                print("[load_clip_etc] DEBUG: Model loaded successfully")
+            except Exception as e:
+                print(f"[load_clip_etc] ERROR: Failed to load model: {str(e)}")
+                import traceback
+                traceback.print_exc()
+
+
     @staticmethod
     def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
@@ -483,10 +522,8 @@ class Predictor(BasePredictor):
             resp = self.api.text2imgapi(**req)
         except AssertionError as e:
             print(f"Got {e=}. Downloading clip model files")
-            with catchtime(tag="Downloading clip model files"):
+            with catchtime(tag="[load_clip_etc] Downloading clip model files"):
                 self.load_clip_etc()
-                self.setup()
-
             resp = self.api.text2imgapi(**req)
 
         info = json.loads(resp.info)
