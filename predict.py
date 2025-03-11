@@ -70,7 +70,7 @@ class Predictor(BasePredictor):
             dest=os.path.join(self.vae_dir, "ae.safetensors"),
         )
 
-    def load_clip_etc(self) -> None:
+    def load_clip_etc(self) -> list[Path]:
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
         vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
 
@@ -109,38 +109,8 @@ class Predictor(BasePredictor):
             os.path.join(vae_dir, "ae.safetensors"),
         ]
 
-        from modules import sd_models, shared
-
-        sd_models.model_data.forge_loading_parameters = {
-            'additional_modules': additional_modules
-        }
-
-        # Add debug info for state dictionaries
         print(f"[load_clip_etc] DEBUG: About to load model with {len(additional_modules)} additional modules")
-        for i, module_path in enumerate(additional_modules):
-            try:
-                from backend.utils import load_torch_file
-                state_dict = load_torch_file(module_path)
-                if isinstance(state_dict, dict):
-                    print(f"[load_clip_etc] DEBUG: Module {i + 1}: {module_path} - State dict has {len(state_dict)} keys")
-                    # Print some key names for debugging
-                    keys_sample = list(state_dict.keys())[:5]
-                    print(f"[load_clip_etc] DEBUG: Sample keys: {keys_sample}")
-                else:
-                    print(
-                        f"[load_clip_etc] DEBUG: Module {i + 1}: {module_path} - State dict is not a dictionary, type: {type(state_dict)}"
-                        )
-            except Exception as e:
-                print(f"[load_clip_etc] DEBUG: Error inspecting module {module_path}: {str(e)}")
-
-            try:
-                sd_models.forge_model_reload()
-                print("[load_clip_etc] DEBUG: Model loaded successfully")
-            except Exception as e:
-                print(f"[load_clip_etc] ERROR: Failed to load model: {str(e)}")
-                import traceback
-                traceback.print_exc()
-
+        return additional_modules
 
     @staticmethod
     def _download_loras(lora_urls: list[str]):
@@ -246,7 +216,7 @@ class Predictor(BasePredictor):
             memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
             print(
                 f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
-                )
+            )
 
             # Настройка Swap Method на ASYNC для лучшей производительности
             try:
@@ -523,8 +493,9 @@ class Predictor(BasePredictor):
         except AssertionError as e:
             print(f"Got {e=}. Downloading clip model files")
             with catchtime(tag="[load_clip_etc] Downloading clip model files"):
-                self.load_clip_etc()
-            resp = self.api.text2imgapi(**req)
+                additional_modules = self.load_clip_etc()
+
+            resp = self.api.text2imgapi(**req, additional_modules=additional_modules)
 
         info = json.loads(resp.info)
         outputs = []

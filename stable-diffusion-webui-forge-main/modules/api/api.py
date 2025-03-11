@@ -456,7 +456,7 @@ class Api:
         return params
 
     @staticmethod
-    def load_flux() -> None:
+    def load_flux(additional_modules=None) -> None:
         print("Model is FakeInitialModel, loading Flux model...")
 
         with catchtime(tag="Set the checkpoint to the Flux model specifically") as t:
@@ -478,7 +478,7 @@ class Api:
                 # Set up forge loading parameters - don't use string for dtype
                 sd_models.model_data.forge_loading_parameters = {
                     'checkpoint_info': flux_checkpoint,
-                    'additional_modules': []
+                    'additional_modules': additional_modules or [],
                 }
 
                 # Set the dynamic args directly instead of using the string
@@ -490,7 +490,12 @@ class Api:
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data=None):
+    def text2imgapi(
+        self,
+        txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI,
+        extra_network_data=None,
+        additional_modules=None,
+    ):
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
 
@@ -538,8 +543,8 @@ class Api:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
 
-                    with catchtime(tag="load_flux") as t:
-                        self.load_flux()
+                    with catchtime(tag="load_flux"):
+                        self.load_flux(additional_modules=additional_modules)
 
                     if hasattr(shared.sd_model, 'forge_objects'):
                         print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
