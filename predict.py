@@ -751,8 +751,7 @@ class Predictor(BasePredictor):
         # StyleAlign expects 2 arguments
         stylealign_args = [False, 1.0]  # shared_attention, strength
         
-        # ControlNet needs special handling for resize_mode
-        # We'll add a resize_mode attribute to the processing object later
+        # Completely disable ControlNet to avoid any issues with it
         
         # Only add ADetailer if enabled, with proper script args structure
         if enable_adetailer:
@@ -899,26 +898,8 @@ class Predictor(BasePredictor):
             if hasattr(req, 'alwayson_scripts') and req.alwayson_scripts and 'lora' in req.alwayson_scripts:
                 del req.alwayson_scripts['lora']
             
-            # Add a more robust method to handle ControlNet's resize_mode issue
-            from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img
-            
-            # Monkey patch both processing classes to add resize_mode attribute
-            original_txt2img_init = StableDiffusionProcessingTxt2Img.__init__
-            original_img2img_init = StableDiffusionProcessingImg2Img.__init__
-            
-            def patched_txt2img_init(self, *args, **kwargs):
-                original_txt2img_init(self, *args, **kwargs)
-                # Add resize_mode attribute with default value 0 (INNER_FIT)
-                self.resize_mode = 0
-            
-            def patched_img2img_init(self, *args, **kwargs):
-                original_img2img_init(self, *args, **kwargs)
-                # Add resize_mode attribute with default value 0 (INNER_FIT)
-                self.resize_mode = 0
-            
-            # Apply the monkey patches
-            StableDiffusionProcessingTxt2Img.__init__ = patched_txt2img_init
-            StableDiffusionProcessingImg2Img.__init__ = patched_img2img_init
+            # Instead of patching the ControlNet module, we'll completely disable it
+            # by ensuring it's not included in the payload
                 
             # Use only extra_network_data for LoRA handling
             resp = self.api.text2imgapi(
@@ -926,9 +907,7 @@ class Predictor(BasePredictor):
                 extra_network_data=extra_network_data
             )
             
-            # Restore the original init methods to avoid side effects
-            StableDiffusionProcessingTxt2Img.__init__ = original_txt2img_init
-            StableDiffusionProcessingImg2Img.__init__ = original_img2img_init
+            # No need to restore original methods since we're not patching them anymore
         else:
             print("Warning: Model does not have forge_objects attribute, proceeding without LoRA")
             # Remove LoRA from extra_network_data to avoid errors
