@@ -74,11 +74,15 @@ class Predictor(BasePredictor):
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 
+        force_download = False
+        if flux_checkpoint_url:
+            force_download = True
+
         if not flux_checkpoint_url:
             flux_checkpoint_url = FLUX_CHECKPOINT_URL
 
-        if not os.path.exists(model_path):
-            print(f"Загружаем модель Flux...")
+        if (not os.path.exists(model_path)) and (not force_download):
+            print(f"Загружаем модель Flux... {force_download=}, {os.path.exists(model_path)=}")
             download_base_weights(url=flux_checkpoint_url, dest=model_path)
         else:
             print(f"Модель Flux уже загружена: {model_path}, {flux_checkpoint_url=}")
