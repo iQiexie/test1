@@ -41,77 +41,6 @@ def download_base_weights(url: str, dest: Path):
 
 
 class Predictor(BasePredictor):
-    text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
-    vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
-
-    def _load_clip_etc_download_models(self):
-        print("[load_clip_etc] Downloading required model components...")
-        os.makedirs(self.text_encoder_dir, exist_ok=True)
-        sys.argv.extend(["--text-encoder-dir", self.text_encoder_dir])
-
-        print("[load_clip_etc] Downloading: clip_l")
-        download_base_weights(
-            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
-            dest=os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
-        )
-
-        print("[load_clip_etc] Downloading: t5xxl_fp16")
-        download_base_weights(
-            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
-            dest=os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
-        )
-
-        os.makedirs(self.vae_dir, exist_ok=True)
-        sys.argv.extend(["--vae-dir", self.vae_dir])
-
-        print("[load_clip_etc] Downloading: ae")
-        download_base_weights(
-            url="https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
-            dest=os.path.join(self.vae_dir, "ae.safetensors"),
-        )
-
-    def load_clip_etc(self) -> list[Path]:
-        text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
-        vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
-
-        if (
-            not os.path.exists(os.path.join(text_encoder_dir, "clip_l.safetensors")) or
-            not os.path.exists(os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")) or
-            not os.path.exists(os.path.join(vae_dir, "ae.safetensors"))
-        ):
-            with catchtime(tag="[load_clip_etc] Downloading required model components"):
-                self._load_clip_etc_download_models()
-
-        print("[load_clip_etc] All required model components already exist.")
-
-        # Make sure directories exist
-        os.makedirs(text_encoder_dir, exist_ok=True)
-        os.makedirs(vae_dir, exist_ok=True)
-
-        # Remove any existing arguments to avoid duplicates
-        for i in range(len(sys.argv) - 1, -1, -1):
-            if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
-                if i + 1 < len(sys.argv):
-                    sys.argv.pop(i + 1)
-                sys.argv.pop(i)
-
-        # Add the arguments
-        sys.argv.extend(["--text-encoder-dir", text_encoder_dir])
-        sys.argv.extend(["--vae-dir", vae_dir])
-
-        # Set environment variables as well for extra safety
-        os.environ["FORGE_TEXT_ENCODER_DIR"] = text_encoder_dir
-        os.environ["FORGE_VAE_DIR"] = vae_dir
-
-        additional_modules = [
-            os.path.join(text_encoder_dir, "clip_l.safetensors"),
-            os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors"),
-            os.path.join(vae_dir, "ae.safetensors"),
-        ]
-
-        print(f"[load_clip_etc] DEBUG: About to load model with {len(additional_modules)} additional modules")
-        return additional_modules
-
     @staticmethod
     def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
@@ -488,15 +417,7 @@ class Predictor(BasePredictor):
             },
         )
 
-        try:
-            resp = self.api.text2imgapi(**req)
-        except AssertionError as e:
-            print(f"Got {e=}. Downloading clip model files")
-            with catchtime(tag="[load_clip_etc] Downloading clip model files"):
-                additional_modules = self.load_clip_etc()
-
-            resp = self.api.text2imgapi(**req, additional_modules=additional_modules)
-
+        resp = self.api.text2imgapi(**req)
         info = json.loads(resp.info)
         outputs = []
 

@@ -1,10 +1,14 @@
 import base64
 import io
 import os
+import subprocess
+import sys
 import traceback
 
 import time
 import datetime
+from pathlib import Path
+import extra_networks_lora
 import uvicorn
 import ipaddress
 import requests
@@ -37,6 +41,23 @@ from modules.progress import create_task_id, add_task_to_queue, start_task, fini
 from time import perf_counter
 from contextlib import contextmanager
 from typing import Callable
+
+
+def download_base_weights(url: str, dest: Path):
+    """
+    Загружает базовые веса модели.
+
+    Args:
+        url: URL для загрузки весов
+        dest: Путь для сохранения весов
+    """
+    start = time.time()  # Засекаем время начала загрузки
+    print("downloading url: ", url)
+    print("downloading to: ", dest)
+    # Используем pget для эффективной загрузки файлов
+    # Убираем параметр -xf, так как файл не является архивом
+    subprocess.check_call(["pget", "-f", url, dest], close_fds=False)
+    print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
 
 @contextmanager
@@ -210,6 +231,9 @@ def api_middleware(app: FastAPI):
 
 
 class Api:
+    text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
+    vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
+
     def __init__(self, app: FastAPI, queue_lock: Lock):
         if shared.cmd_opts.api_auth:
             self.credentials = {}
@@ -284,7 +308,64 @@ class Api:
         self.embedding_db.add_embedding_dir(cmd_opts.embeddings_dir)
         self.embedding_db.load_textual_inversion_embeddings(force_reload=True, sync_with_sd_model=False)
 
+    def _load_clip_etc_download_models(self):
+        print("[load_clip_etc] Downloading required model components...")
+        os.makedirs(self.text_encoder_dir, exist_ok=True)
 
+        print("[load_clip_etc] Downloading: clip_l")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
+        )
+
+        print("[load_clip_etc] Downloading: t5xxl_fp16")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
+        )
+
+        os.makedirs(self.vae_dir, exist_ok=True)
+
+        print("[load_clip_etc] Downloading: ae")
+        download_base_weights(
+            url="https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
+            dest=os.path.join(self.vae_dir, "ae.safetensors"),
+        )
+
+    def load_clip_etc(self) -> list[str]:
+        if (
+            not os.path.exists(os.path.join(self.text_encoder_dir, "clip_l.safetensors")) or
+            not os.path.exists(os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors")) or
+            not os.path.exists(os.path.join(self.vae_dir, "ae.safetensors"))
+        ):
+            with catchtime(tag="[load_clip_etc] Downloading required model components"):
+                self._load_clip_etc_download_models()
+
+        print("[load_clip_etc] All required model components already exist.")
+
+        # Remove any existing arguments to avoid duplicates
+        for i in range(len(sys.argv) - 1, -1, -1):
+            if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
+                if i + 1 < len(sys.argv):
+                    sys.argv.pop(i + 1)
+                sys.argv.pop(i)
+
+        # Add the arguments
+        sys.argv.extend(["--text-encoder-dir", self.text_encoder_dir])
+        sys.argv.extend(["--vae-dir", self.vae_dir])
+
+        # Set environment variables as well for extra safety
+        os.environ["FORGE_TEXT_ENCODER_DIR"] = self.text_encoder_dir
+        os.environ["FORGE_VAE_DIR"] = self.vae_dir
+
+        additional_modules = [
+            os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
+            os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
+            os.path.join(self.vae_dir, "ae.safetensors"),
+        ]
+
+        print(f"[load_clip_etc] DEBUG: About to load model with {len(additional_modules)} additional modules")
+        return additional_modules
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -459,21 +540,19 @@ class Api:
     def load_flux(additional_modules=None) -> None:
         print("loading Flux model...")
 
-        with catchtime(tag="Set the checkpoint to the Flux model specifically") as t:
+        with catchtime(tag="Set the checkpoint to the Flux model specifically"):
             flux_checkpoint_name = "flux_checkpoint.safetensors"
             shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
             shared.opts.set('forge_preset', 'flux')
 
-        # Don't set forge_unet_storage_dtype directly, instead set it in the forge_loading_parameters
-
-        with catchtime(tag="Find the Flux checkpoint") as t:
+        with catchtime(tag="Find the Flux checkpoint"):
             flux_checkpoint = None
             for checkpoint in sd_models.checkpoints_list.values():
                 if checkpoint.filename.endswith(flux_checkpoint_name):
                     flux_checkpoint = checkpoint
                     break
 
-        with catchtime(tag="Set up forge loading parameters - don't use string for dtype") as t:
+        with catchtime(tag="Set up forge loading parameters - don't use string for dtype"):
             if flux_checkpoint is not None:
                 # Set up forge loading parameters - don't use string for dtype
                 sd_models.model_data.forge_loading_parameters = {
@@ -494,13 +573,21 @@ class Api:
         self,
         txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI,
         extra_network_data=None,
-        additional_modules=None,
     ):
+        try:
+            with catchtime(tag="load_flux first time"):
+                self.load_flux()
+        except AssertionError as e:
+            print(f"Got {e=}. Downloading clip model files")
+            with catchtime(tag="[load_clip_etc] Downloading clip model files"):
+                additional_modules = self.load_clip_etc()
+
+            with catchtime(tag="load_flux second time"):
+                self.load_flux(additional_modules=additional_modules)
+
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
-
         script_runner = scripts.scripts_txt2img
-
         infotext_script_args = {}
         self.apply_infotext(txt2imgreq, "txt2img", script_runner=script_runner, mentioned_script_args=infotext_script_args)
 
@@ -520,11 +607,18 @@ class Api:
 
         args = vars(populate)
         args.pop('script_name', None)
-        args.pop('script_args', None) # will refeed them to the pipeline directly after initializing them
+        args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
         args.pop('infotext', None)
 
-        script_args = self.init_script_args(txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner, input_script_args=infotext_script_args)
+        script_args = self.init_script_args(
+            txt2imgreq,
+            self.default_script_arg_txt2img,
+            selectable_scripts,
+            selectable_script_idx,
+            script_runner,
+            input_script_args=infotext_script_args,
+        )
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
@@ -543,26 +637,15 @@ class Api:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
 
-                    with catchtime(tag="load_flux"):
-                        self.load_flux(additional_modules=additional_modules)
+                    extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
+                    p.script_args = tuple(script_args)  # Need to pass args as tuple here
 
-                    if hasattr(shared.sd_model, 'forge_objects'):
-                        print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
-                        import extra_networks_lora
-                        extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
-                    else:
-                        print("Warning: Model does not have forge_objects attribute, skipping LoRA activation")
+                    with catchtime(tag="processed = process_images(p)"):
+                        processed = process_images(p)
 
-                    if selectable_scripts is not None:
-                        p.script_args = script_args
-                        print("Instead scripts.scripts_txt2img.run starting process_images(p)")
-                        processed = process_images(p)
-                        # processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
-                    else:
-                        print(f"Starting process_images(p). {p.extra_network_data=}")
-                        p.script_args = tuple(script_args) # Need to pass args as tuple here
-                        processed = process_images(p)
-                    process_extra_images(processed)
+                    with catchtime(tag="process_extra_images(processed)"):
+                        process_extra_images(processed)
+
                     finish_task(task_id)
                 except Exception as e:
                     print(f"Failed to process images: {e}")
@@ -574,7 +657,6 @@ class Api:
                     shared.total_tqdm.clear()
 
         b64images = list(map(encode_pil_to_base64, processed.images + processed.extra_images)) if send_images else []
-
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
