@@ -806,15 +806,15 @@ class Predictor(BasePredictor):
                 "args": [adetailer_args, {"ad_model": "None"}, {"ad_model": "None"}, {"ad_model": "None"}]
             }
             
-        # Add script args for each extension
-        alwayson_scripts["forge_never_oom"] = {"args": neveroom_args}
-        alwayson_scripts["forge_freeu"] = {"args": freeu_args}
-        alwayson_scripts["kohya_hrfix"] = {"args": kohya_hrfix_args}
-        alwayson_scripts["forge_latent_modifier"] = {"args": latent_modifier_args}
-        alwayson_scripts["forge_multidiffusion"] = {"args": multidiffusion_args}
-        alwayson_scripts["forge_perturbed_attention"] = {"args": perturbed_attention_args}
-        alwayson_scripts["forge_sag"] = {"args": sag_args}
-        alwayson_scripts["forge_stylealign"] = {"args": stylealign_args}
+        # Add script args for each extension - using the exact script names from the available scripts list
+        alwayson_scripts["never oom integrated"] = {"args": neveroom_args}
+        alwayson_scripts["freeu integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": freeu_args}
+        alwayson_scripts["kohya hrfix integrated"] = {"args": kohya_hrfix_args}
+        alwayson_scripts["latentmodifier integrated"] = {"args": latent_modifier_args}
+        alwayson_scripts["multidiffusion integrated"] = {"args": multidiffusion_args}
+        alwayson_scripts["perturbedattentionguidance integrated"] = {"args": perturbed_attention_args}
+        alwayson_scripts["selfattentionguidance integrated (sd 1.x, sd 2.x, sdxl)"] = {"args": sag_args}
+        alwayson_scripts["stylealign integrated"] = {"args": stylealign_args}
         
         # Add alwayson_scripts to payload
         payload["alwayson_scripts"] = alwayson_scripts
