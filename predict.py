@@ -302,7 +302,7 @@ class Predictor(BasePredictor):
             default="",
         ),
     ) -> list[Path]:
-        print("Новая сервися 73")
+        print("Новая сервися 74")
         self.setup()
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
@@ -359,7 +359,7 @@ class Predictor(BasePredictor):
             StableDiffusionTxt2ImgProcessingAPI,
         )
 
-        print(f"Финальный пейлоад: {payload=}")
+        print(f"Финальный пейлоад 1111: {payload=}")
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
         # generate
         resp = self.api.text2imgapi(req)
