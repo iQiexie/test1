@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import subprocess  # Для запуска внешних процессов
 import sys
 import time
@@ -44,38 +45,31 @@ def download_base_weights(url: str, dest: Path):
 class Predictor(BasePredictor):
     weights_cache = WeightsDownloadCache()
 
-    @staticmethod
-    def _download_loras(lora_urls: list[str]):
-        target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
-        os.makedirs(target_dir, exist_ok=True)
-
+    def _download_loras(self, lora_urls: list[str]):
         lora_paths = []
-        for i, url in enumerate(lora_urls):
-            try:
-                # Извлекаем имя файла из URL или используем индекс, если не удалось
-                filename = os.path.basename(url.split("?")[0])
-                if not filename or filename == "":
-                    filename = f"lora_{i + 1}.safetensors"
 
-                # Убедимся, что файл имеет расширение .safetensors
-                if not filename.endswith(".safetensors"):
-                    filename += ".safetensors"
+        for url in lora_urls:
+            if re.match(r"^https?://replicate.delivery/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/trained_model.tar", url):
+                print(f"Downloading LoRA weights from - Replicate URL: {url}")
+                local_weights_cache = self.weights_cache.ensure(url)
+                lora_path = os.path.join(local_weights_cache, "output/flux_train_replicate/lora.safetensors")
+                lora_paths.append(lora_path)
+            elif re.match(r"^https?://civitai.com/api/download/models/[0-9]+\?type=Model&format=SafeTensor", url):
+                # split url to get first part of the url, everythin before '?type'
+                civitai_slug = url.split('?type')[0]
+                print(f"Downloading LoRA weights from - Civitai URL: {civitai_slug}")
+                lora_path = self.weights_cache.ensure(url, file=True)
+                lora_paths.append(lora_path)
+            elif url.endswith('.safetensors'):
+                print(f"Downloading LoRA weights from - safetensor URL: {url}")
+                try:
+                    lora_path = self.weights_cache.ensure(url, file=True)
+                except Exception as e:
+                    print(f"Error downloading LoRA weights: {e}")
+                    continue
+                lora_paths.append(lora_path)
 
-                lora_path = os.path.join(target_dir, filename)
-
-                # Проверяем, существует ли уже файл
-                if os.path.exists(lora_path):
-                    print(f"ТОЧНО ПОСЛЕДНЯЯ ВЕРСИЯ LoRA файл уже существует: {lora_path}")
-                    lora_paths.append(lora_path)
-                else:
-                    # Если файл не существует, загружаем его
-                    download_base_weights(url=url, dest=lora_path)
-                    lora_paths.append(lora_path)
-                    print(f"LoRA {i + 1} успешно загружена: {lora_path}")
-            except Exception as e:
-                print(f"Ошибка при загрузке LoRA {i + 1}: {e}")
-
-        files = [os.path.join(target_dir, f) for f in os.listdir(target_dir)]
+        files = [os.path.join(self.weights_cache.base_dir, f) for f in os.listdir(self.weights_cache.base_dir)]
         print(f'Available loras: {files}')
 
         return lora_paths
