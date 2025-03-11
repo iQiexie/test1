@@ -1,14 +1,10 @@
-# Prediction interface for Cog ⚙️
-# https://github.com/replicate/cog/blob/main/docs/python.md
-
 import os, sys, json
-import shutil
 import time
-import subprocess  # Для запуска внешних процессов
+import subprocess
+from datetime import datetime
 sys.path.extend(["/stable-diffusion-webui-forge-main"])
 
-from cog import BasePredictor, BaseModel, Input, Path
-
+from cog import BasePredictor, Input, Path
 
 FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&token=18b51174c4d9ae0451a3dedce1946ce3"
 
@@ -29,6 +25,7 @@ def download_base_weights(url: str, dest: Path):
     subprocess.check_call(["pget", url, dest], close_fds=False)
     print("downloading took: ", time.time() - start)  # Выводим время загрузки
 
+
 class Predictor(BasePredictor):
     def _move_model_to_sdwebui_dir(self, checkpoint_url):
         """
@@ -37,12 +34,12 @@ class Predictor(BasePredictor):
         """
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
-        
+
         # Проверяем, существует ли уже файл модели
         if os.path.exists(model_path):
             print(f"Модель уже загружена!!: {model_path}")
             return
-        
+
         # Если модель не найдена, загружаем ее
         print("Модель не найдена, загружаем...")
         os.makedirs(target_dir, exist_ok=True)
@@ -61,22 +58,22 @@ class Predictor(BasePredictor):
         Returns:
             Список путей к загруженным LoRA файлам
         """
-            
+
         import os
         import tarfile
         import tempfile
         import shutil
         import re
-        
+
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
         os.makedirs(target_dir, exist_ok=True)
-        
+
         lora_paths = []
         for i, url in enumerate(lora_urls):
             try:
                 # Проверяем, является ли URL ссылкой на .tar архив
                 is_tar_archive = url.endswith('.tar') or '/trained_model.tar' in url
-                
+
                 if is_tar_archive:
                     # Извлекаем ID из URL для .tar архивов (например, из replicate.delivery)
                     # Пример: https://replicate.delivery/xezq/h1097z5f1FXycCDn31BYqb4fi1o5nfqExf0ZmozqArxFobaRB/trained_model.tar
@@ -86,10 +83,10 @@ class Predictor(BasePredictor):
                         filename = f"{lora_id}.safetensors"
                     else:
                         # Если не удалось извлечь ID, используем индекс
-                        filename = f"lora_tar_{i+1}.safetensors"
-                    
+                        filename = f"lora_tar_{i + 1}.safetensors"
+
                     lora_path = os.path.join(target_dir, filename)
-                    
+
                     # Проверяем, существует ли уже файл
                     if os.path.exists(lora_path):
                         print(f"LoRA файл уже существует: {lora_path}")
@@ -100,17 +97,19 @@ class Predictor(BasePredictor):
                             # Загружаем .tar архив во временный файл
                             tar_path = os.path.join(temp_dir, "archive.tar")
                             download_base_weights(url, tar_path)
-                            
+
                             # Распаковываем архив
                             with tarfile.open(tar_path) as tar:
                                 tar.extractall(path=temp_dir)
-                            
+
                             # Ищем lora.safetensors в распакованной структуре
                             # Ожидаемый путь: output/flux_train_replicate/lora.safetensors
                             lora_file_path = None
-                            
+
                             # Проверяем наличие ожидаемой структуры
-                            expected_path = os.path.join(temp_dir, "output", "flux_train_replicate", "lora.safetensors")
+                            expected_path = os.path.join(
+                                temp_dir, "output", "flux_train_replicate", "lora.safetensors"
+                                )
                             if os.path.exists(expected_path):
                                 lora_file_path = expected_path
                             else:
@@ -122,12 +121,12 @@ class Predictor(BasePredictor):
                                             break
                                     if lora_file_path:
                                         break
-                            
+
                             if lora_file_path:
                                 # Копируем найденный файл в целевую директорию с нужным именем
                                 shutil.copy2(lora_file_path, lora_path)
                                 lora_paths.append(lora_path)
-                                print(f"LoRA {i+1} успешно извлечена из архива и сохранена: {lora_path}")
+                                print(f"LoRA {i + 1} успешно извлечена из архива и сохранена: {lora_path}")
                             else:
                                 print(f"Ошибка: не удалось найти .safetensors файл в архиве {url}")
                 else:
@@ -135,14 +134,14 @@ class Predictor(BasePredictor):
                     # Извлекаем имя файла из URL или используем индекс, если не удалось
                     filename = os.path.basename(url.split("?")[0])
                     if not filename or filename == "":
-                        filename = f"lora_{i+1}.safetensors"
-                    
+                        filename = f"lora_{i + 1}.safetensors"
+
                     # Убедимся, что файл имеет расширение .safetensors
                     if not filename.endswith(".safetensors"):
                         filename += ".safetensors"
-                    
+
                     lora_path = os.path.join(target_dir, filename)
-                    
+
                     # Проверяем, существует ли уже файл
                     if os.path.exists(lora_path):
                         print(f"LoRA файл уже существует: {lora_path}")
@@ -151,15 +150,15 @@ class Predictor(BasePredictor):
                         # Если файл не существует, загружаем его
                         download_base_weights(url, lora_path)
                         lora_paths.append(lora_path)
-                        print(f"LoRA {i+1} успешно загружена: {lora_path}")
+                        print(f"LoRA {i + 1} успешно загружена: {lora_path}")
             except Exception as e:
-                print(f"Ошибка при загрузке LoRA {i+1}: {e}")
+                print(f"Ошибка при загрузке LoRA {i + 1}: {e}")
 
         import os
         files = [os.path.join(target_dir, f) for f in os.listdir(target_dir) if
                  os.path.isfile(os.path.join(target_dir, f))]
         print(files)
-        
+
         return lora_paths
 
     def download_models(self):
@@ -193,15 +192,15 @@ class Predictor(BasePredictor):
         if not checkpoint_url:
             checkpoint_url = FLUX_CHECKPOINT_URL
         print("Starting setup...")
-        
+
         # Download text encoders and VAE if they don't exist
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
         vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
-        
+
         # Check if files exist and download if needed
         if not os.path.exists(os.path.join(text_encoder_dir, "clip_l.safetensors")) or \
-           not os.path.exists(os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")) or \
-           not os.path.exists(os.path.join(vae_dir, "ae.safetensors")):
+            not os.path.exists(os.path.join(text_encoder_dir, "t5xxl_fp16.safetensors")) or \
+            not os.path.exists(os.path.join(vae_dir, "ae.safetensors")):
             print("Downloading required model components...")
             self.download_models()
         else:
@@ -211,7 +210,7 @@ class Predictor(BasePredictor):
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
-        
+
         # Проверяем, существует ли уже файл модели
         if not os.path.exists(model_path) and force is False:
             print(f"Загружаем модель Flux...")
@@ -224,17 +223,17 @@ class Predictor(BasePredictor):
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
-        
+
         # Set the LoRA directory path
         lora_dir = "/stable-diffusion-webui-forge-main/models/Lora"  # You can change this path if needed
         os.makedirs(lora_dir, exist_ok=True)
         sys.argv.extend(["--lora-dir", lora_dir])
-        
+
         # Ensure the LoRA extension is loaded
         sys.path.append("/stable-diffusion-webui-forge-main/extensions-builtin/sd_forge_lora")
-        
+
         from modules import timer
-        
+
         # Безопасный импорт memory_management
         try:
             from backend import memory_management
@@ -242,7 +241,7 @@ class Predictor(BasePredictor):
         except ImportError as e:
             print(f"Предупреждение: Не удалось импортировать memory_management: {e}")
             self.has_memory_management = False
-        
+
         # moved env preparation to build time to reduce the warm-up time
         # from modules import launch_utils
 
@@ -260,24 +259,26 @@ class Predictor(BasePredictor):
         initialize.check_versions()
 
         initialize.initialize()
-        
+
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
             # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
             total_vram = memory_management.total_vram
             inference_memory = int(total_vram * 0.1)  # 10% для вычислений
             model_memory = total_vram - inference_memory
-            
+
             memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
-            print(f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений")
-            
+            print(
+                f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
+                )
+
             # Настройка Swap Method на ASYNC для лучшей производительности
             try:
                 from backend import stream
                 # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
                 stream.stream_activated = True  # True = ASYNC, False = Queue
                 print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
-                
+
                 # Настройка Swap Location на Shared для лучшей производительности
                 memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
                 print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
@@ -293,33 +294,41 @@ class Predictor(BasePredictor):
 
         from modules.api.api import Api
         from modules.call_queue import queue_lock
-        
+
         # Create a custom API class that patches the script handling functions
         class CustomApi(Api):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                
+
                 # Patch the get_script function to handle LoRA scripts
                 original_get_script = self.get_script
-                
+
                 def patched_get_script(script_name, script_runner):
                     try:
                         return original_get_script(script_name, script_runner)
                     except Exception as e:
                         # If the script is not found and it's the LoRA script, handle it specially
                         if script_name in ["lora", "sd_forge_lora"]:
-                            print(f"LoRA script '{script_name}' not found in standard scripts, using extra_network_data instead")
+                            print(
+                                f"LoRA script '{script_name}' not found in standard scripts, using extra_network_data instead"
+                                )
                             return None
                         raise e
-                
+
                 self.get_script = patched_get_script
-                
+
                 # Patch the init_script_args function to handle missing scripts
                 original_init_script_args = self.init_script_args
-                
-                def patched_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, *, input_script_args=None):
+
+                def patched_init_script_args(
+                    request, default_script_args, selectable_scripts, selectable_idx, script_runner, *,
+                    input_script_args=None
+                    ):
                     try:
-                        return original_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, input_script_args=input_script_args)
+                        return original_init_script_args(
+                            request, default_script_args, selectable_scripts, selectable_idx, script_runner,
+                            input_script_args=input_script_args
+                            )
                     except Exception as e:
                         # If there's an error with alwayson_scripts, try to continue without them
                         if hasattr(request, 'alwayson_scripts') and request.alwayson_scripts:
@@ -329,19 +338,23 @@ class Predictor(BasePredictor):
                                 if script_name in ["lora", "sd_forge_lora"]:
                                     print(f"Removing problematic script: {script_name}")
                                     del request.alwayson_scripts[script_name]
-                            
+
                             # Try again without the problematic scripts
                             if not request.alwayson_scripts:
                                 request.alwayson_scripts = None
-                            
-                            return original_init_script_args(request, default_script_args, selectable_scripts, selectable_idx, script_runner, input_script_args=input_script_args)
+
+                            return original_init_script_args(
+                                request, default_script_args, selectable_scripts, selectable_idx,
+                                script_runner, input_script_args=input_script_args
+                                )
                         raise e
-                
+
                 self.init_script_args = patched_init_script_args
-        
+
         self.api = CustomApi(app, queue_lock)
 
-    def load_model(self) -> None:
+    @staticmethod
+    def load_model() -> None:
         from modules import sd_models, shared
 
         print("Loading Flux model...")
@@ -374,7 +387,7 @@ class Predictor(BasePredictor):
                 )
             print(
                 f"DEBUG: VAE directory contents: {os.listdir(vae_dir) if os.path.exists(vae_dir) else 'directory not found'}"
-                )
+            )
 
             # Check if files exist
             additional_modules = []
@@ -396,7 +409,7 @@ class Predictor(BasePredictor):
                     additional_modules.append(clip_path)
                     print(
                         f"Successfully downloaded CLIP text encoder: {clip_path} (Size: {file_size:.2f} MB)"
-                        )
+                    )
 
             if os.path.exists(t5xxl_path):
                 file_size = os.path.getsize(t5xxl_path) / (1024 * 1024)
@@ -416,7 +429,7 @@ class Predictor(BasePredictor):
                     additional_modules.append(t5xxl_path)
                     print(
                         f"Successfully downloaded T5XXL text encoder: {t5xxl_path} (Size: {file_size:.2f} MB)"
-                        )
+                    )
 
             if os.path.exists(vae_path):
                 file_size = os.path.getsize(vae_path) / (1024 * 1024)
@@ -462,7 +475,7 @@ class Predictor(BasePredictor):
                     else:
                         print(
                             f"DEBUG: Module {i + 1}: {module_path} - State dict is not a dictionary, type: {type(state_dict)}"
-                            )
+                        )
                 except Exception as e:
                     print(f"DEBUG: Error inspecting module {module_path}: {str(e)}")
 
@@ -539,7 +552,8 @@ class Predictor(BasePredictor):
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
         ),
         distilled_guidance_scale: float = Input(
-            description="Distilled CFG Scale (основной параметр для Flux, рекомендуется 3.5)", ge=0, le=30, default=3.5
+            description="Distilled CFG Scale (основной параметр для Flux, рекомендуется 3.5)", ge=0, le=30,
+            default=3.5
         ),
         seed: int = Input(
             description="Random seed. Leave blank to randomize the seed", default=-1
@@ -617,30 +631,33 @@ class Predictor(BasePredictor):
         ),
 
     ) -> list[Path]:
+        start = datetime.now()
         self.setup(
             checkpoint_url=flux_checkpoint_url or FLUX_CHECKPOINT_URL,
             force=bool(flux_checkpoint_url),
         )
+        print(f"[Time] setup: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
 
         # Set up directories for text encoder and VAE
         text_encoder_dir = "/stable-diffusion-webui-forge-main/models/text_encoder"
         vae_dir = "/stable-diffusion-webui-forge-main/models/VAE"
-        
+
         # Make sure directories exist
         os.makedirs(text_encoder_dir, exist_ok=True)
         os.makedirs(vae_dir, exist_ok=True)
-        
+
         # Remove any existing arguments to avoid duplicates
-        for i in range(len(sys.argv)-1, -1, -1):
+        for i in range(len(sys.argv) - 1, -1, -1):
             if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
-                if i+1 < len(sys.argv):
-                    sys.argv.pop(i+1)
+                if i + 1 < len(sys.argv):
+                    sys.argv.pop(i + 1)
                 sys.argv.pop(i)
-        
+
         # Add the arguments
         sys.argv.extend(["--text-encoder-dir", text_encoder_dir])
         sys.argv.extend(["--vae-dir", vae_dir])
-        
+
         # Set environment variables as well for extra safety
         os.environ["FORGE_TEXT_ENCODER_DIR"] = text_encoder_dir
         os.environ["FORGE_VAE_DIR"] = vae_dir
@@ -663,9 +680,14 @@ class Predictor(BasePredictor):
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
 
+        print(f"[Time] defined variables: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
+
         if lora_urls:
             self._download_loras(lora_urls)
 
+        print(f"[Time] downloaded loras: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
         from modules.extra_networks import ExtraNetworkParams
 
         payload = {
@@ -680,16 +702,18 @@ class Predictor(BasePredictor):
             "seed": seed,
             "do_not_save_samples": True,
             "sampler_name": sampler,  # Используем выбранный пользователем sampler
-            "scheduler": scheduler,    # Устанавливаем scheduler для Flux
+            "scheduler": scheduler,  # Устанавливаем scheduler для Flux
             "enable_hr": enable_hr,
             "hr_upscaler": hr_upscaler,
             "hr_second_pass_steps": hr_steps,
             "denoising_strength": denoising_strength if enable_hr else None,
             "hr_scale": hr_scale,
-            "distilled_cfg_scale": distilled_guidance_scale,  # Добавляем параметр distilled_cfg_scale для Flux
-            "hr_additional_modules": [],  # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
+            "distilled_cfg_scale": distilled_guidance_scale,
+            # Добавляем параметр distilled_cfg_scale для Flux
+            "hr_additional_modules": [],
+            # Добавляем пустой список для hr_additional_modules, чтобы избежать ошибки
         }
-        
+
         # Нет необходимости добавлять их в payload отдельно
         alwayson_scripts = {}
 
@@ -722,7 +746,7 @@ class Predictor(BasePredictor):
         # generate
         # Use both extra_network_data and alwayson_scripts to handle LoRA models
         extra_network_data = {"lora": []}
-        
+
         # Add all LoRA files with their weights to extra_network_data
         lora_args = []
         for url, scale in zip(lora_urls, lora_scales):
@@ -737,22 +761,28 @@ class Predictor(BasePredictor):
         # Use the correct script name: "lora" instead of "sd_forge_lora"
         alwayson_scripts["lora"] = {"args": lora_args}
         print(f"Added LoRA files to alwayson_scripts: {lora_args}")
-        
+
         # Import the necessary modules for script registration
         from modules import scripts
-        
+
+        print(f"[Time] set variables again: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
+
         # Make sure the LoRA script is initialized
         if not hasattr(scripts.scripts_txt2img, 'selectable_scripts'):
             scripts.scripts_txt2img.initialize_scripts(False)
-        
+
+        print(f"[Time] initialized scripts: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
         # Print available scripts for debugging
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
-        
+
         # Ensure the model is properly loaded before using LoRA
         from modules import sd_models, shared
-        
+
         self.load_model()
-        
+        print(f"[Time] loaded model: {(datetime.now() - start).total_seconds()}")
+
         # Now check if the model has forge_objects attribute
         if hasattr(shared.sd_model, 'forge_objects'):
             print(f"Model has forge_objects, proceeding with LoRA... {shared.sd_model=}")
