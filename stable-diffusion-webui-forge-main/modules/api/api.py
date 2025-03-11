@@ -491,7 +491,6 @@ class Api:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data=None):
-        print(f"{shared.opts.get('kekekekek')=}")
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
 
