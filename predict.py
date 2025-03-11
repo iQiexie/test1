@@ -424,6 +424,9 @@ class Predictor(BasePredictor):
             },
         )
 
+        for lora in req['extra_network_data']['lora']:
+            print(f"LoRA: {lora.items=}")
+
         with catchtime(tag="Total Prediction Time"):
             resp = self.api.text2imgapi(**req)
 
