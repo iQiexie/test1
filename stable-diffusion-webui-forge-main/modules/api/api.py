@@ -480,7 +480,6 @@ class Api:
 
         add_task_to_queue(task_id)
         print(f"new {args=}")
-        print(f"new {shared.sd_mode=}")
 
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
