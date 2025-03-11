@@ -444,7 +444,41 @@ class Api:
 
         return params
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+    @staticmethod
+    def load_flux() -> None:
+        print("Model is FakeInitialModel, loading Flux model...")
+
+        # Set the checkpoint to the Flux model specifically
+        flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+        shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
+        shared.opts.set('forge_preset', 'flux')
+
+        # Don't set forge_unet_storage_dtype directly, instead set it in the forge_loading_parameters
+
+        # Find the Flux checkpoint
+        flux_checkpoint = None
+        for checkpoint in sd_models.checkpoints_list.values():
+            if checkpoint.filename.endswith(flux_checkpoint_name):
+                flux_checkpoint = checkpoint
+                break
+
+        if flux_checkpoint is not None:
+            # Set up forge loading parameters - don't use string for dtype
+            sd_models.model_data.forge_loading_parameters = {
+                'checkpoint_info': flux_checkpoint,
+                'additional_modules': []
+            }
+
+            # Set the dynamic args directly instead of using the string
+            from backend.args import dynamic_args
+            dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
+            # Load the model
+            sd_models.forge_model_reload()
+            print(f"Flux model loaded: {type(shared.sd_model)}")
+        else:
+            print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
+
+    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data=None):
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
 
@@ -491,6 +525,19 @@ class Api:
                 try:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
+
+                    if isinstance(shared.sd_model, sd_models.FakeInitialModel):
+                        self.load_flux()
+                    else:
+                        print(f"Flux model already loaded: {type(shared.sd_model)}")
+
+                    if hasattr(shared.sd_model, 'forge_objects'):
+                        print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
+                        import extra_networks_lora
+                        extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
+                    else:
+                        print("Warning: Model does not have forge_objects attribute, skipping LoRA activation")
+
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         print("Instead scripts.scripts_txt2img.run starting process_images(p)")
