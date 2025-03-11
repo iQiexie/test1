@@ -61,24 +61,10 @@ class WeightsDownloadCache:
             shutil.rmtree(path)
 
     def _has_enough_space(self) -> bool:
-        """
-        Check if there's enough disk space.
-
-        :return: True if there's more than min_disk_free free, False otherwise.
-        """
         disk_usage = shutil.disk_usage(self.base_dir)
-        # print(f"Free disk space: {disk_usage.free}")
         return disk_usage.free >= self.min_disk_free
 
-    def ensure(self, url: str, file: bool = False) -> str:
-        """
-        Ensure weights file is in the cache and return its path.
-
-        This also updates the LRU cache to mark the weights as recently used.
-
-        :param url: URL to download weights file from, if not in cache.
-        :return: Path to weights.
-        """
+    def ensure(self, url: str, file: bool = False, mv_from: str = None) -> str:
         path = self.weights_path(url)
 
         if path in self.lru_paths:
@@ -91,8 +77,12 @@ class WeightsDownloadCache:
                 self.download_weights(url, path, file=True)
             else:
                 self.download_weights(url, path, file=False)
+                if mv_from:
+                    mv_from = os.path.join(path, mv_from)
+                    path = f"{path}.safetensors"
+                    shutil.move(mv_from, path)
 
-        self.lru_paths.append(path)  # Add file to end of cache
+        self.lru_paths.append(path)
         return path
 
     def weights_path(self, url: str) -> str:
