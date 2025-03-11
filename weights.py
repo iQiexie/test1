@@ -79,8 +79,10 @@ class WeightsDownloadCache:
                 self.download_weights(url, path, file=False)
                 if mv_from:
                     mv_from = os.path.join(path, mv_from)
-                    path = f"{path}.safetensors"
-                    shutil.move(mv_from, path)
+                    mv_to = f"{path}.safetensors"
+                    shutil.move(mv_from, mv_to)
+                    self._rm_disk(path)
+                    path = mv_to
 
         self.lru_paths.append(path)
         return path
