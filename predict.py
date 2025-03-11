@@ -302,6 +302,8 @@ class Predictor(BasePredictor):
             default="",
         ),
     ) -> list[Path]:
+        print("Cache version 73")
+        self.setup()
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
         # output = self.model(processed_image, scale)
