@@ -84,6 +84,25 @@ class Predictor(BasePredictor):
 
         print("[load_clip_etc] All required model components already exist.")
 
+        # Make sure directories exist
+        os.makedirs(text_encoder_dir, exist_ok=True)
+        os.makedirs(vae_dir, exist_ok=True)
+
+        # Remove any existing arguments to avoid duplicates
+        for i in range(len(sys.argv) - 1, -1, -1):
+            if sys.argv[i] in ["--text-encoder-dir", "--vae-dir"]:
+                if i + 1 < len(sys.argv):
+                    sys.argv.pop(i + 1)
+                sys.argv.pop(i)
+
+        # Add the arguments
+        sys.argv.extend(["--text-encoder-dir", text_encoder_dir])
+        sys.argv.extend(["--vae-dir", vae_dir])
+
+        # Set environment variables as well for extra safety
+        os.environ["FORGE_TEXT_ENCODER_DIR"] = text_encoder_dir
+        os.environ["FORGE_VAE_DIR"] = vae_dir
+
     @staticmethod
     def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
