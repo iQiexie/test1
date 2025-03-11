@@ -109,7 +109,7 @@ class ControlNetForForgeOfficial(scripts.Script):
             assert all(isinstance(unit, ControlNetUnit) for unit in units)
         except AssertionError as e:
             print(f"[CRITICAL WARNING]: failed to assert {units=}")
-        enabled_units = [x for x in units if x.enabled if isinstance(x, ControlNetUnit)]
+        enabled_units = [x for x in units if x.enabled if hasattr(x, 'enabled')]
         return enabled_units
 
     @staticmethod
