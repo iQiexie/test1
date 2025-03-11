@@ -29,49 +29,13 @@ def download_base_weights(url: str, dest: Path):
 
 
 class Predictor(BasePredictor):
-    def _move_model_to_sdwebui_dir(self):
-        """
-        Проверяет наличие модели и загружает ее, если она отсутствует.
-        Модель должна быть предварительно загружена во время сборки в cog.yaml.
-        """
-        target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
-        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
-
-        # Проверяем, существует ли уже файл модели
-        if os.path.exists(model_path):
-            print(f"Модель уже загружена!!: {model_path}")
-            return
-
-        # Если модель не найдена, загружаем ее
-        print("Модель не найдена, загружаем...")
-        os.makedirs(target_dir, exist_ok=True)
-        download_base_weights(
-            "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
-            model_path
-        )
-
-    def _download_loras(self, lora_urls):
-        """
-        Загружает LoRA файлы по указанным URL.
-        
-        Args:
-            lora_urls: Список URL для загрузки LoRA файлов
-            
-        Returns:
-            Список путей к загруженным LoRA файлам
-        """
-        if not lora_urls or lora_urls.strip() == "":
-            return []
-
-        lora_urls_list = [url.strip() for url in lora_urls.split(",") if url.strip()]
-        if not lora_urls_list:
-            return []
-
+    @staticmethod
+    def _download_loras(lora_urls: list[str]):
         target_dir = "/stable-diffusion-webui-forge-main/models/Lora"
         os.makedirs(target_dir, exist_ok=True)
 
         lora_paths = []
-        for i, url in enumerate(lora_urls_list):
+        for i, url in enumerate(lora_urls):
             try:
                 # Извлекаем имя файла из URL или используем индекс, если не удалось
                 filename = os.path.basename(url.split("?")[0])
@@ -90,11 +54,14 @@ class Predictor(BasePredictor):
                     lora_paths.append(lora_path)
                 else:
                     # Если файл не существует, загружаем его
-                    download_base_weights(url, lora_path)
+                    download_base_weights(url=url, dest=lora_path)
                     lora_paths.append(lora_path)
                     print(f"LoRA {i + 1} успешно загружена: {lora_path}")
             except Exception as e:
                 print(f"Ошибка при загрузке LoRA {i + 1}: {e}")
+
+        files = [os.path.join(target_dir, f) for f in os.listdir(target_dir)]
+        print(f'Available loras: {files}')
 
         return lora_paths
 
@@ -103,14 +70,14 @@ class Predictor(BasePredictor):
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/stable-diffusion-webui-forge-main/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
-        model_path = os.path.join(target_dir, "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors")
+        model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 
         # Проверяем, существует ли уже файл модели
         if not os.path.exists(model_path):
             print(f"Загружаем модель Flux...")
             download_base_weights(
-                "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
-                model_path
+                url="https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3",
+                dest=model_path
             )
         else:
             print(f"Модель Flux уже загружена: {model_path}")
@@ -152,7 +119,7 @@ class Predictor(BasePredictor):
         shared.opts.set('forge_preset', 'flux')
 
         # Устанавливаем чекпоинт
-        shared.opts.set('sd_model_checkpoint', 'flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors')
+        shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
 
         # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
         shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
@@ -360,26 +327,30 @@ class Predictor(BasePredictor):
             description="ADetailer (не рекомендуется для Flux моделей)",
             default=False,
         ),
-        lora_urls: str = Input(
-            description="Ссылки на LoRA файлы, разделенные запятыми (например, https://example.com/lora1.safetensors,https://example.com/lora2.safetensors)",
-            default="",
+        lora_urls: list[str] = Input(
+            description="Ссылки на LoRA файлы",
+            default=[],
+        ),
+        lora_scales: list[float] = Input(
+            description="Lora scales",
+            default=[1],
         ),
     ) -> list[Path]:
-        print("Cache version 78")
-        self.setup()
         """Run a single prediction on the model"""
-        # processed_input = preprocess(image)
-        # output = self.model(processed_image, scale)
-        # return postprocess(output)
-        # Загружаем и применяем LoRA файлы, если они указаны
-
-        if lora_urls and lora_urls.strip():
-            self._download_loras(lora_urls)
-
         from modules.extra_networks import ExtraNetworkParams
+        from modules import scripts
+        from modules.api.models import (
+            StableDiffusionTxt2ImgProcessingAPI,
+        )
+        from PIL import Image
+        import uuid
+        import base64
+        from io import BytesIO
+
+        self.setup()
+        self._download_loras(lora_urls)
 
         payload = {
-            # "init_images": [encoded_image],
             "prompt": prompt,
             "negative_prompt": negative_prompt,
             "width": width,
@@ -405,35 +376,33 @@ class Predictor(BasePredictor):
         if enable_adetailer:
             alwayson_scripts["ADetailer"] = {
                 "args": [
-                    {
-                        "ad_model": "face_yolov8n.pt",
-                    }
-                ],
+                    {"ad_model": "face_yolov8n.pt"},
+                ]
             }
 
         # Добавляем все скрипты в payload, если они есть
         if alwayson_scripts:
             payload["alwayson_scripts"] = alwayson_scripts
 
-        from modules import scripts
-        from modules.api.models import (
-            StableDiffusionTxt2ImgProcessingAPI,
-        )
-
         print(f"Финальный пейлоад: {payload=}")
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
         req = StableDiffusionTxt2ImgProcessingAPI(**payload)
-        # generate
+
         resp = self.api.text2imgapi(
             txt2imgreq=req,
-            extra_network_data={"lora": [ExtraNetworkParams(items=["Vita600Photo", "1"])]},
+            extra_network_data={
+                "lora": [
+                    ExtraNetworkParams(
+                        items=[
+                            lora_url.split('/')[-1].split('.safetensors')[0],
+                            str(lora_scale)
+                        ]
+                    )
+                    for lora_url, lora_scale in zip(lora_urls, lora_scales)
+                ]
+            },
         )
         info = json.loads(resp.info)
-
-        from PIL import Image
-        import uuid
-        import base64
-        from io import BytesIO
 
         outputs = []
 

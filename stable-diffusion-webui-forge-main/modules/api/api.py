@@ -460,7 +460,7 @@ class Api:
         print("Model is FakeInitialModel, loading Flux model...")
 
         with catchtime(tag="Set the checkpoint to the Flux model specifically") as t:
-            flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+            flux_checkpoint_name = "flux_checkpoint.safetensors"
             shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
             shared.opts.set('forge_preset', 'flux')
 
