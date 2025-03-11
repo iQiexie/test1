@@ -2,7 +2,7 @@ import base64
 import io
 import os
 import traceback
-
+from datetime import datetime
 import time
 import datetime
 import uvicorn
@@ -446,6 +446,7 @@ class Api:
         return params
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data = None):
+        start = datetime.now()
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
 
@@ -474,7 +475,11 @@ class Api:
         args.pop('alwayson_scripts', None)
         args.pop('infotext', None)
 
+        print(f"[Time] initialized variables: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
         script_args = self.init_script_args(txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner, input_script_args=infotext_script_args)
+        print(f"[Time] init_script_args: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
@@ -486,7 +491,11 @@ class Api:
         print(f"new {shared.sd_model=}")
 
         with self.queue_lock:
+            print(f"[Time] queue waiting: {(datetime.now() - start).total_seconds()}")
+            start = datetime.now()
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
+                print(f"[Time] closing(Stable...): {(datetime.now() - start).total_seconds()}")
+                start = datetime.now()
                 print(f"with closing(StableDiffusionProcessingTxt2Img {p.extra_network_data=}. {extra_network_data=}")
                 p.is_api = True
                 p.scripts = script_runner
@@ -503,7 +512,9 @@ class Api:
                     # Ensure model is properly loaded before using LoRA
                     from modules import sd_models, shared
                     from backend.diffusion_engine.flux import Flux
-                    
+
+                    print(f"[Time] before load model: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                     # Check if the model is a FakeInitialModel and needs to be loaded
                     if isinstance(shared.sd_model, sd_models.FakeInitialModel):
                         print("Model is FakeInitialModel, loading Flux model...")
@@ -537,7 +548,9 @@ class Api:
                             print(f"Flux model loaded: {type(shared.sd_model)}")
                         else:
                             print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
-                    
+
+                    print(f"[Time] after load model: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                     # Now check if the model has forge_objects attribute
                     if hasattr(shared.sd_model, 'forge_objects'):
                         print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
@@ -546,6 +559,8 @@ class Api:
                     else:
                         print("Warning: Model does not have forge_objects attribute, skipping LoRA activation")
 
+                    print(f"[Time] activated forge objects: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                     # Set script args
                     if selectable_scripts is not None:
                         p.script_args = script_args
@@ -556,8 +571,15 @@ class Api:
                         print(f"Starting process_images(p). {extra_network_data=}")
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p, extra_network_data)
+
+                    print(f"[Time] processed images: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                     process_extra_images(processed)
+                    print(f"[Time] processed extra images: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                     finish_task(task_id)
+                    print(f"[Time] finished task: {(datetime.now() - start).total_seconds()}")
+                    start = datetime.now()
                 except Exception as e:
                     print(f"Failed to process images: {e}")
                     traceback.print_tb(e.__traceback__)
@@ -568,7 +590,8 @@ class Api:
                     shared.total_tqdm.clear()
 
         b64images = list(map(encode_pil_to_base64, processed.images + processed.extra_images)) if send_images else []
-
+        print(f"[Time] encoded images: {(datetime.now() - start).total_seconds()}")
+        start = datetime.now()
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
