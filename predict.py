@@ -302,6 +302,7 @@ class Predictor(BasePredictor):
             default="",
         ),
     ) -> list[Path]:
+        print("Новая сервися 73")
         self.setup()
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
