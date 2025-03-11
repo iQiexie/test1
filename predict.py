@@ -365,7 +365,7 @@ class Predictor(BasePredictor):
             default="",
         ),
     ) -> list[Path]:
-        print("Cache version 77")
+        print("Cache version 78")
         self.setup()
         """Run a single prediction on the model"""
         # processed_input = preprocess(image)
@@ -415,6 +415,7 @@ class Predictor(BasePredictor):
         if alwayson_scripts:
             payload["alwayson_scripts"] = alwayson_scripts
 
+        from modules import scripts
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
         )
