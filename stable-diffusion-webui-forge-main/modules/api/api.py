@@ -34,6 +34,17 @@ import piexif
 import piexif.helper
 from contextlib import closing
 from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task
+from time import perf_counter
+from contextlib import contextmanager
+from typing import Callable
+
+
+@contextmanager
+def catchtime(tag: str) -> Callable[[], float]:
+    start = perf_counter()
+    yield lambda: perf_counter() - start
+    print(f'[Timer: {tag}]: {perf_counter() - start:.3f} seconds')
+
 
 def script_name_to_index(name, scripts):
     try:
@@ -448,35 +459,36 @@ class Api:
     def load_flux() -> None:
         print("Model is FakeInitialModel, loading Flux model...")
 
-        # Set the checkpoint to the Flux model specifically
-        flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
-        shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
-        shared.opts.set('forge_preset', 'flux')
+        with catchtime(tag="Set the checkpoint to the Flux model specifically") as t:
+            flux_checkpoint_name = "flux1DevHyperNF4Flux1DevBNB_flux1DevHyperNF4.safetensors"
+            shared.opts.set('sd_model_checkpoint', flux_checkpoint_name)
+            shared.opts.set('forge_preset', 'flux')
 
         # Don't set forge_unet_storage_dtype directly, instead set it in the forge_loading_parameters
 
-        # Find the Flux checkpoint
-        flux_checkpoint = None
-        for checkpoint in sd_models.checkpoints_list.values():
-            if checkpoint.filename.endswith(flux_checkpoint_name):
-                flux_checkpoint = checkpoint
-                break
+        with catchtime(tag="Find the Flux checkpoint") as t:
+            flux_checkpoint = None
+            for checkpoint in sd_models.checkpoints_list.values():
+                if checkpoint.filename.endswith(flux_checkpoint_name):
+                    flux_checkpoint = checkpoint
+                    break
 
-        if flux_checkpoint is not None:
-            # Set up forge loading parameters - don't use string for dtype
-            sd_models.model_data.forge_loading_parameters = {
-                'checkpoint_info': flux_checkpoint,
-                'additional_modules': []
-            }
+        with catchtime(tag="Set up forge loading parameters - don't use string for dtype") as t:
+            if flux_checkpoint is not None:
+                # Set up forge loading parameters - don't use string for dtype
+                sd_models.model_data.forge_loading_parameters = {
+                    'checkpoint_info': flux_checkpoint,
+                    'additional_modules': []
+                }
 
-            # Set the dynamic args directly instead of using the string
-            from backend.args import dynamic_args
-            dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
-            # Load the model
-            sd_models.forge_model_reload()
-            print(f"Flux model loaded: {type(shared.sd_model)}")
-        else:
-            print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
+                # Set the dynamic args directly instead of using the string
+                from backend.args import dynamic_args
+                dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
+                # Load the model
+                sd_models.forge_model_reload()
+                print(f"Flux model loaded: {type(shared.sd_model)}")
+            else:
+                print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, extra_network_data=None):
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
@@ -526,9 +538,8 @@ class Api:
                     shared.state.begin(job="scripts_txt2img")
                     start_task(task_id)
 
-                    start = datetime.datetime.now()
-                    self.load_flux()
-                    print(f"Loading model took: {(datetime.datetime.now() - start).total_seconds()}")
+                    with catchtime(tag="load_flux") as t:
+                        self.load_flux()
 
                     if hasattr(shared.sd_model, 'forge_objects'):
                         print(f"Model has forge_objects, activating LoRA... {shared.sd_model=}")
