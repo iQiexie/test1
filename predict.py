@@ -1,6 +1,29 @@
-# Prediction interface for Cog ⚙️
-# https://github.com/replicate/cog/blob/main/docs/python.md
+from modules import initialize_util
+from modules import initialize
+from modules import timer
 
+startup_timer = timer.startup_timer
+startup_timer.record("launcher")
+
+initialize.imports()
+initialize.check_versions()
+initialize.initialize()
+
+from modules.extra_networks import ExtraNetworkParams
+from modules import scripts
+from modules.api.models import (
+    StableDiffusionTxt2ImgProcessingAPI,
+)
+from PIL import Image
+import uuid
+import base64
+from io import BytesIO
+from fastapi import FastAPI
+from backend import stream
+from backend import memory_management
+from modules import shared
+from modules.api.api import Api
+from modules.call_queue import queue_lock
 import json
 import os
 import re
@@ -100,33 +123,10 @@ class Predictor(BasePredictor):
 
         # Безопасный импорт memory_management
         try:
-            from backend import memory_management
             self.has_memory_management = True
         except ImportError as e:
             print(f"Предупреждение: Не удалось импортировать memory_management: {e}")
             self.has_memory_management = False
-
-        # moved env preparation to build time to reduce the warm-up time
-        # from modules import launch_utils
-
-        # with launch_utils.startup_timer.subcategory("prepare environment"):
-        #     launch_utils.prepare_environment()
-
-        from modules import initialize_util
-        from modules import initialize
-        from modules import timer
-
-        startup_timer = timer.startup_timer
-        startup_timer.record("launcher")
-
-        initialize.imports()
-
-        initialize.check_versions()
-
-        initialize.initialize()
-
-        # Импортируем shared после initialize.initialize()
-        from modules import shared
 
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
@@ -151,7 +151,6 @@ class Predictor(BasePredictor):
 
             # Настройка Swap Method на ASYNC для лучшей производительности
             try:
-                from backend import stream
                 # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
                 stream.stream_activated = True  # True = ASYNC, False = Queue
                 print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
@@ -164,13 +163,8 @@ class Predictor(BasePredictor):
         else:
             print("[GPU Setting] memory_management не доступен, используются настройки по умолчанию")
 
-        from fastapi import FastAPI
-
         app = FastAPI()
         initialize_util.setup_middleware(app)
-
-        from modules.api.api import Api
-        from modules.call_queue import queue_lock
 
         # Create a custom API class that patches the script handling functions
         class CustomApi(Api):
@@ -363,15 +357,6 @@ class Predictor(BasePredictor):
     ) -> list[Path]:
         print("Cache version 105")
         """Run a single prediction on the model"""
-        from modules.extra_networks import ExtraNetworkParams
-        from modules import scripts
-        from modules.api.models import (
-            StableDiffusionTxt2ImgProcessingAPI,
-        )
-        from PIL import Image
-        import uuid
-        import base64
-        from io import BytesIO
 
         if debug_flux_checkpoint_url:
             self.setup(force_download_url=debug_flux_checkpoint_url)
