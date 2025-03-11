@@ -751,9 +751,7 @@ class Predictor(BasePredictor):
         # Ensure the model is properly loaded before using LoRA
         from modules import sd_models, shared
         
-        # Check if the model is a FakeInitialModel and needs to be loaded
-        if isinstance(shared.sd_model, sd_models.FakeInitialModel):
-            self.load_model()
+        self.load_model()
         
         # Now check if the model has forge_objects attribute
         if hasattr(shared.sd_model, 'forge_objects'):
