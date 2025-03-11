@@ -52,7 +52,9 @@ class Predictor(BasePredictor):
             if re.match(r"^https?://replicate.delivery/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/trained_model.tar", url):
                 print(f"Downloading LoRA weights from - Replicate URL: {url}")
                 local_weights_cache = self.weights_cache.ensure(url)
+                print(f"{local_weights_cache=}")
                 lora_path = os.path.join(local_weights_cache, "output/flux_train_replicate/lora.safetensors")
+                print(f"{lora_path=}")
                 lora_paths.append(lora_path)
             elif re.match(r"^https?://civitai.com/api/download/models/[0-9]+\?type=Model&format=SafeTensor", url):
                 # split url to get first part of the url, everythin before '?type'
