@@ -5,7 +5,7 @@
 build:
   # Настройки GPU и CUDA
   gpu: true
-  cuda: "12.6.2"
+  cuda: "12.4"
 
   # Версия Python
   python_version: "3.11"
@@ -16,14 +16,14 @@ build:
     - "numpy<2"
     - "einops==0.8.0"
     - "fire==0.6.0"
-    
+
     # Hugging Face
     - "huggingface-hub==0.25.0"
     - "safetensors==0.4.3"
     - "sentencepiece==0.2.0"
     - "transformers==4.43.3"
     - "tokenizers==0.19.1"
-    
+
     # Дополнительные зависимости
     - "protobuf==5.27.2"
     - "diffusers==0.32.2"
@@ -32,17 +32,16 @@ build:
     - "pydash==8.0.3"
     - "opencv-python==4.10.0.84"
     - "gguf==0.14.0"
-    
-    # PyTorch и связанные пакеты (стабильные версии для CUDA 12.6)
-    - "torch==2.6.0+cu126"
-    - "torchvision==0.21.0+cu126"
-    - "torchaudio==2.6.0+cu126"
-    - "--extra-index-url=https://download.pytorch.org/whl/cu126"
+
+    # PyTorch и связанные пакеты
+    - "https://download.pytorch.org/whl/nightly/cu124/torch-2.6.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/cu124/torchaudio-2.5.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/cu124/torchvision-0.20.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
+    - "https://download.pytorch.org/whl/nightly/pytorch_triton-3.1.0%2B5fe38ffd73-cp311-cp311-linux_x86_64.whl"
 
   # commands run after the environment is setup
   run:
     - echo "Cache 112"
-    - apt-get update && apt-get install -y libgl1 libglib2.0-0 libsm6 libxext6 ffmpeg
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     - git clone https://github.com/iQiexie/test1 /src
