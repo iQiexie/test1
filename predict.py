@@ -298,7 +298,7 @@ class Predictor(BasePredictor):
         # image: Path = Input(description="Grayscale input image"),
         enable_hr: bool = Input(
             description="Hires. fix",
-            default=True,
+            default=False,
         ),
         hr_upscaler: str = Input(
             description="Upscaler for Hires. fix",
