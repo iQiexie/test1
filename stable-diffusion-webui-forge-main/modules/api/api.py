@@ -538,10 +538,12 @@ class Api:
                 sd_models.model_data.forge_loading_parameters = {
                     'checkpoint_info': flux_checkpoint,
                     'additional_modules': additional_modules or [],
+                    'unet_storage_dtype': shared.opts['forge_unet_storage_dtype'],
                 }
 
                 sd_models.forge_model_reload(force=force_model_reload)
                 print(f"Flux model loaded: {type(shared.sd_model)}")
+                print(f"{shared.opts['forge_unet_storage_dtype']=}")
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
 
@@ -556,7 +558,7 @@ class Api:
             additional_modules = self.load_clip_etc(additional_modules=additional_modules)
             self.load_flux(
                 additional_modules=additional_modules,
-                force_model_reload=force_model_reload,
+                force_model_reload=force_model_reload or bool(additional_modules),
             )
 
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
