@@ -320,7 +320,7 @@ class Api:
             ],
             "ae.safetensors": [
                 self.vae_dir,
-                "https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
+                "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft",
             ],
 
         }
