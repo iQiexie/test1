@@ -134,9 +134,6 @@ class Predictor(BasePredictor):
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
 
-        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
-        shared.opts.set('forge_unet_storage_dtype', 'bnb-nf4')
-
         # Оптимизация памяти для лучшего качества и скорости с Flux
         if self.has_memory_management:
             # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
@@ -360,6 +357,22 @@ class Predictor(BasePredictor):
             description="Enable ae",
             default=False
         ),
+        forge_unet_storage_dtype: str = Input(
+            description="forge_unet_storage_dtype",
+            choices=[
+                'Automatic',
+                'Automatic (fp16 LoRA)',
+                'bnb-nf4',
+                'bnb-nf4 (fp16 LoRA)',
+                'float8-e4m3fn',
+                'float8-e4m3fn (fp16 LoRA)',
+                'bnb-fp4',
+                'bnb-fp4 (fp16 LoRA)',
+                'float8-e5m2',
+                'float8-e5m2 (fp16 LoRA)',
+            ],
+            default="bnb-nf4",
+        ),
     ) -> list[Path]:
         print("Cache version 105")
         """Run a single prediction on the model"""
@@ -372,6 +385,10 @@ class Predictor(BasePredictor):
         import uuid
         import base64
         from io import BytesIO
+        from modules import shared
+
+        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
+        shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
 
         if debug_flux_checkpoint_url:
             self.setup(force_download_url=debug_flux_checkpoint_url)

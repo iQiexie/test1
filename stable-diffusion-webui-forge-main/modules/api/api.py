@@ -540,10 +540,6 @@ class Api:
                     'additional_modules': additional_modules or [],
                 }
 
-                # Set the dynamic args directly instead of using the string
-                from backend.args import dynamic_args
-                dynamic_args['forge_unet_storage_dtype'] = None  # Let the loader determine the best dtype
-                # Load the model
                 sd_models.forge_model_reload(force=bool(additional_modules))
                 print(f"Flux model loaded: {type(shared.sd_model)}")
             else:
