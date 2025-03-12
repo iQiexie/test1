@@ -248,6 +248,7 @@ class Predictor(BasePredictor):
             choices=[
                 "[Forge] Flux Realistic",
                 "Euler",
+                "DEIS",
                 "Euler a",
                 "DPM++ 2M",
                 "DPM++ SDE",
@@ -258,7 +259,7 @@ class Predictor(BasePredictor):
                 "DPM++ 3M SDE Karras",
                 "DPM++ 3M SDE Exponential"
             ],
-            default="[Forge] Flux Realistic",
+            default="Euler",
         ),
         scheduler: str = Input(
             description="Schedule type для Flux моделей",
@@ -282,7 +283,7 @@ class Predictor(BasePredictor):
             default="Simple",
         ),
         num_inference_steps: int = Input(
-            description="Number of denoising steps", ge=1, le=50, default=15
+            description="Number of denoising steps", ge=1, le=50, default=28
         ),
         guidance_scale: float = Input(
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
@@ -297,7 +298,7 @@ class Predictor(BasePredictor):
         # image: Path = Input(description="Grayscale input image"),
         enable_hr: bool = Input(
             description="Hires. fix",
-            default=False,
+            default=True,
         ),
         hr_upscaler: str = Input(
             description="Upscaler for Hires. fix",
@@ -319,19 +320,19 @@ class Predictor(BasePredictor):
                 "ScuNET PSNR",
                 "SwinIR 4x",
             ],
-            default="Latent",
+            default="R-ESRGAN 4x+",
         ),
         hr_steps: int = Input(
-            description="Inference steps for Hires. fix", ge=0, le=100, default=20
+            description="Inference steps for Hires. fix", ge=0, le=100, default=1
         ),
         hr_scale: float = Input(
-            description="Factor to scale image by", ge=1, le=4, default=2
+            description="Factor to scale image by", ge=1, le=4, default=1.5
         ),
         denoising_strength: float = Input(
             description="Denoising strength. 1.0 corresponds to full destruction of information in init image",
             ge=0,
             le=1,
-            default=0.5,
+            default=0.1,
         ),
         debug_flux_checkpoint_url: str = Input(
             description="Flux checkpoint URL",
