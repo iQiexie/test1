@@ -105,6 +105,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         loaded_networks.append(net)
 
     online_mode = dynamic_args.get('online_lora', False)
+    print(f"[Load Networks] using {online_mode=}")
 
     if current_sd.forge_objects.unet.model.storage_dtype in [torch.float32, torch.float16, torch.bfloat16]:
         online_mode = False

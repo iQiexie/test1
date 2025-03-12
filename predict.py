@@ -393,9 +393,16 @@ class Predictor(BasePredictor):
         import base64
         from io import BytesIO
         from modules import shared
+        from modules_forge.main_entry import forge_unet_storage_dtype_options
+        from backend.args import dynamic_args
 
-        # Устанавливаем unet тип на 'Automatic (fp16 LoRA)' для Flux, чтобы LoRA работали правильно
+        forge_unet_storage_dtype, online_lora = forge_unet_storage_dtype_options.get(
+            forge_unet_storage_dtype, (None, False),
+        )
+
+        print(f"Setting {forge_unet_storage_dtype=}, {online_lora=}")
         shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
+        dynamic_args['online_lora'] = online_lora
 
         if debug_flux_checkpoint_url:
             self.setup(force_download_url=debug_flux_checkpoint_url)
