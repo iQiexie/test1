@@ -230,10 +230,6 @@ class Predictor(BasePredictor):
     def predict(
         self,
         prompt: str = Input(description="Prompt"),
-        negative_prompt: str = Input(
-            description="Negative Prompt (для Flux рекомендуется оставить пустым и использовать Distilled CFG)",
-            default="",
-        ),
         width: int = Input(
             description="Width of output image", ge=1, le=1280, default=768
         ),
@@ -283,7 +279,7 @@ class Predictor(BasePredictor):
             default="Simple",
         ),
         num_inference_steps: int = Input(
-            description="Number of denoising steps", ge=1, le=50, default=28
+            description="Number of denoising steps", ge=1, le=50, default=8
         ),
         guidance_scale: float = Input(
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
@@ -298,7 +294,7 @@ class Predictor(BasePredictor):
         # image: Path = Input(description="Grayscale input image"),
         enable_hr: bool = Input(
             description="Hires. fix",
-            default=False,
+            default=True,
         ),
         hr_upscaler: str = Input(
             description="Upscaler for Hires. fix",
@@ -323,16 +319,16 @@ class Predictor(BasePredictor):
             default="R-ESRGAN 4x+",
         ),
         hr_steps: int = Input(
-            description="Inference steps for Hires. fix", ge=0, le=100, default=1
+            description="Inference steps for Hires. fix", ge=0, le=100, default=8
         ),
         hr_scale: float = Input(
-            description="Factor to scale image by", ge=1, le=4, default=1.5
+            description="Factor to scale image by", ge=1, le=4, default=1.3
         ),
         denoising_strength: float = Input(
             description="Denoising strength. 1.0 corresponds to full destruction of information in init image",
             ge=0,
             le=1,
-            default=0.1,
+            default=0.3,
         ),
         debug_flux_checkpoint_url: str = Input(
             description="Flux checkpoint URL",
@@ -409,7 +405,6 @@ class Predictor(BasePredictor):
 
         payload = {
             "prompt": prompt,
-            "negative_prompt": negative_prompt,
             "width": width,
             "height": height,
             "batch_size": num_outputs,
