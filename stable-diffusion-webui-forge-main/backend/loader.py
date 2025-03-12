@@ -126,8 +126,10 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             state_dict_dtype = memory_management.state_dict_dtype(state_dict)
 
             storage_dtype = memory_management.unet_dtype(model_params=state_dict_parameters, supported_dtypes=guess.supported_inference_dtypes)
+            print(f"[Huggingface component] Got {storage_dtype=}")
 
             unet_storage_dtype_overwrite = backend.args.dynamic_args.get('forge_unet_storage_dtype')
+            print(f"[Huggingface component] Got {unet_storage_dtype_overwrite=}")
 
             if unet_storage_dtype_overwrite is not None:
                 storage_dtype = unet_storage_dtype_overwrite
@@ -142,6 +144,8 @@ def load_huggingface_component(guess, component_name, lib_name, cls_name, repo_p
             load_device = memory_management.get_torch_device()
             computation_dtype = memory_management.get_computation_dtype(load_device, parameters=state_dict_parameters, supported_dtypes=guess.supported_inference_dtypes)
             offload_device = memory_management.unet_offload_device()
+
+            print(f"[Huggingface component] Final {storage_dtype=}")
 
             if storage_dtype in ['nf4', 'fp4', 'gguf']:
                 initial_device = memory_management.unet_inital_load_device(parameters=state_dict_parameters, dtype=computation_dtype)

@@ -333,14 +333,6 @@ class Predictor(BasePredictor):
             le=1,
             default=0.5,
         ),
-        lora_urls: list[str] = Input(
-            description="Ссылки на LoRA файлы",
-            default=[],
-        ),
-        lora_scales: list[float] = Input(
-            description="Lora scales",
-            default=[1],
-        ),
         debug_flux_checkpoint_url: str = Input(
             description="Flux checkpoint URL",
             default=""
@@ -374,8 +366,19 @@ class Predictor(BasePredictor):
                 'bnb-fp4 (fp16 LoRA)',
                 'float8-e5m2',
                 'float8-e5m2 (fp16 LoRA)',
+                'nf4',
+                'fp4',
+                'gguf',
             ],
             default="bnb-nf4",
+        ),
+        lora_urls: list[str] = Input(
+            description="Ссылки на LoRA файлы",
+            default=[],
+        ),
+        lora_scales: list[float] = Input(
+            description="Lora scales",
+            default=[1],
         ),
     ) -> list[Path]:
         print("Cache version 105")
