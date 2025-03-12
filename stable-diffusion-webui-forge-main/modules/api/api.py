@@ -638,7 +638,16 @@ class Api:
         b64images = list(map(encode_pil_to_base64, processed.images + processed.extra_images)) if send_images else []
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
-    def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+    def img2imgapi(
+        self,
+        img2imgreq: models.StableDiffusionImg2ImgProcessingAPI,
+        extra_network_data=None,
+        additional_modules=None,
+    ):
+        with catchtime(tag="load_flux first time"):
+            additional_modules = self.load_clip_etc(additional_modules=additional_modules)
+            self.load_flux(additional_modules=additional_modules)
+
         task_id = img2imgreq.force_task_id or create_task_id("img2img")
 
         init_images = img2imgreq.init_images
@@ -694,6 +703,7 @@ class Api:
                 try:
                     shared.state.begin(job="scripts_img2img")
                     start_task(task_id)
+                    extra_networks_lora.ExtraNetworkLora().activate(p, extra_network_data['lora'])
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
