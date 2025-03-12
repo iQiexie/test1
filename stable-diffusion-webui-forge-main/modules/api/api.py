@@ -538,7 +538,7 @@ class Api:
                 sd_models.model_data.forge_loading_parameters = {
                     'checkpoint_info': flux_checkpoint,
                     'additional_modules': additional_modules or [],
-                    'unet_storage_dtype': shared.opts['forge_unet_storage_dtype'],
+                    'unet_storage_dtype': shared.opts.forge_unet_storage_dtype,
                 }
 
                 sd_models.forge_model_reload(force=force_model_reload)
