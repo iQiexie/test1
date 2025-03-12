@@ -517,7 +517,7 @@ class Api:
         return params
 
     @staticmethod
-    def load_flux(additional_modules=None) -> None:
+    def load_flux(additional_modules=None, force_model_reload: bool = False) -> None:
         print("loading Flux model...")
 
         with catchtime(tag="Set the checkpoint to the Flux model specifically"):
@@ -540,7 +540,7 @@ class Api:
                     'additional_modules': additional_modules or [],
                 }
 
-                sd_models.forge_model_reload(force=bool(additional_modules))
+                sd_models.forge_model_reload(force=force_model_reload)
                 print(f"Flux model loaded: {type(shared.sd_model)}")
             else:
                 print(f"Warning: Could not find Flux checkpoint {flux_checkpoint_name}")
@@ -550,10 +550,14 @@ class Api:
         txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI,
         extra_network_data=None,
         additional_modules=None,
+        force_model_reload: bool = False,
     ):
         with catchtime(tag="load_flux first time"):
             additional_modules = self.load_clip_etc(additional_modules=additional_modules)
-            self.load_flux(additional_modules=additional_modules)
+            self.load_flux(
+                additional_modules=additional_modules,
+                force_model_reload=force_model_reload,
+            )
 
         print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")

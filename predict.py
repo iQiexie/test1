@@ -357,6 +357,10 @@ class Predictor(BasePredictor):
             description="Enable ae",
             default=False
         ),
+        force_model_reload: bool = Input(
+            description="Load Flux model from scratch",
+            default=False
+        ),
         forge_unet_storage_dtype: str = Input(
             description="forge_unet_storage_dtype",
             choices=[
@@ -449,7 +453,10 @@ class Predictor(BasePredictor):
             print(f"LoRA: {lora.items=}")
 
         with catchtime(tag="Total Prediction Time"):
-            resp = self.api.text2imgapi(**req)
+            resp = self.api.text2imgapi(
+                **req,
+                force_model_reload=force_model_reload,
+            )
 
         info = json.loads(resp.info)
         outputs = []
