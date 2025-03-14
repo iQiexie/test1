@@ -433,13 +433,8 @@ class Predictor(BasePredictor):
         }
 
         if image:
-            init_image = self.get_image(image)
-            width = init_image.shape[-1]
-            height = init_image.shape[-2]
-            print(f"Input image size: {width}x{height}")
-
             payload['denoising_strength'] = prompt_strength
-            payload['init_images'] = [init_image]
+            payload['init_images'] = [image]
 
         alwayson_scripts = {}
 
@@ -495,27 +490,3 @@ class Predictor(BasePredictor):
                 outputs.append(output)
 
         return outputs
-
-    def get_image(self, image: str):
-        from PIL import Image
-        from torchvision import transforms
-        import torch
-
-        hashed_url = hashlib.sha256(image.encode()).hexdigest()
-        short_hash = hashed_url[:16]
-
-        target_dir = "/src/input_images/"
-        os.makedirs(target_dir, exist_ok=True)
-        image_path = os.path.join(target_dir, f"{short_hash}.{image.split('.')[-1]}")
-        download_base_weights(url=image, dest=image_path)
-
-        image = Image.open(image_path).convert("RGB")
-        transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Lambda(lambda x: 2.0 * x - 1.0),
-            ]
-        )
-        img: torch.Tensor = transform(image)
-        return img[None, ...]
-
