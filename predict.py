@@ -25,6 +25,21 @@ FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model
 sys.path.extend(["/src"])
 
 
+ASPECT_RATIOS = {
+    "1:1": (1024, 1024),
+    "16:9": (1344, 768),
+    "21:9": (1536, 640),
+    "3:2": (1216, 832),
+    "2:3": (832, 1216),
+    "4:5": (896, 1088),
+    "5:4": (1088, 896),
+    "3:4": (896, 1152),
+    "4:3": (1152, 896),
+    "9:16": (768, 1344),
+    "9:21": (640, 1536),
+}
+
+
 def download_base_weights(url: str, dest: Path):
     """
     Загружает базовые веса модели.
@@ -231,10 +246,10 @@ class Predictor(BasePredictor):
         self,
         prompt: str = Input(description="Prompt"),
         width: int = Input(
-            description="Width of output image", ge=1, le=1280, default=768
+            description="Width of output image", ge=1, le=1280, default=0
         ),
         height: int = Input(
-            description="Height of output image", ge=1, le=1280, default=1280
+            description="Height of output image", ge=1, le=1280, default=0
         ),
         num_outputs: int = Input(
             description="Number of images to output", ge=1, le=4, default=1
@@ -366,14 +381,6 @@ class Predictor(BasePredictor):
             ],
             default="bnb-nf4 (fp16 LoRA)",
         ),
-        lora_urls: list[str] = Input(
-            description="Ссылки на LoRA файлы",
-            default=[],
-        ),
-        lora_scales: list[float] = Input(
-            description="Lora scales",
-            default=[1],
-        ),
         image: str = Input(
             description="Input image for image to image mode. The aspect ratio of your output will match this image",
             default=None,
@@ -381,6 +388,19 @@ class Predictor(BasePredictor):
         prompt_strength: float = Input(
             description="Prompt strength (or denoising strength) when using image to image. 1.0 corresponds to full destruction of information in image.",
             ge=0, le=1, default=0.8,
+        ),
+        aspect_ratio: str = Input(
+            description="Aspect ratio for the generated image",
+            choices=list(ASPECT_RATIOS.keys()),
+            default="9:16"
+        ),
+        lora_urls: list[str] = Input(
+            description="Ссылки на LoRA файлы",
+            default=[],
+        ),
+        lora_scales: list[float] = Input(
+            description="Lora scales",
+            default=[1],
         ),
     ) -> list[Path]:
         print("Cache version 105")
@@ -411,6 +431,9 @@ class Predictor(BasePredictor):
             self.setup(force_download_url=debug_flux_checkpoint_url)
 
         lora_paths = self._download_loras(lora_urls)
+
+        if (not width) or (not height):
+            width, height = ASPECT_RATIOS[aspect_ratio]
 
         payload = {
             "prompt": prompt,
