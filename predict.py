@@ -507,6 +507,7 @@ class Predictor(BasePredictor):
         target_dir = "/src/input_images/"
         os.makedirs(target_dir, exist_ok=True)
         image_path = os.path.join(target_dir, f"{short_hash}.{image.split('.')[-1]}")
+        download_base_weights(url=image, dest=image_path)
 
         image = Image.open(image_path).convert("RGB")
         transform = transforms.Compose(
