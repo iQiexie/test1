@@ -645,10 +645,16 @@ class Api:
         img2imgreq: models.StableDiffusionImg2ImgProcessingAPI,
         extra_network_data=None,
         additional_modules=None,
+        force_model_reload: bool = False,
     ):
         with catchtime(tag="load_flux first time"):
             additional_modules = self.load_clip_etc(additional_modules=additional_modules)
-            self.load_flux(additional_modules=additional_modules)
+            self.load_flux(
+                additional_modules=additional_modules,
+                force_model_reload=force_model_reload or bool(additional_modules),
+            )
+
+        print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{img2imgreq.dict()=}\n\n\n\n\n\n\n")
 
         task_id = img2imgreq.force_task_id or create_task_id("img2img")
 

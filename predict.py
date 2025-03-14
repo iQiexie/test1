@@ -374,6 +374,14 @@ class Predictor(BasePredictor):
             description="Lora scales",
             default=[1],
         ),
+        image: str = Input(
+            description="Input image for image to image mode. The aspect ratio of your output will match this image",
+            default=None,
+        ),
+        prompt_strength: float = Input(
+            description="Prompt strength (or denoising strength) when using image to image. 1.0 corresponds to full destruction of information in image.",
+            ge=0, le=1, default=0.8,
+        ),
     ) -> list[Path]:
         print("Cache version 105")
         """Run a single prediction on the model"""
@@ -381,6 +389,7 @@ class Predictor(BasePredictor):
         from modules import scripts
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
+            StableDiffusionImg2ImgProcessingAPI
         )
         from PIL import Image
         import uuid
@@ -423,6 +432,15 @@ class Predictor(BasePredictor):
             "hr_additional_modules": [],
         }
 
+        if image:
+            init_image = self.get_image(image)
+            width = init_image.shape[-1]
+            height = init_image.shape[-2]
+            print(f"Input image size: {width}x{height}")
+
+            payload['denoising_strength'] = prompt_strength
+            payload['init_images'] = [init_image]
+
         alwayson_scripts = {}
 
         # Добавляем все скрипты в payload, если они есть
@@ -433,7 +451,7 @@ class Predictor(BasePredictor):
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
 
         req = dict(
-            txt2imgreq=StableDiffusionTxt2ImgProcessingAPI(**payload),
+            force_model_reload=force_model_reload,
             extra_network_data={
                 "lora": [
                     ExtraNetworkParams(
@@ -456,10 +474,12 @@ class Predictor(BasePredictor):
             print(f"LoRA: {lora.items=}")
 
         with catchtime(tag="Total Prediction Time"):
-            resp = self.api.text2imgapi(
-                **req,
-                force_model_reload=force_model_reload,
-            )
+            if image:
+                req['img2imgreq'] = StableDiffusionImg2ImgProcessingAPI(**payload)
+                resp = self.api.img2imgapi(**req)
+            else:
+                req['txt2imgreq'] = StableDiffusionTxt2ImgProcessingAPI(**payload)
+                resp = self.api.text2imgapi(**req)
 
         info = json.loads(resp.info)
         outputs = []
@@ -475,3 +495,19 @@ class Predictor(BasePredictor):
                 outputs.append(output)
 
         return outputs
+
+    def get_image(self, image: str):
+        from PIL import Image
+        from torchvision import transforms
+        import torch
+
+        image = Image.open(image).convert("RGB")
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Lambda(lambda x: 2.0 * x - 1.0),
+            ]
+        )
+        img: torch.Tensor = transform(image)
+        return img[None, ...]
+
