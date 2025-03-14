@@ -435,6 +435,7 @@ class Predictor(BasePredictor):
         if image:
             payload['denoising_strength'] = prompt_strength
             payload['init_images'] = [image]
+            payload['resize_mode'] = 1
 
         alwayson_scripts = {}
 
