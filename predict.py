@@ -246,10 +246,10 @@ class Predictor(BasePredictor):
         self,
         prompt: str = Input(description="Prompt"),
         width: int = Input(
-            description="Width of output image", ge=1, le=1280, default=0
+            description="Width of output image", ge=0, le=1280, default=0
         ),
         height: int = Input(
-            description="Height of output image", ge=1, le=1280, default=0
+            description="Height of output image", ge=0, le=1280, default=0
         ),
         num_outputs: int = Input(
             description="Number of images to output", ge=1, le=4, default=1
