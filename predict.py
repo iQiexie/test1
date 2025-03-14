@@ -1,6 +1,6 @@
 # Prediction interface for Cog ⚙️
 # https://github.com/replicate/cog/blob/main/docs/python.md
-
+import hashlib
 import json
 import os
 import re
@@ -501,7 +501,14 @@ class Predictor(BasePredictor):
         from torchvision import transforms
         import torch
 
-        image = Image.open(image).convert("RGB")
+        hashed_url = hashlib.sha256(image.encode()).hexdigest()
+        short_hash = hashed_url[:16]
+
+        target_dir = "/src/input_images/"
+        os.makedirs(target_dir, exist_ok=True)
+        image_path = os.path.join(target_dir, f"{short_hash}.{image.split('.')[-1]}")
+
+        image = Image.open(image_path).convert("RGB")
         transform = transforms.Compose(
             [
                 transforms.ToTensor(),
