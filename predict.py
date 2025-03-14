@@ -394,6 +394,11 @@ class Predictor(BasePredictor):
             choices=list(ASPECT_RATIOS.keys()),
             default="9:16"
         ),
+        output_format: str = Input(
+            description="Format of the output images",
+            choices=["webp", "jpg", "png"],
+            default="webp",
+        ),
         lora_urls: list[str] = Input(
             description="Ссылки на LoRA файлы",
             default=[],
@@ -508,8 +513,13 @@ class Predictor(BasePredictor):
                 seed = info["all_seeds"][i]
                 gen_bytes = BytesIO(base64.b64decode(image))
                 gen_data = Image.open(gen_bytes)
-                filename = "{}-{}.png".format(seed, uuid.uuid1())
-                gen_data.save(fp=filename, format="PNG")
+                filename = f"{seed}-{uuid.uuid1()}.{output_format}"
+
+                if output_format != 'png':
+                    gen_data.save(fp=filename, format=output_format, quality=100, optimize=True)
+                else:
+                    gen_data.save(fp=filename, format=output_format)
+
                 output = Path(filename)
                 outputs.append(output)
 
