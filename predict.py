@@ -364,7 +364,7 @@ class Predictor(BasePredictor):
                 'float8-e5m2',
                 'float8-e5m2 (fp16 LoRA)',
             ],
-            default="bnb-nf4",
+            default="bnb-nf4 (fp16 LoRA)",
         ),
         lora_urls: list[str] = Input(
             description="Ссылки на LoRA файлы",
