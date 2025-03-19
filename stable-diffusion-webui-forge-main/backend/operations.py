@@ -125,7 +125,19 @@ class ForgeOperations:
             super().__init__()
             self.in_features = in_features
             self.out_features = out_features
-            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=dtype_to_use))
             self.weight = None
             self.bias = None
             self.parameters_manual_cast = current_manual_cast_enabled
@@ -153,7 +165,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -173,7 +197,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -193,7 +229,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -213,7 +261,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -238,7 +298,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -263,7 +335,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -288,7 +372,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -307,7 +403,19 @@ class ForgeOperations:
 
         def __init__(self, *args, **kwargs):
             kwargs['device'] = current_device
-            kwargs['dtype'] = current_dtype
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            kwargs['dtype'] = dtype_to_use
             super().__init__(*args, **kwargs)
             self.parameters_manual_cast = current_manual_cast_enabled
 
@@ -390,7 +498,19 @@ class ForgeOperationsGGUF(ForgeOperations):
     class Linear(torch.nn.Module):
         def __init__(self, *args, **kwargs):
             super().__init__()
-            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
+            # Convert string dtype to torch.dtype if needed
+            dtype_to_use = current_dtype
+            if isinstance(dtype_to_use, str):
+                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
+                    dtype_to_use = torch.float16
+                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
+                    dtype_to_use = torch.bfloat16
+                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
+                    dtype_to_use = torch.float32
+                else:
+                    # Default to float16 if string is not recognized
+                    dtype_to_use = torch.float16
+            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=dtype_to_use))
             self.weight = None
             self.bias = None
             self.parameters_manual_cast = current_manual_cast_enabled
