@@ -306,7 +306,6 @@ class Predictor(BasePredictor):
         seed: int = Input(
             description="Random seed. Leave blank to randomize the seed", default=-1
         ),
-        # image: Path = Input(description="Grayscale input image"),
         enable_hr: bool = Input(
             description="Hires. fix",
             default=True,
