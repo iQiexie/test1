@@ -302,44 +302,51 @@ class Api:
         self.embedding_db.add_embedding_dir(cmd_opts.embeddings_dir)
         self.embedding_db.load_textual_inversion_embeddings(force_reload=True, sync_with_sd_model=False)
 
-    def load_clip_etc(self, additional_modules: dict[str, bool]) -> list[str]:
-        _additional_modules_dict = {
-            "clip_l.safetensors": [
-                self.text_encoder_dir,
-                "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
-            ],
-            "t5xxl_fp16.safetensors": [
-                self.text_encoder_dir,
-                "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
-            ],
-            "ae.safetensors": [
-                self.vae_dir,
-                "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft",
-            ],
+    def _load_clip_etc_download_models(self):
+        print("[load_clip_etc] Downloading required model components...")
+        os.makedirs(self.text_encoder_dir, exist_ok=True)
 
-        }
+        print("[load_clip_etc] Downloading: clip_l")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
+        )
 
-        resp = []
+        print("[load_clip_etc] Downloading: t5xxl_fp16")
+        download_base_weights(
+            url="https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
+            dest=os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
+        )
 
-        for module, enabled in additional_modules.items():
-            if not enabled:
-                continue
+        os.makedirs(self.vae_dir, exist_ok=True)
 
-            module_dir, download_url = _additional_modules_dict[module]
-            module_path = os.path.join(module_dir, module)
+        print("[load_clip_etc] Downloading: ae")
+        download_base_weights(
+            url="https://ai-photo.fra1.cdn.digitaloceanspaces.com/ae.safetensors",
+            dest=os.path.join(self.vae_dir, "ae.safetensors"),
+        )
 
-            if os.path.exists(os.path.join(module_dir, module)):
-                print(f"[Additional modules]: Module {module} is downloaded")
-            else:
-                print(f"[Additional modules] Downloading module {module} ...")
-                os.makedirs(module_dir, exist_ok=True)
-                download_base_weights(url=download_url, dest=module_path)
-                print(f"[Additional modules]: Module {module} is downloaded")
+    def load_clip_etc(self) -> list[str]:
+        print("[load_clip_etc] Always loading!!!!")
 
-            resp.append(module_path)
+        if (
+                not os.path.exists(os.path.join(self.text_encoder_dir, "clip_l.safetensors")) or
+                not os.path.exists(os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors")) or
+                not os.path.exists(os.path.join(self.vae_dir, "ae.safetensors"))
+        ):
+            with catchtime(tag="[load_clip_etc] Downloading required model components"):
+                self._load_clip_etc_download_models()
 
-        print(f"[Additional modules] Proceeding with these modules: {resp=}")
-        return resp
+        print("[load_clip_etc] All required model components already exist.")
+
+        additional_modules = [
+            os.path.join(self.text_encoder_dir, "clip_l.safetensors"),
+            os.path.join(self.text_encoder_dir, "t5xxl_fp16.safetensors"),
+            os.path.join(self.vae_dir, "ae.safetensors"),
+        ]
+
+        print(f"[load_clip_etc] DEBUG: About to load model with {len(additional_modules)} additional modules")
+        return additional_modules
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -549,7 +556,7 @@ class Api:
         force_model_reload: bool = False,
     ):
         with catchtime(tag="load_flux first time"):
-            additional_modules = self.load_clip_etc(additional_modules=additional_modules)
+            additional_modules = self.load_clip_etc()
             self.load_flux(
                 additional_modules=additional_modules,
                 force_model_reload=force_model_reload or bool(additional_modules),
@@ -642,7 +649,7 @@ class Api:
         force_model_reload: bool = False,
     ):
         with catchtime(tag="load_flux first time"):
-            additional_modules = self.load_clip_etc(additional_modules=additional_modules)
+            additional_modules = self.load_clip_etc()
             self.load_flux(
                 additional_modules=additional_modules,
                 force_model_reload=force_model_reload or bool(additional_modules),
