@@ -503,6 +503,7 @@ def forge_model_reload(force: bool = False):
     dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
     dynamic_args['emphasis_name'] = opts.emphasis
     print(f"Loading model with {dynamic_args['forge_unet_storage_dtype']=}")
+    print(f"Loading model with {additional_state_dicts=}")
     sd_model = forge_loader(state_dict, additional_state_dicts=additional_state_dicts)
     timer.record("forge model load")
 
