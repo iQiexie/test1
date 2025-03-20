@@ -474,6 +474,7 @@ class Predictor(BasePredictor):
         print("Available scripts:", [script.title().lower() for script in scripts.scripts_txt2img.scripts])
 
         req = dict(
+            forge_unet_storage_dtype=forge_unet_storage_dtype,
             force_model_reload=force_model_reload,
             extra_network_data={
                 "lora": [

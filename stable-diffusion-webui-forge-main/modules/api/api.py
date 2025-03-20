@@ -511,7 +511,7 @@ class Api:
         return params
 
     @staticmethod
-    def load_flux(additional_modules=None, force_model_reload: bool = False) -> None:
+    def load_flux(additional_modules=None, force_model_reload: bool = False, forge_unet_storage_dtype = None,) -> None:
         print("loading Flux model...")
 
         with catchtime(tag="Set the checkpoint to the Flux model specifically"):
@@ -532,10 +532,10 @@ class Api:
                 sd_models.model_data.forge_loading_parameters = {
                     'checkpoint_info': flux_checkpoint,
                     'additional_modules': additional_modules or [],
-                    'unet_storage_dtype': shared.opts.forge_unet_storage_dtype,
+                    'unet_storage_dtype': forge_unet_storage_dtype,
                 }
 
-                print(f"{shared.opts.forge_unet_storage_dtype=}")
+                print(f"{forge_unet_storage_dtype=}")
                 sd_models.forge_model_reload(force=force_model_reload)
                 print(f"Flux model loaded: {type(shared.sd_model)}")
             else:
@@ -547,11 +547,13 @@ class Api:
         extra_network_data=None,
         additional_modules=None,
         force_model_reload: bool = False,
+        forge_unet_storage_dtype=None,
     ):
         with catchtime(tag="load_flux first time"):
             additional_modules = self.load_clip_etc(additional_modules=additional_modules)
             self.load_flux(
                 additional_modules=additional_modules,
+                forge_unet_storage_dtype=forge_unet_storage_dtype,
                 force_model_reload=force_model_reload or bool(additional_modules),
             )
 
@@ -640,11 +642,13 @@ class Api:
         extra_network_data=None,
         additional_modules=None,
         force_model_reload: bool = False,
+        forge_unet_storage_dtype = None,
     ):
         with catchtime(tag="load_flux first time"):
             additional_modules = self.load_clip_etc(additional_modules=additional_modules)
             self.load_flux(
                 additional_modules=additional_modules,
+                forge_unet_storage_dtype=forge_unet_storage_dtype,
                 force_model_reload=force_model_reload or bool(additional_modules),
             )
 
