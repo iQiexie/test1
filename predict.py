@@ -21,7 +21,7 @@ def catchtime(tag: str) -> Callable[[], float]:
     print(f'[Timer: {tag}]: {perf_counter() - start:.3f} seconds')
 
 
-FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3"
+FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32"
 sys.path.extend(["/src"])
 
 
