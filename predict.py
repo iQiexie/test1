@@ -7,6 +7,8 @@ import re
 import subprocess  # Для запуска внешних процессов
 import sys
 import time
+from typing import Optional
+
 from cog import BasePredictor, Input, Path
 from time import perf_counter
 from contextlib import contextmanager
@@ -380,7 +382,7 @@ class Predictor(BasePredictor):
             ],
             default="bnb-nf4 (fp16 LoRA)",
         ),
-        image: str = Input(
+        image: Optional[str] = Input(
             description="Input image for image to image mode. The aspect ratio of your output will match this image",
             default=None,
         ),
