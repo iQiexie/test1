@@ -407,6 +407,10 @@ class Predictor(BasePredictor):
             default=[1],
         ),
     ) -> list[Path]:
+        if image == "runpod":
+            print("Setting image to None, because of runpod")
+            image = None
+
         print("Cache version 105")
         """Run a single prediction on the model"""
         from modules.extra_networks import ExtraNetworkParams
