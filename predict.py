@@ -510,6 +510,17 @@ class Predictor(BasePredictor):
 
         with catchtime(tag="Total Encode Time"):
             for i, image in enumerate(resp.images):
-                outputs.append(image)
+                seed = info["all_seeds"][i]
+                gen_bytes = BytesIO(base64.b64decode(image))
+                gen_data = Image.open(gen_bytes)
+                filename = f"{seed}-{uuid.uuid1()}.{output_format}"
+
+                if output_format != 'png':
+                    gen_data.save(fp=filename, format=output_format, quality=100, optimize=True)
+                else:
+                    gen_data.save(fp=filename, format=output_format)
+
+                output = Path(filename)
+                outputs.append(output)
 
         return outputs
