@@ -8,7 +8,7 @@ import subprocess  # Для запуска внешних процессов
 import sys
 import time
 from typing import Optional
-
+import requests
 from cog import BasePredictor, Input, Path
 from time import perf_counter
 from contextlib import contextmanager
@@ -96,6 +96,37 @@ class Predictor(BasePredictor):
         return lora_paths
 
     def setup(self, force_download_url: str = None) -> None:
+        import logging
+        import requests
+
+        class WebhookHandler(logging.Handler):
+            def __init__(self, webhook_url):
+                super().__init__(logging.INFO)  # Set handler to INFO level
+                self.webhook_url = webhook_url
+
+            def emit(self, record):
+                log_entry = self.format(record)  # Format the log message
+                payload = {"message": log_entry}  # Customize payload if needed
+
+                try:
+                    requests.post(self.webhook_url, json=payload, timeout=5)
+                except requests.RequestException as e:
+                    print(f"Failed to send log to webhook: {e}")  # Fallback error logging
+
+        # Configure logging
+        def configure_logging(webhook_url):
+            handler = WebhookHandler(webhook_url)
+            handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
+
+            logging.getLogger().addHandler(handler)  # Attach to root logger
+
+        # Example usage
+        WEBHOOK_URL = "https://back-dev.recrea.ai/api/v1/logs"
+        configure_logging(WEBHOOK_URL)
+
+        logger = logging.getLogger("my_logger")
+        logger.info("This is an info log that will be sent to the webhook.")
+
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/src/models/Stable-diffusion"
