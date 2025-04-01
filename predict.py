@@ -382,9 +382,9 @@ class Predictor(BasePredictor):
             ],
             default="bnb-nf4 (fp16 LoRA)",
         ),
-        image: str = Input(
+        image: Optional[str] = Input(
             description="Input image for image to image mode. The aspect ratio of your output will match this image",
-            default="",
+            default=None,
         ),
         prompt_strength: float = Input(
             description="Prompt strength (or denoising strength) when using image to image. 1.0 corresponds to full destruction of information in image.",
