@@ -96,8 +96,6 @@ class Predictor(BasePredictor):
         return lora_paths
 
     def setup(self, force_download_url: str = None) -> None:
-        WEBHOOK_URL = "https://back-dev.recrea.ai/api/v1/logs"
-
         import logging
         import requests
 
@@ -128,33 +126,6 @@ class Predictor(BasePredictor):
 
         logger = logging.getLogger("my_logger")
         logger.info("This is an info log that will be sent to the webhook.")
-
-        import sys
-        import requests
-        import logging
-
-        class WebhookPrinter:
-            def __init__(self, webhook_url):
-                self.webhook_url = webhook_url
-                self.original_stdout = sys.stdout  # Preserve the original stdout
-
-            def write(self, message):
-                message = message.strip()  # Remove extra newlines
-                if message:  # Avoid sending empty messages
-                    payload = {"message": message}
-                    try:
-                        requests.post(self.webhook_url, json=payload, timeout=5)
-                    except requests.RequestException as e:
-                        logging.error(f"Failed to send print output to webhook: {e}")
-
-                self.original_stdout.write(message + "\n")  # Also print to console
-
-            def flush(self):
-                self.original_stdout.flush()
-
-        sys.stdout = WebhookPrinter(WEBHOOK_URL)  # Redirect stdout
-
-        print("PRINT PRINT This message will be sent to the webhook.")
 
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
