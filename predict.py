@@ -7,8 +7,6 @@ import re
 import subprocess  # Для запуска внешних процессов
 import sys
 import time
-from typing import Optional
-import requests
 from cog import BasePredictor, Input, Path
 from time import perf_counter
 from contextlib import contextmanager
@@ -96,66 +94,6 @@ class Predictor(BasePredictor):
         return lora_paths
 
     def setup(self, force_download_url: str = None) -> None:
-        WEBHOOK_URL = "https://back-dev.recrea.ai/api/v1/logs"
-
-        import logging
-        import requests
-
-        class WebhookHandler(logging.Handler):
-            def __init__(self, webhook_url):
-                super().__init__(logging.INFO)  # Set handler to INFO level
-                self.webhook_url = webhook_url
-
-            def emit(self, record):
-                log_entry = self.format(record)  # Format the log message
-                payload = {"message": log_entry}  # Customize payload if needed
-
-                try:
-                    requests.post(self.webhook_url, json=payload, timeout=5)
-                except requests.RequestException as e:
-                    print(f"Failed to send log to webhook: {e}")  # Fallback error logging
-
-        # Configure logging
-        def configure_logging(webhook_url):
-            handler = WebhookHandler(webhook_url)
-            handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
-
-            logging.getLogger().addHandler(handler)  # Attach to root logger
-
-        # Example usage
-        WEBHOOK_URL = "https://back-dev.recrea.ai/api/v1/logs"
-        configure_logging(WEBHOOK_URL)
-
-        logger = logging.getLogger("my_logger")
-        logger.info("This is an info log that will be sent to the webhook.")
-
-        import sys
-        import requests
-        import logging
-
-        class WebhookPrinter:
-            def __init__(self, webhook_url):
-                self.webhook_url = webhook_url
-                self.original_stdout = sys.stdout  # Preserve the original stdout
-
-            def write(self, message):
-                message = message.strip()  # Remove extra newlines
-                if message:  # Avoid sending empty messages
-                    payload = {"message": message}
-                    try:
-                        requests.post(self.webhook_url, json=payload, timeout=5)
-                    except requests.RequestException as e:
-                        logging.error(f"Failed to send print output to webhook: {e}")
-
-                self.original_stdout.write(message + "\n")  # Also print to console
-
-            def flush(self):
-                self.original_stdout.flush()
-
-        sys.stdout = WebhookPrinter(WEBHOOK_URL)  # Redirect stdout
-
-        print("PRINT PRINT This message will be sent to the webhook.")
-
         """Load the model into memory to make running multiple predictions efficient"""
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/src/models/Stable-diffusion"
@@ -444,7 +382,7 @@ class Predictor(BasePredictor):
         ),
         image: str = Input(
             description="Input image for image to image mode. The aspect ratio of your output will match this image",
-            default="",
+            default=None,
         ),
         prompt_strength: float = Input(
             description="Prompt strength (or denoising strength) when using image to image. 1.0 corresponds to full destruction of information in image.",
