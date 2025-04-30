@@ -48,6 +48,9 @@ def txt2img_create_processing(id_task: str, request: gr.Request, prompt: str, ne
         override_settings=override_settings,
     )
 
+    for i in args:
+        print(f"\n\nDEBUG ARGS: {i=}\n\n")
+
     p.scripts = modules.scripts.scripts_txt2img
     p.script_args = args
 
