@@ -46,6 +46,7 @@ build:
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     - git clone https://github.com/iQiexie/test1 /src
     - mv /src/stable-diffusion-webui-forge-main/* /src
+    - git clone https://github.com/Bing-su/adetailer.git /src/extensions/adetailer
     - pget -f "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
     - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors"
     - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
