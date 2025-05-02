@@ -404,6 +404,9 @@ class Predictor(BasePredictor):
             description="Ссылки на LoRA файлы",
             default=[],
         ),
+        ad_prompt: str = Input(
+            default="TOK masterpiece, best quality, best quality eyes",
+        ),
         lora_scales: list[float] = Input(
             description="Lora scales",
             default=[1],
@@ -475,7 +478,7 @@ class Predictor(BasePredictor):
             "args": [
                 {
                 "ad_model": "face_yolov8n.pt",
-                "ad_prompt": "masterpiece, best quality, best quality eyes",
+                "ad_prompt": ad_prompt,
                 "ad_confidence": 0.3,
                 "ad_mask_filter_method": "Area",
                 "ad_mask_k": 0,
