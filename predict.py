@@ -404,12 +404,15 @@ class Predictor(BasePredictor):
             description="Ссылки на LoRA файлы",
             default=[],
         ),
-        ad_prompt: str = Input(
-            default="TOK masterpiece, best quality, best quality eyes",
-        ),
         lora_scales: list[float] = Input(
             description="Lora scales",
             default=[1],
+        ),
+        ad_prompt: str = Input(
+            default="TOK masterpiece, best quality, best quality eyes",
+        ),
+        ad_hands_prompt: str = Input(
+            default="Perfect hand , high-quality nails, anatomically correct hands and fingers",
         ),
     ) -> list[Path]:
         if image == "runpod":
@@ -475,37 +478,66 @@ class Predictor(BasePredictor):
 
         payload["alwayson_scripts"] = {
             "ADetailer": {
-            "args": [
-                {
-                "ad_model": "face_yolov8n.pt",
-                "ad_prompt": ad_prompt,
-                "ad_confidence": 0.3,
-                "ad_mask_filter_method": "Area",
-                "ad_mask_k": 0,
-                "ad_mask_min_ratio": 0,
-                "ad_mask_max_ratio": 1,
-                "ad_x_offset": 0,
-                "ad_y_offset": 0,
-                "ad_dilate_erode": 4,
-                "ad_mask_merge_invert": "None",
-                "ad_mask_blur": 4,
-                "ad_denoising_strength": 0.5,
-                "ad_inpaint_only_masked": True, 
-                "ad_inpaint_only_masked_padding": 32,
-                "ad_inpaint_width": 512,
-                "ad_inpaint_height": 512,
-                "ad_use_steps": False,
-                "ad_use_cfg_scale":  False,
-                "ad_cfg_scale": 7,
-                "ad_use_checkpoint": False,
-                "ad_vae": False,
-                "ad_use_sampler": False,
-                "ad_scheduler": "Use same scheduler",
-                "ad_use_noise_multiplier": False,
-                "ad_noise_multiplier": 1,
-                "ad_use_clip_skip": False
-                }
-            ]
+                "args": [
+                    {
+                        "ad_model": "face_yolov8n.pt",
+                        "ad_prompt": ad_prompt,
+                        "ad_confidence": 0.3,
+                        "ad_mask_filter_method": "Area",
+                        "ad_mask_k": 0,
+                        "ad_mask_min_ratio": 0,
+                        "ad_mask_max_ratio": 1,
+                        "ad_x_offset": 0,
+                        "ad_y_offset": 0,
+                        "ad_dilate_erode": 4,
+                        "ad_mask_merge_invert": "None",
+                        "ad_mask_blur": 4,
+                        "ad_denoising_strength": 0.5,
+                        "ad_inpaint_only_masked": True,
+                        "ad_inpaint_only_masked_padding": 32,
+                        "ad_inpaint_width": 512,
+                        "ad_inpaint_height": 512,
+                        "ad_use_steps": False,
+                        "ad_use_cfg_scale": False,
+                        "ad_cfg_scale": 7,
+                        "ad_use_checkpoint": False,
+                        "ad_vae": False,
+                        "ad_use_sampler": False,
+                        "ad_scheduler": "Use same scheduler",
+                        "ad_use_noise_multiplier": False,
+                        "ad_noise_multiplier": 1,
+                        "ad_use_clip_skip": False
+                    },
+                    {
+                        "ad_model": "hand_yolov8n.pt",
+                        "ad_prompt": ad_hands_prompt,
+                        "ad_confidence": 0.3,
+                        "ad_mask_filter_method": "Area",
+                        "ad_mask_k": 0,
+                        "ad_mask_min_ratio": 0,
+                        "ad_mask_max_ratio": 1,
+                        "ad_x_offset": 0,
+                        "ad_y_offset": 0,
+                        "ad_dilate_erode": 4,
+                        "ad_mask_merge_invert": "None",
+                        "ad_mask_blur": 4,
+                        "ad_denoising_strength": 0.5,
+                        "ad_inpaint_only_masked": True,
+                        "ad_inpaint_only_masked_padding": 32,
+                        "ad_inpaint_width": 512,
+                        "ad_inpaint_height": 512,
+                        "ad_use_steps": False,
+                        "ad_use_cfg_scale": False,
+                        "ad_cfg_scale": 7,
+                        "ad_use_checkpoint": False,
+                        "ad_vae": False,
+                        "ad_use_sampler": False,
+                        "ad_scheduler": "Use same scheduler",
+                        "ad_use_noise_multiplier": False,
+                        "ad_noise_multiplier": 1,
+                        "ad_use_clip_skip": False
+                    }
+                ]
             }
         }
 
