@@ -429,7 +429,13 @@ class Predictor(BasePredictor):
             print("Running kek")
             while True:
                 try:
-                    response = self.api.progressapi(ProgressRequest())
+
+                    from modules.api.models import (
+                        StableDiffusionTxt2ImgProcessingAPI,
+                        StableDiffusionImg2ImgProcessingAPI,
+                        ProgressRequest
+                    )
+                    response = self.api.progressapi(ProgressRequest(skip_current_image=False))
                     requests.post(
                         url=postback_url or "https://back-dev.recrea.ai/api/v1/live_preview",
                         json=response.dict(),
@@ -469,6 +475,7 @@ class Predictor(BasePredictor):
 
         print(f"Setting {forge_unet_storage_dtype=}, {online_lora=}")
         shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
+        shared.state.current_image = True
         dynamic_args['online_lora'] = online_lora
 
         if debug_flux_checkpoint_url:
