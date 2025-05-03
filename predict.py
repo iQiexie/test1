@@ -426,7 +426,7 @@ class Predictor(BasePredictor):
             print("Running kek")
             while True:
                 try:
-                    response = self.api.progressapi()
+                    response = self.api.progressapi(ProgressRequest())
                     print(f"[progress] {response=}")
                     time.sleep(1)
                 except Exception as e:
