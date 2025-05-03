@@ -424,15 +424,13 @@ class Predictor(BasePredictor):
 
         def kek():
             print("Running kek")
-
-            try:
-                while True:
-                    response = requests.get('http://127.0.0.1:7860/sdapi/progress')
-                    print(response.status_code)
-                    print(response.text)
+            while True:
+                try:
+                    response = self.api.progressapi()
+                    print(f"[progress] {response=}")
                     time.sleep(1)
-            except Exception as e:
-                traceback.print_exception(type(e), e, e.__traceback__)
+                except Exception as e:
+                    print(f"[progress] got: {e=}")
 
         print("Starting kek")
         thread = threading.Thread(target=kek, daemon=True)
@@ -448,7 +446,8 @@ class Predictor(BasePredictor):
         from modules import scripts
         from modules.api.models import (
             StableDiffusionTxt2ImgProcessingAPI,
-            StableDiffusionImg2ImgProcessingAPI
+            StableDiffusionImg2ImgProcessingAPI,
+            ProgressRequest
         )
         from PIL import Image
         import uuid
