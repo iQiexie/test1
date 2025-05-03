@@ -417,23 +417,27 @@ class Predictor(BasePredictor):
             default="Perfect hand , high-quality nails, anatomically correct hands and fingers",
         ),
     ) -> list[Path]:
-        async def kek():
+        import threading
+        import time
+        import traceback
+        import requests
+
+        def kek():
             print("Running kek")
 
             try:
-                import aiohttp
-
                 while True:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.get('http://127.0.0.1:7860/sdapi/progress') as resp:
-                            print(resp.status)
-                            print(await resp.text())
-                    await asyncio.sleep(1)
+                    response = requests.get('http://127.0.0.1:7860/sdapi/progress')
+                    print(response.status_code)
+                    print(response.text)
+                    time.sleep(1)
             except Exception as e:
-                traceback.print_exception(e)
+                traceback.print_exception(type(e), e, e.__traceback__)
 
         print("Starting kek")
-        asyncio.create_task(kek)
+        thread = threading.Thread(target=kek, daemon=True)
+        thread.start()
+
         if image == "runpod":
             print("Setting image to None, because of runpod")
             image = None
