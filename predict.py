@@ -475,7 +475,6 @@ class Predictor(BasePredictor):
 
         print(f"Setting {forge_unet_storage_dtype=}, {online_lora=}")
         shared.opts.set('forge_unet_storage_dtype', forge_unet_storage_dtype)
-        shared.state.current_image = True
         dynamic_args['online_lora'] = online_lora
 
         if debug_flux_checkpoint_url:
@@ -604,6 +603,7 @@ class Predictor(BasePredictor):
             print(f"LoRA: {lora.items=}")
 
         with catchtime(tag="Total Prediction Time"):
+            print(f"{shared.opts.dumpjson()=}")
             if image:
                 req['img2imgreq'] = StableDiffusionImg2ImgProcessingAPI(**payload)
                 resp = self.api.img2imgapi(**req)
