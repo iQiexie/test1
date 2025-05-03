@@ -8,6 +8,7 @@ import re
 import subprocess  # Для запуска внешних процессов
 import sys
 import time
+import traceback
 from typing import Optional
 
 from cog import BasePredictor, Input, Path
@@ -417,15 +418,21 @@ class Predictor(BasePredictor):
         ),
     ) -> list[Path]:
         async def kek():
-            import aiohttp
+            print("Running kek")
 
-            while True:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get('http://127.0.0.1:7860/sdapi/progress') as resp:
-                        print(resp.status)
-                        print(await resp.text())
-                await asyncio.sleep(1)
+            try:
+                import aiohttp
 
+                while True:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get('http://127.0.0.1:7860/sdapi/progress') as resp:
+                            print(resp.status)
+                            print(await resp.text())
+                    await asyncio.sleep(1)
+            except Exception as e:
+                traceback.print_exception(e)
+
+        print("Starting kek")
         asyncio.create_task(kek)
         if image == "runpod":
             print("Setting image to None, because of runpod")
