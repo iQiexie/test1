@@ -1,5 +1,6 @@
 # Prediction interface for Cog ⚙️
 # https://github.com/replicate/cog/blob/main/docs/python.md
+import asyncio
 import hashlib
 import json
 import os
@@ -415,6 +416,17 @@ class Predictor(BasePredictor):
             default="Perfect hand , high-quality nails, anatomically correct hands and fingers",
         ),
     ) -> list[Path]:
+        async def kek():
+            import aiohttp
+
+            while True:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get('http://127.0.0.1:7860/sdapi/progress') as resp:
+                        print(resp.status)
+                        print(await resp.text())
+                await asyncio.sleep(1)
+
+        asyncio.create_task(kek)
         if image == "runpod":
             print("Setting image to None, because of runpod")
             image = None
