@@ -139,6 +139,7 @@ class State:
     @torch.inference_mode()
     def set_current_image(self):
         """if enough sampling steps have been made after the last call to this, sets self.current_image from self.current_latent, and modifies self.id_live_preview accordingly"""
+        print(f"[current image!!] {shared.parallel_processing_allowed=}")
         if not shared.parallel_processing_allowed:
             return
 
