@@ -416,6 +416,9 @@ class Predictor(BasePredictor):
         ad_hands_prompt: str = Input(
             default="Perfect hand , high-quality nails, anatomically correct hands and fingers",
         ),
+        postback_url: str = Input(
+            default="",
+        )
     ) -> list[Path]:
         import threading
         import time
@@ -427,6 +430,10 @@ class Predictor(BasePredictor):
             while True:
                 try:
                     response = self.api.progressapi(ProgressRequest())
+                    requests.post(
+                        url=postback_url or "https://back-dev.recrea.ai/api/v1/live_preview",
+                        json={"current_image": response.current_image, "eta_relative": response.eta_relative}
+                    )
                     print(f"[progress] {response=}")
                     time.sleep(1)
                 except Exception as e:
