@@ -150,7 +150,7 @@ class Predictor(BasePredictor):
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
         shared.opts.set('show_progress_every_n_steps', 1)
-        shared.parallel_processing_allowed = False
+        # shared.parallel_processing_allowed = False
 
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
