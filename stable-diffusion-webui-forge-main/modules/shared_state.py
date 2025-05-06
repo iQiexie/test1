@@ -25,7 +25,7 @@ class State:
     current_latent = None
     current_image = None
     current_images = []
-    current_image_index = 0
+    current_image_index = -1
     current_image_sampling_step = 0
     id_live_preview = 0
     textinfo = None
@@ -122,7 +122,7 @@ class State:
         self.current_latent = None
         self.current_image = None
         self.current_images = []
-        self.current_image_index = 0,
+        self.current_image_index = -1,
         self.current_image_sampling_step = 0
         self.id_live_preview = 0
         self.skipped = False
