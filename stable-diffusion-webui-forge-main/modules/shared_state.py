@@ -24,6 +24,8 @@ class State:
     sampling_steps = 0
     current_latent = None
     current_image = None
+    current_images = []
+    current_image_index = 0
     current_image_sampling_step = 0
     id_live_preview = 0
     textinfo = None
@@ -105,6 +107,7 @@ class State:
             "job_no": self.job_no,
             "sampling_step": self.sampling_step,
             "sampling_steps": self.sampling_steps,
+            "current_image_index": self.current_image_index,
         }
 
         return obj
@@ -118,6 +121,8 @@ class State:
         self.job_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         self.current_latent = None
         self.current_image = None
+        self.current_images = []
+        self.current_image_index = 0,
         self.current_image_sampling_step = 0
         self.id_live_preview = 0
         self.skipped = False
@@ -160,6 +165,8 @@ class State:
                 self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
 
             self.current_image_sampling_step = self.sampling_step
+            if len(self.current_latent) > 1 or self.id_live_preview < 2:
+                self.current_images = [modules.sd_samplers.sample_to_image(self.current_latent, i) for i in range(len(self.current_latent))]
 
         except Exception as e:
             # traceback.print_exc()
