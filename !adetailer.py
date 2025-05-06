@@ -816,7 +816,7 @@ class AfterDetailerScript(scripts.Script):
             return False
 
         i = get_i(p)
-        shared.state.current_image_index = i + 100
+        shared.state.current_image_index = i
 
         i2i = self.get_i2i_p(p, args, pp.image)
         ad_prompts, ad_negatives = self.get_prompt(p, args)
