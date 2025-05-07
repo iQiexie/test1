@@ -557,7 +557,6 @@ class Api:
                 force_model_reload=force_model_reload or bool(additional_modules),
             )
 
-        print(f"v2 TEST TEST TEST\n\n\n\n\n\n\n{txt2imgreq.dict()=}\n\n\n\n\n\n\n")
         task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
         script_runner = scripts.scripts_txt2img
         infotext_script_args = {}
@@ -601,8 +600,6 @@ class Api:
         args.pop('save_images', None)
 
         add_task_to_queue(task_id)
-        print(f"new {args=}")
-        print(f"new {script_args=}")
 
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:

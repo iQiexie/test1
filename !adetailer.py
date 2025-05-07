@@ -230,8 +230,6 @@ class AfterDetailerScript(scripts.Script):
 
     def get_args(self, p, *args_) -> list[ADetailerArgs]:
         args = [arg for arg in args_ if isinstance(arg, dict)]
-        print(f"Adetailer got: {args_=}")
-
         if not args:
             message = f"[-] ADetailer: Invalid arguments passed to ADetailer: {args_!r}"
             raise ValueError(message)

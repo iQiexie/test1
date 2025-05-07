@@ -605,7 +605,6 @@ class Predictor(BasePredictor):
             print(f"LoRA: {lora.items=}")
 
         with catchtime(tag="Total Prediction Time"):
-            print(f"{shared.opts.dumpjson()=}")
             if image:
                 req['img2imgreq'] = StableDiffusionImg2ImgProcessingAPI(**payload)
                 resp = self.api.img2imgapi(**req)
