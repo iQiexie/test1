@@ -47,7 +47,7 @@ build:
     - pget -f "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
     - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors"
     - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
-    - pip install torch==2.0.0a0 intel-extension-for-pytorch==2.0.110+gitba7f6c1 --extra-index-url
+    - pip install torch==2.0.0a0 intel-extension-for-pytorch==2.0.110+gitba7f6c1 --extra-index-url https://download.pytorch.org/whl/cu121
     - pip install -r requirements_versions.txt
     - pip install install -U -I --no-deps xformers==0.0.27
     - pip install https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip https://github.com/mlfoundations/open_clip/archive/bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b.zip
