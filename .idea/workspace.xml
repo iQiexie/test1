@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="656b6eb1-7272-4e05-aaa5-1764be404a6a" name="Changes" comment="better adetailer settings" />
+    <list default="true" id="656b6eb1-7272-4e05-aaa5-1764be404a6a" name="Changes" comment="better adetailer settings">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cog.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/cog.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extensions/adetailer" beforeDir="false" afterPath="$PROJECT_DIR$/extensions/adetailer" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extensions/adetailer/scripts/!adetailer.py" beforeDir="false" afterPath="$PROJECT_DIR$/extensions/adetailer/scripts/!adetailer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/launch_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/modules/launch_utils.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -205,6 +212,7 @@
       <workItem from="1746606698329" duration="3701000" />
       <workItem from="1746713086787" duration="2384000" />
       <workItem from="1746724688773" duration="1384000" />
+      <workItem from="1746784654283" duration="2905000" />
     </task>
     <task id="LOCAL-00226" summary="test remove gradio">
       <option name="closed" value="true" />
