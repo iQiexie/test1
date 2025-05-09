@@ -1,0 +1,220 @@
+Index: stable-diffusion-webui-forge-main/backend/operations.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Copyright Forge 2024\n\nimport time\nimport torch\nimport contextlib\n\nfrom backend import stream, memory_management, utils\nfrom backend.patcher.lora import merge_lora_to_weight\n\n\nstash = {}\n\n\ndef get_weight_and_bias(layer, weight_args=None, bias_args=None, weight_fn=None, bias_fn=None):\n    patches = getattr(layer, 'forge_online_loras', None)\n    weight_patches, bias_patches = None, None\n\n    if patches is not None:\n        weight_patches = patches.get('weight', None)\n\n    if patches is not None:\n        bias_patches = patches.get('bias', None)\n\n    weight = None\n    if layer.weight is not None:\n        weight = layer.weight\n        if weight_fn is not None:\n            if weight_args is not None:\n                fn_device = weight_args.get('device', None)\n                if fn_device is not None:\n                    weight = weight.to(device=fn_device)\n            weight = weight_fn(weight)\n        if weight_args is not None:\n            weight = weight.to(**weight_args)\n        if weight_patches is not None:\n            weight = merge_lora_to_weight(patches=weight_patches, weight=weight, key=\"online weight lora\", computation_dtype=weight.dtype)\n\n    bias = None\n    if layer.bias is not None:\n        bias = layer.bias\n        if bias_fn is not None:\n            if bias_args is not None:\n                fn_device = bias_args.get('device', None)\n                if fn_device is not None:\n                    bias = bias.to(device=fn_device)\n            bias = bias_fn(bias)\n        if bias_args is not None:\n            bias = bias.to(**bias_args)\n        if bias_patches is not None:\n            bias = merge_lora_to_weight(patches=bias_patches, weight=bias, key=\"online bias lora\", computation_dtype=bias.dtype)\n    return weight, bias\n\n\ndef weights_manual_cast(layer, x, skip_weight_dtype=False, skip_bias_dtype=False, weight_fn=None, bias_fn=None):\n    weight, bias, signal = None, None, None\n    non_blocking = True\n\n    if getattr(x.device, 'type', None) == 'mps':\n        non_blocking = False\n\n    target_dtype = x.dtype\n    target_device = x.device\n\n    if skip_weight_dtype:\n        weight_args = dict(device=target_device, non_blocking=non_blocking)\n    else:\n        weight_args = dict(device=target_device, dtype=target_dtype, non_blocking=non_blocking)\n\n    if skip_bias_dtype:\n        bias_args = dict(device=target_device, non_blocking=non_blocking)\n    else:\n        bias_args = dict(device=target_device, dtype=target_dtype, non_blocking=non_blocking)\n\n    if stream.should_use_stream():\n        with stream.stream_context()(stream.mover_stream):\n            weight, bias = get_weight_and_bias(layer, weight_args, bias_args, weight_fn=weight_fn, bias_fn=bias_fn)\n            signal = stream.mover_stream.record_event()\n    else:\n        weight, bias = get_weight_and_bias(layer, weight_args, bias_args, weight_fn=weight_fn, bias_fn=bias_fn)\n\n    return weight, bias, signal\n\n\n@contextlib.contextmanager\ndef main_stream_worker(weight, bias, signal):\n    if signal is None or not stream.should_use_stream():\n        yield\n        return\n\n    with stream.stream_context()(stream.current_stream):\n        stream.current_stream.wait_event(signal)\n        yield\n        finished_signal = stream.current_stream.record_event()\n        stash[id(finished_signal)] = (weight, bias, finished_signal)\n\n    garbage = []\n    for k, (w, b, s) in stash.items():\n        if s.query():\n            garbage.append(k)\n\n    for k in garbage:\n        del stash[k]\n    return\n\n\ndef cleanup_cache():\n    if not stream.should_use_stream():\n        return\n\n    stream.current_stream.synchronize()\n    stream.mover_stream.synchronize()\n    stash.clear()\n    return\n\n\ncurrent_device = None\ncurrent_dtype = None\ncurrent_manual_cast_enabled = False\ncurrent_bnb_dtype = None\n\n\nclass ForgeOperations:\n    class Linear(torch.nn.Module):\n        def __init__(self, in_features, out_features, *args, **kwargs):\n            super().__init__()\n            self.in_features = in_features\n            self.out_features = out_features\n            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))\n            self.weight = None\n            self.bias = None\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs):\n            if hasattr(self, 'dummy'):\n                if prefix + 'weight' in state_dict:\n                    self.weight = torch.nn.Parameter(state_dict[prefix + 'weight'].to(self.dummy))\n                if prefix + 'bias' in state_dict:\n                    self.bias = torch.nn.Parameter(state_dict[prefix + 'bias'].to(self.dummy))\n                del self.dummy\n            else:\n                super()._load_from_state_dict(state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs)\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.linear(x, weight, bias)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                return torch.nn.functional.linear(x, weight, bias)\n\n    class Conv2d(torch.nn.Conv2d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return self._conv_forward(x, weight, bias)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                return super()._conv_forward(x, weight, bias)\n\n    class Conv3d(torch.nn.Conv3d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return self._conv_forward(x, weight, bias)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                return super()._conv_forward(input, weight, bias)\n\n    class Conv1d(torch.nn.Conv1d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return self._conv_forward(x, weight, bias)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                return super()._conv_forward(input, weight, bias)\n\n    class ConvTranspose2d(torch.nn.ConvTranspose2d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x, output_size=None):\n            if self.parameters_manual_cast:\n                num_spatial_dims = 2\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.conv_transpose2d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                num_spatial_dims = 2\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n                return torch.nn.functional.conv_transpose2d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n\n    class ConvTranspose1d(torch.nn.ConvTranspose1d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x, output_size=None):\n            if self.parameters_manual_cast:\n                num_spatial_dims = 1\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.conv_transpose1d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                num_spatial_dims = 1\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n                return torch.nn.functional.conv_transpose2d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n\n    class ConvTranspose3d(torch.nn.ConvTranspose3d):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x, output_size=None):\n            if self.parameters_manual_cast:\n                num_spatial_dims = 3\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.conv_transpose3d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n            else:\n                weight, bias = get_weight_and_bias(self)\n                num_spatial_dims = 3\n                output_padding = self._output_padding(x, output_size, self.stride, self.padding, self.kernel_size, num_spatial_dims, self.dilation)\n                return torch.nn.functional.conv_transpose2d(x, weight, bias, self.stride, self.padding, output_padding, self.groups, self.dilation)\n\n    class GroupNorm(torch.nn.GroupNorm):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.group_norm(x, self.num_groups, weight, bias, self.eps)\n            else:\n                return super().forward(x)\n\n    class LayerNorm(torch.nn.LayerNorm):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            kwargs['dtype'] = current_dtype\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def reset_parameters(self):\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.layer_norm(x, self.normalized_shape, weight, bias, self.eps)\n            else:\n                return super().forward(x)\n\n    class Embedding(torch.nn.Embedding):\n\n        def __init__(self, *args, **kwargs):\n            kwargs['device'] = current_device\n            super().__init__(*args, **kwargs)\n            self.parameters_manual_cast = current_manual_cast_enabled\n            self.bias = None\n\n        def reset_parameters(self):\n            self.bias = None\n            return None\n\n        def forward(self, x):\n            if self.parameters_manual_cast:\n                weight, bias, signal = weights_manual_cast(self, x, skip_weight_dtype=True, skip_bias_dtype=True)\n                with main_stream_worker(weight, bias, signal):\n                    return torch.nn.functional.embedding(x, weight, self.padding_idx, self.max_norm, self.norm_type, self.scale_grad_by_freq, self.sparse)\n            else:\n                return super().forward(x)\n\n\ntry:\n    from backend.operations_bnb import ForgeLoader4Bit, ForgeParams4bit, functional_linear_4bits, functional_dequantize_4bit\n\n    class ForgeOperationsBNB4bits(ForgeOperations):\n        class Linear(ForgeLoader4Bit):\n            def __init__(self, *args, **kwargs):\n                super().__init__(device=current_device, dtype=current_dtype, quant_type=current_bnb_dtype)\n                self.parameters_manual_cast = current_manual_cast_enabled\n\n            def forward(self, x):\n                if self.bias is not None and self.bias.dtype != x.dtype:\n                    # Maybe this can also be set to all non-bnb ops since the cost is very low.\n                    # And it only invokes one time, and most linear does not have bias\n                    self.bias = utils.tensor2parameter(self.bias.to(x.dtype))\n\n                if hasattr(self, 'forge_online_loras'):\n                    weight, bias, signal = weights_manual_cast(self, x, weight_fn=functional_dequantize_4bit, bias_fn=None, skip_bias_dtype=True)\n                    with main_stream_worker(weight, bias, signal):\n                        return torch.nn.functional.linear(x, weight, bias)\n\n                if not self.parameters_manual_cast:\n                    return functional_linear_4bits(x, self.weight, self.bias)\n                elif not self.weight.bnb_quantized:\n                    assert x.device.type == 'cuda', 'BNB Must Use CUDA as Computation Device!'\n                    layer_original_device = self.weight.device\n                    self.weight = self.weight._quantize(x.device)\n                    bias = self.bias.to(x.device) if self.bias is not None else None\n                    out = functional_linear_4bits(x, self.weight, bias)\n                    self.weight = self.weight.to(layer_original_device)\n                    return out\n                else:\n                    weight, bias, signal = weights_manual_cast(self, x, skip_weight_dtype=True, skip_bias_dtype=True)\n                    with main_stream_worker(weight, bias, signal):\n                        return functional_linear_4bits(x, weight, bias)\n\n    bnb_avaliable = True\nexcept:\n    bnb_avaliable = False\n\n\nfrom backend.operations_gguf import dequantize_tensor\n\n\nclass ForgeOperationsGGUF(ForgeOperations):\n    class Linear(torch.nn.Module):\n        def __init__(self, *args, **kwargs):\n            super().__init__()\n            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))\n            self.weight = None\n            self.bias = None\n            self.parameters_manual_cast = current_manual_cast_enabled\n\n        def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs):\n            if hasattr(self, 'dummy'):\n                computation_dtype = self.dummy.dtype\n                if computation_dtype not in [torch.float16, torch.bfloat16]:\n                    # GGUF cast only supports 16bits otherwise super slow\n                    computation_dtype = torch.float16\n                if prefix + 'weight' in state_dict:\n                    self.weight = state_dict[prefix + 'weight'].to(device=self.dummy.device)\n                    self.weight.computation_dtype = computation_dtype\n                if prefix + 'bias' in state_dict:\n                    self.bias = state_dict[prefix + 'bias'].to(device=self.dummy.device)\n                    self.bias.computation_dtype = computation_dtype\n                del self.dummy\n            else:\n                if prefix + 'weight' in state_dict:\n                    self.weight = state_dict[prefix + 'weight']\n                if prefix + 'bias' in state_dict:\n                    self.bias = state_dict[prefix + 'bias']\n            return\n\n        def _apply(self, fn, recurse=True):\n            for k, p in self.named_parameters(recurse=False, remove_duplicate=True):\n                setattr(self, k, utils.tensor2parameter(fn(p)))\n            return self\n\n        def forward(self, x):\n            if self.bias is not None and self.bias.dtype != x.dtype:\n                self.bias = utils.tensor2parameter(dequantize_tensor(self.bias).to(x.dtype))\n\n            if self.weight is not None and self.weight.dtype != x.dtype and getattr(self.weight, 'gguf_cls', None) is None:\n                self.weight = utils.tensor2parameter(self.weight.to(x.dtype))\n\n            weight, bias, signal = weights_manual_cast(self, x, weight_fn=dequantize_tensor, bias_fn=None, skip_bias_dtype=True)\n            with main_stream_worker(weight, bias, signal):\n                return torch.nn.functional.linear(x, weight, bias)\n\n\n@contextlib.contextmanager\ndef using_forge_operations(operations=None, device=None, dtype=None, manual_cast_enabled=False, bnb_dtype=None):\n    global current_device, current_dtype, current_manual_cast_enabled, current_bnb_dtype\n\n    current_device, current_dtype, current_manual_cast_enabled, current_bnb_dtype = device, dtype, manual_cast_enabled, bnb_dtype\n\n    if operations is None:\n        if bnb_dtype in ['gguf']:\n            operations = ForgeOperationsGGUF\n        elif bnb_avaliable and bnb_dtype in ['nf4', 'fp4']:\n            operations = ForgeOperationsBNB4bits\n        else:\n            operations = ForgeOperations\n\n    op_names = ['Linear', 'Conv1d', 'Conv2d', 'Conv3d', 'ConvTranspose1d', 'ConvTranspose2d', 'ConvTranspose3d', 'GroupNorm', 'LayerNorm', 'Embedding']\n    backups = {op_name: getattr(torch.nn, op_name) for op_name in op_names}\n\n    try:\n        for op_name in op_names:\n            setattr(torch.nn, op_name, getattr(operations, op_name))\n\n        yield\n\n    finally:\n        for op_name in op_names:\n            setattr(torch.nn, op_name, backups[op_name])\n    return\n\n\ndef shift_manual_cast(model, enabled):\n    for m in model.modules():\n        if hasattr(m, 'parameters_manual_cast'):\n            m.parameters_manual_cast = enabled\n    return\n\n\n@contextlib.contextmanager\ndef automatic_memory_management():\n    memory_management.free_memory(\n        memory_required=3 * 1024 * 1024 * 1024,\n        device=memory_management.get_torch_device()\n    )\n\n    module_list = []\n\n    original_init = torch.nn.Module.__init__\n    original_to = torch.nn.Module.to\n\n    def patched_init(self, *args, **kwargs):\n        module_list.append(self)\n        return original_init(self, *args, **kwargs)\n\n    def patched_to(self, *args, **kwargs):\n        module_list.append(self)\n        return original_to(self, *args, **kwargs)\n\n    try:\n        torch.nn.Module.__init__ = patched_init\n        torch.nn.Module.to = patched_to\n        yield\n    finally:\n        torch.nn.Module.__init__ = original_init\n        torch.nn.Module.to = original_to\n\n    start = time.perf_counter()\n    module_list = set(module_list)\n\n    for module in module_list:\n        module.cpu()\n\n    memory_management.soft_empty_cache()\n    end = time.perf_counter()\n\n    print(f'Automatic Memory Management: {len(module_list)} Modules in {(end - start):.2f} seconds.')\n    return\n\n\nclass DynamicSwapInstaller:\n    @staticmethod\n    def _install_module(module: torch.nn.Module, target_device: torch.device):\n        original_class = module.__class__\n        module.__dict__['forge_backup_original_class'] = original_class\n\n        def hacked_get_attr(self, name: str):\n            if '_parameters' in self.__dict__:\n                _parameters = self.__dict__['_parameters']\n                if name in _parameters:\n                    p = _parameters[name]\n                    if p is None:\n                        return None\n                    if p.__class__ == torch.nn.Parameter:\n                        return torch.nn.Parameter(p.to(target_device), requires_grad=p.requires_grad)\n                    else:\n                        return p.to(target_device)\n            if '_buffers' in self.__dict__:\n                _buffers = self.__dict__['_buffers']\n                if name in _buffers:\n                    return _buffers[name].to(target_device)\n            return super(original_class, self).__getattr__(name)\n\n        module.__class__ = type('DynamicSwap_' + original_class.__name__, (original_class,), {\n            '__getattr__': hacked_get_attr,\n        })\n\n        return\n\n    @staticmethod\n    def _uninstall_module(module: torch.nn.Module):\n        if 'forge_backup_original_class' in module.__dict__:\n            module.__class__ = module.__dict__.pop('forge_backup_original_class')\n        return\n\n    @staticmethod\n    def install_model(model: torch.nn.Module, target_device: torch.device):\n        for m in model.modules():\n            DynamicSwapInstaller._install_module(m, target_device)\n        return\n\n    @staticmethod\n    def uninstall_model(model: torch.nn.Module):\n        for m in model.modules():\n            DynamicSwapInstaller._uninstall_module(m)\n        return\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/stable-diffusion-webui-forge-main/backend/operations.py b/stable-diffusion-webui-forge-main/backend/operations.py
+--- a/stable-diffusion-webui-forge-main/backend/operations.py	(revision 253a21b8e25c2ba8327bc1ae004cd0217024e6aa)
++++ b/stable-diffusion-webui-forge-main/backend/operations.py	(date 1742397521346)
+@@ -125,7 +125,19 @@
+             super().__init__()
+             self.in_features = in_features
+             self.out_features = out_features
+-            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=dtype_to_use))
+             self.weight = None
+             self.bias = None
+             self.parameters_manual_cast = current_manual_cast_enabled
+@@ -153,7 +165,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -173,7 +197,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -193,7 +229,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -213,7 +261,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -238,7 +298,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -263,7 +335,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -288,7 +372,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -307,7 +403,19 @@
+ 
+         def __init__(self, *args, **kwargs):
+             kwargs['device'] = current_device
+-            kwargs['dtype'] = current_dtype
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            kwargs['dtype'] = dtype_to_use
+             super().__init__(*args, **kwargs)
+             self.parameters_manual_cast = current_manual_cast_enabled
+ 
+@@ -390,7 +498,19 @@
+     class Linear(torch.nn.Module):
+         def __init__(self, *args, **kwargs):
+             super().__init__()
+-            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=current_dtype))
++            # Convert string dtype to torch.dtype if needed
++            dtype_to_use = current_dtype
++            if isinstance(dtype_to_use, str):
++                if dtype_to_use == 'float16' or dtype_to_use == 'fp16':
++                    dtype_to_use = torch.float16
++                elif dtype_to_use == 'bfloat16' or dtype_to_use == 'bf16':
++                    dtype_to_use = torch.bfloat16
++                elif dtype_to_use == 'float32' or dtype_to_use == 'fp32':
++                    dtype_to_use = torch.float32
++                else:
++                    # Default to float16 if string is not recognized
++                    dtype_to_use = torch.float16
++            self.dummy = torch.nn.Parameter(torch.empty(1, device=current_device, dtype=dtype_to_use))
+             self.weight = None
+             self.bias = None
+             self.parameters_manual_cast = current_manual_cast_enabled
