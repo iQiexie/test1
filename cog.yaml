@@ -73,6 +73,7 @@ build:
     - "peft==0.13.2"
     - "pydantic==2.8.2"
     - "huggingface-hub==0.26.2"
+    - "ultralytics"
 
   # commands run after the environment is setup
   run:
