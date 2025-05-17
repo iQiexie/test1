@@ -159,7 +159,7 @@ class Predictor(BasePredictor):
         if self.has_memory_management:
             # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
             total_vram = memory_management.total_vram
-            inference_memory = int(total_vram * 0.1)  # 10% для вычислений
+            inference_memory = int(total_vram * 0.6)  # 60% для вычислений
             model_memory = total_vram - inference_memory
 
             memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
