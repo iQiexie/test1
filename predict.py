@@ -534,7 +534,7 @@ class Predictor(BasePredictor):
                         {
                             "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
                             "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.2),
+                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
                             "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
                             "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
                             "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
@@ -563,7 +563,7 @@ class Predictor(BasePredictor):
                         {
                             "ad_model": adetailer_args.get("ad_model", "hand_yolov8n.pt"),
                             "ad_prompt": adetailer_args.get("ad_prompt", ad_hands_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.2),
+                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
                             "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
                             "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
                             "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
