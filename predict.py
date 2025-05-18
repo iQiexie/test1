@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from typing import Callable
+from time import perf_counter
 
 @contextmanager
 def catchtime(tag: str) -> Callable[[], float]:
@@ -21,7 +22,6 @@ with catchtime(tag="Imports"):
 
     from modules import initialize_util
     from cog import BasePredictor, Input, Path
-    from time import perf_counter
     from weights import WeightsDownloadCache
 
 
