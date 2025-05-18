@@ -85,7 +85,7 @@ build:
     - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     - pip install https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip https://github.com/mlfoundations/open_clip/archive/bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b.zip
     - git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-assets.git /src/stable-diffusion-webui-assets
-    - midir -p /src/repositories
+    - mkdir -p /src/repositories
     - git clone https://github.com/lllyasviel/huggingface_guess.git /src/repositories/huggingface_guess
     - git clone https://github.com/salesforce/BLIP.git /src/repositories/BLIP
     - pip install torchvision==0.21
