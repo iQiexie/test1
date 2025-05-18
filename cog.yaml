@@ -89,6 +89,7 @@ build:
     - git clone https://github.com/lllyasviel/huggingface_guess.git /src/repositories/huggingface_guess
     - git clone https://github.com/salesforce/BLIP.git /src/repositories/BLIP
     - pip install torchvision==0.21
+    - wget --content-disposition -P /src/models/RealESRGAN/RealESRGAN_x4plus.pth "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
