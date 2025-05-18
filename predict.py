@@ -161,14 +161,6 @@ class Predictor(BasePredictor):
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
-
-
-        # moved env preparation to build time to reduce the warm-up time
-        # from modules import launch_utils
-
-        # with launch_utils.startup_timer.subcategory("prepare environment"):
-        #     launch_utils.prepare_environment()
-
         startup_timer = timer.startup_timer
         startup_timer.record("launcher")
 
@@ -186,7 +178,7 @@ class Predictor(BasePredictor):
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
         shared.opts.set('show_progress_every_n_steps', 1)
-        # shared.parallel_processing_allowed = False
+        shared.parallel_processing_allowed = False
 
         # Устанавливаем чекпоинт
         shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
