@@ -1,4 +1,5 @@
 import collections
+import hashlib
 import importlib
 import os
 import sys
@@ -111,7 +112,7 @@ class CheckpointInfo:
             checkpoint_aliases[id] = self
 
     def calculate_shorthash(self):
-        self.sha256 = hashes.sha256(self.filename, f"checkpoint/{self.name}")
+        self.sha256 = hashlib.sha256(self.filename.encode()).hexdigest()
         if self.sha256 is None:
             return
 

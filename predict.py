@@ -330,7 +330,7 @@ class Predictor(BasePredictor):
             default=0.3,
         ),
         debug_flux_checkpoint_url: str = Input(
-            description="Flux checkpoint URL",
+            description="Flux checkpoint URL. UPDATE 18.05.2025 BREAKS IT BECAUSE OF NEW def calculate_shorthash(self):",
             default=""
         ),
         enable_clip_l: bool = Input(
