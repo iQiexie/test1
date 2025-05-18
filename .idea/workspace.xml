@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="656b6eb1-7272-4e05-aaa5-1764be404a6a" name="Changes" comment="better adetailer settings" />
+    <list default="true" id="656b6eb1-7272-4e05-aaa5-1764be404a6a" name="Changes" comment="add adetailer args">
+      <change beforePath="$PROJECT_DIR$/.idea/cog-sd-webui-main.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/cog-sd-webui-main.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements_versions.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements_versions.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -59,6 +63,28 @@
                 </list>
               </option>
               <option name="repositoryRootUrl" value="file://$PROJECT_DIR$" />
+            </RecentBranchesForRepo>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1746788010" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$/extensions/adetailer" />
+            </RecentBranchesForRepo>
+            <RecentBranchesForRepo>
+              <option name="branches">
+                <list>
+                  <RecentBranch>
+                    <option name="branchName" value="main" />
+                    <option name="lastUsedInstant" value="1746788078" />
+                  </RecentBranch>
+                </list>
+              </option>
+              <option name="repositoryRootUrl" value="file://$PROJECT_DIR$/extensions/adetailer/kek" />
             </RecentBranchesForRepo>
           </list>
         </option>
@@ -205,79 +231,17 @@
       <workItem from="1746606698329" duration="3701000" />
       <workItem from="1746713086787" duration="2384000" />
       <workItem from="1746724688773" duration="1384000" />
-      <workItem from="1746784654283" duration="3224000" />
-    </task>
-    <task id="LOCAL-00227" summary="[runpod] Revert &quot;new checkpoint 22gb&quot;&#10;&#10;This reverts commit 19bc6f7f8fb62f320cca50af009b192906bcef1b.">
-      <option name="closed" value="true" />
-      <created>1743002660338</created>
-      <option name="number" value="00227" />
-      <option name="presentableId" value="LOCAL-00227" />
-      <option name="project" value="LOCAL" />
-      <updated>1743002660338</updated>
-    </task>
-    <task id="LOCAL-00228" summary="runpod">
-      <option name="closed" value="true" />
-      <created>1743002830633</created>
-      <option name="number" value="00228" />
-      <option name="presentableId" value="LOCAL-00228" />
-      <option name="project" value="LOCAL" />
-      <updated>1743002830633</updated>
-    </task>
-    <task id="LOCAL-00229" summary="runpod">
-      <option name="closed" value="true" />
-      <created>1743015852225</created>
-      <option name="number" value="00229" />
-      <option name="presentableId" value="LOCAL-00229" />
-      <option name="project" value="LOCAL" />
-      <updated>1743015852225</updated>
-    </task>
-    <task id="LOCAL-00230" summary="runpod explicit optional image">
-      <option name="closed" value="true" />
-      <created>1743015939527</created>
-      <option name="number" value="00230" />
-      <option name="presentableId" value="LOCAL-00230" />
-      <option name="project" value="LOCAL" />
-      <updated>1743015939527</updated>
-    </task>
-    <task id="LOCAL-00231" summary="runpod logging webhook">
-      <option name="closed" value="true" />
-      <created>1743417189133</created>
-      <option name="number" value="00231" />
-      <option name="presentableId" value="LOCAL-00231" />
-      <option name="project" value="LOCAL" />
-      <updated>1743417189133</updated>
-    </task>
-    <task id="LOCAL-00232" summary="runpod logging webhook">
-      <option name="closed" value="true" />
-      <created>1743421005361</created>
-      <option name="number" value="00232" />
-      <option name="presentableId" value="LOCAL-00232" />
-      <option name="project" value="LOCAL" />
-      <updated>1743421005361</updated>
-    </task>
-    <task id="LOCAL-00233" summary="add adetailer">
-      <option name="closed" value="true" />
-      <created>1746011738834</created>
-      <option name="number" value="00233" />
-      <option name="presentableId" value="LOCAL-00233" />
-      <option name="project" value="LOCAL" />
-      <updated>1746011738834</updated>
-    </task>
-    <task id="LOCAL-00234" summary="add adetailer">
-      <option name="closed" value="true" />
-      <created>1746011821135</created>
-      <option name="number" value="00234" />
-      <option name="presentableId" value="LOCAL-00234" />
-      <option name="project" value="LOCAL" />
-      <updated>1746011821135</updated>
-    </task>
-    <task id="LOCAL-00235" summary="add adetailer">
-      <option name="closed" value="true" />
-      <created>1746015814032</created>
-      <option name="number" value="00235" />
-      <option name="presentableId" value="LOCAL-00235" />
-      <option name="project" value="LOCAL" />
-      <updated>1746015814032</updated>
+      <workItem from="1746784654283" duration="6822000" />
+      <workItem from="1746820720013" duration="1507000" />
+      <workItem from="1747033479516" duration="3066000" />
+      <workItem from="1747068999584" duration="672000" />
+      <workItem from="1747092689066" duration="899000" />
+      <workItem from="1747126722309" duration="4327000" />
+      <workItem from="1747136672138" duration="5000" />
+      <workItem from="1747139018000" duration="1796000" />
+      <workItem from="1747223261220" duration="662000" />
+      <workItem from="1747245805014" duration="624000" />
+      <workItem from="1747398373135" duration="654000" />
     </task>
     <task id="LOCAL-00236" summary="add adetailer">
       <option name="closed" value="true" />
@@ -599,7 +563,79 @@
       <option name="project" value="LOCAL" />
       <updated>1746787865177</updated>
     </task>
-    <option name="localTasksCounter" value="276" />
+    <task id="LOCAL-00276" summary="better adetailer settings">
+      <option name="closed" value="true" />
+      <created>1746788449962</created>
+      <option name="number" value="00276" />
+      <option name="presentableId" value="LOCAL-00276" />
+      <option name="project" value="LOCAL" />
+      <updated>1746788449963</updated>
+    </task>
+    <task id="LOCAL-00277" summary="better adetailer settings">
+      <option name="closed" value="true" />
+      <created>1746788476285</created>
+      <option name="number" value="00277" />
+      <option name="presentableId" value="LOCAL-00277" />
+      <option name="project" value="LOCAL" />
+      <updated>1746788476285</updated>
+    </task>
+    <task id="LOCAL-00278" summary="better adetailer settings">
+      <option name="closed" value="true" />
+      <created>1746788801414</created>
+      <option name="number" value="00278" />
+      <option name="presentableId" value="LOCAL-00278" />
+      <option name="project" value="LOCAL" />
+      <updated>1746788801414</updated>
+    </task>
+    <task id="LOCAL-00279" summary="better adetailer settings">
+      <option name="closed" value="true" />
+      <created>1746788854453</created>
+      <option name="number" value="00279" />
+      <option name="presentableId" value="LOCAL-00279" />
+      <option name="project" value="LOCAL" />
+      <updated>1746788854453</updated>
+    </task>
+    <task id="LOCAL-00280" summary="fix huggingface_guess">
+      <option name="closed" value="true" />
+      <created>1746790990400</created>
+      <option name="number" value="00280" />
+      <option name="presentableId" value="LOCAL-00280" />
+      <option name="project" value="LOCAL" />
+      <updated>1746790990400</updated>
+    </task>
+    <task id="LOCAL-00281" summary="fix huggingface_guess">
+      <option name="closed" value="true" />
+      <created>1746791038160</created>
+      <option name="number" value="00281" />
+      <option name="presentableId" value="LOCAL-00281" />
+      <option name="project" value="LOCAL" />
+      <updated>1746791038160</updated>
+    </task>
+    <task id="LOCAL-00282" summary="fix huggingface_guess">
+      <option name="closed" value="true" />
+      <created>1746791763149</created>
+      <option name="number" value="00282" />
+      <option name="presentableId" value="LOCAL-00282" />
+      <option name="project" value="LOCAL" />
+      <updated>1746791763150</updated>
+    </task>
+    <task id="LOCAL-00283" summary="add adetailer args">
+      <option name="closed" value="true" />
+      <created>1747127144021</created>
+      <option name="number" value="00283" />
+      <option name="presentableId" value="LOCAL-00283" />
+      <option name="project" value="LOCAL" />
+      <updated>1747127144021</updated>
+    </task>
+    <task id="LOCAL-00284" summary="add adetailer args">
+      <option name="closed" value="true" />
+      <created>1747129716174</created>
+      <option name="number" value="00284" />
+      <option name="presentableId" value="LOCAL-00284" />
+      <option name="project" value="LOCAL" />
+      <updated>1747129716174</updated>
+    </task>
+    <option name="localTasksCounter" value="285" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -629,8 +665,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="default param" />
-    <MESSAGE value="add aspect ratio" />
     <MESSAGE value="add output_format" />
     <MESSAGE value="debug" />
     <MESSAGE value="test fix" />
@@ -654,7 +688,9 @@
     <MESSAGE value="debug cog" />
     <MESSAGE value="disable adetailer" />
     <MESSAGE value="better adetailer settings" />
-    <option name="LAST_COMMIT_MESSAGE" value="better adetailer settings" />
+    <MESSAGE value="fix huggingface_guess" />
+    <MESSAGE value="add adetailer args" />
+    <option name="LAST_COMMIT_MESSAGE" value="add adetailer args" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
