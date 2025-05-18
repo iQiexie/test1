@@ -86,6 +86,6 @@ parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--log-startup", action='store_true', help="print a detailed log of what's happening at startup")
 args = parser.parse_known_args()[0]
 
-startup_timer = Timer(print_log=args.log_startup)
+startup_timer = Timer(print_log=True)
 
 startup_record = None
