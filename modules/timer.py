@@ -54,7 +54,7 @@ class Timer:
         self.total += e + extra_time
 
         if self.print_log and not disable_log:
-            print(f"{'  ' * self.subcategory_level}{category}: done in {e + extra_time:.3f}s")
+            print(f"{'  ' * self.subcategory_level}{category}: done in {e + extra_time:.3f} seconds")
 
     def subcategory(self, name):
         self.elapsed()
@@ -63,14 +63,14 @@ class Timer:
         return subcat
 
     def summary(self):
-        res = f"{self.total:.1f}s"
+        res = f"{self.total:.1f} seconds"
 
         additions = [(category, time_taken) for category, time_taken in self.records.items() if time_taken >= 0.1 and '/' not in category]
         if not additions:
             return res
 
         res += " ("
-        res += ", ".join([f"{category}: {time_taken:.1f}s" for category, time_taken in additions])
+        res += ", ".join([f"{category}: {time_taken:.1f} seconds" for category, time_taken in additions])
         res += ")"
 
         return res
