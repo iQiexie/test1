@@ -335,6 +335,7 @@ class Predictor(BasePredictor):
                 "ScuNET GAN",
                 "ScuNET PSNR",
                 "SwinIR 4x",
+                "debug",
             ],
             default="R-ESRGAN 4x+",
         ),
