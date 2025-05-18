@@ -2,6 +2,8 @@
 
 import sys
 import time
+from datetime import datetime
+
 import psutil
 import torch
 import platform
@@ -560,6 +562,7 @@ def unload_model_clones(model):
 
 
 def free_memory(memory_required, device, keep_loaded=[], free_all=False):
+    now = datetime.now()
     # this check fully unloads any 'abandoned' models
     for i in range(len(current_loaded_models) - 1, -1, -1):
         if sys.getrefcount(current_loaded_models[i].model) <= 2:
@@ -595,8 +598,7 @@ def free_memory(memory_required, device, keep_loaded=[], free_all=False):
             mem_free_total, mem_free_torch = get_free_memory(device, torch_free_too=True)
             if mem_free_torch > mem_free_total * 0.25:
                 soft_empty_cache()
-
-    print('Done.')
+    print(f'Done in {(datetime.now() - now).total_seconds()} seconds')
     return
 
 
