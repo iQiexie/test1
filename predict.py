@@ -1,28 +1,28 @@
-# Prediction interface for Cog ⚙️
-# https://github.com/replicate/cog/blob/main/docs/python.md
-import asyncio
-import hashlib
-import json
-import os
-import re
-import subprocess  # Для запуска внешних процессов
-import sys
-import time
-import traceback
-from typing import Optional
-
-from cog import BasePredictor, Input, Path
-from time import perf_counter
 from contextlib import contextmanager
 from typing import Callable
-from weights import WeightsDownloadCache
-
 
 @contextmanager
 def catchtime(tag: str) -> Callable[[], float]:
     start = perf_counter()
     yield lambda: perf_counter() - start
     print(f'[Timer: {tag}]: {perf_counter() - start:.3f} seconds')
+
+
+with catchtime(tag="Imports"):
+    import json
+    import os
+    import re
+    import subprocess
+    import sys
+    import time
+    from modules import initialize
+    from modules import timer
+    from fastapi import FastAPI
+
+    from modules import initialize_util
+    from cog import BasePredictor, Input, Path
+    from time import perf_counter
+    from weights import WeightsDownloadCache
 
 
 FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3"
@@ -97,26 +97,7 @@ class Predictor(BasePredictor):
 
         return lora_paths
 
-    def setup(self, force_download_url: str = None) -> None:
-        """Load the model into memory to make running multiple predictions efficient"""
-        # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
-        target_dir = "/src/models/Stable-diffusion"
-        os.makedirs(target_dir, exist_ok=True)
-        model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
-
-        if not os.path.exists(model_path):
-            print(f"Загружаем модель Flux...")
-            download_base_weights(url=FLUX_CHECKPOINT_URL, dest=model_path)
-        elif force_download_url:
-            print(f"Загружаем модель Flux... {force_download_url=}")
-            download_base_weights(url=force_download_url, dest=model_path)
-        else:
-            print(f"Модель Flux уже загружена: {model_path}, {os.path.exists(model_path)=}, {force_download_url=}")
-
-        # workaround for replicate since its entrypoint may contain invalid args
-        os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
-
-
+    def _setup_memory_management(self) -> None:
         # Безопасный импорт memory_management
         try:
             from backend import memory_management
@@ -125,65 +106,33 @@ class Predictor(BasePredictor):
             print(f"Предупреждение: Не удалось импортировать memory_management: {e}")
             self.has_memory_management = False
 
-        # moved env preparation to build time to reduce the warm-up time
-        # from modules import launch_utils
-
-        # with launch_utils.startup_timer.subcategory("prepare environment"):
-        #     launch_utils.prepare_environment()
-
-        from modules import initialize_util
-        from modules import initialize
-        from modules import timer
-
-        startup_timer = timer.startup_timer
-        startup_timer.record("launcher")
-
-        initialize.imports()
-
-        initialize.check_versions()
-
-        initialize.initialize()
-
-        # Импортируем shared после initialize.initialize()
-        from modules import shared
-
-        # Устанавливаем forge_preset на 'flux'
-        shared.opts.set('forge_preset', 'flux')
-        shared.opts.set('show_progress_every_n_steps', 1)
-        # shared.parallel_processing_allowed = False
-
-        # Устанавливаем чекпоинт
-        shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
-
-        # Оптимизация памяти для лучшего качества и скорости с Flux
-        if self.has_memory_management:
-            # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
-            total_vram = memory_management.total_vram
-            inference_memory = int(total_vram * 0.6)  # 60% для вычислений
-            model_memory = total_vram - inference_memory
-
-            memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
-            print(
-                f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
-            )
-
-            # Настройка Swap Method на ASYNC для лучшей производительности
-            try:
-                from backend import stream
-                # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
-                stream.stream_activated = True  # True = ASYNC, False = Queue
-                print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
-
-                # Настройка Swap Location на Shared для лучшей производительности
-                memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
-                print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
-            except ImportError as e:
-                print(f"Предупреждение: Не удалось импортировать stream: {e}")
-        else:
+        if not self.has_memory_management:
             print("[GPU Setting] memory_management не доступен, используются настройки по умолчанию")
 
-        from fastapi import FastAPI
+        # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
+        total_vram = memory_management.total_vram
+        inference_memory = int(total_vram * 0.6)  # 60% для вычислений
+        model_memory = total_vram - inference_memory
 
+        memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
+        print(
+            f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
+        )
+
+        # Настройка Swap Method на ASYNC для лучшей производительности
+        try:
+            from backend import stream
+            # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
+            stream.stream_activated = True  # True = ASYNC, False = Queue
+            print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
+
+            # Настройка Swap Location на Shared для лучшей производительности
+            memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
+            print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
+        except ImportError as e:
+            print(f"Предупреждение: Не удалось импортировать stream: {e}")
+
+    def _setup_api(self) -> None:
         app = FastAPI()
         initialize_util.setup_middleware(app)
 
@@ -247,6 +196,59 @@ class Predictor(BasePredictor):
                 self.init_script_args = patched_init_script_args
 
         self.api = CustomApi(app, queue_lock)
+
+
+    def setup(self, force_download_url: str = None) -> None:
+        """Load the model into memory to make running multiple predictions efficient"""
+        # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
+        target_dir = "/src/models/Stable-diffusion"
+        os.makedirs(target_dir, exist_ok=True)
+        model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
+
+        if not os.path.exists(model_path):
+            print(f"Загружаем модель Flux...")
+            download_base_weights(url=FLUX_CHECKPOINT_URL, dest=model_path)
+        elif force_download_url:
+            print(f"Загружаем модель Flux... {force_download_url=}")
+            download_base_weights(url=force_download_url, dest=model_path)
+        else:
+            print(f"Модель Flux уже загружена: {model_path}, {os.path.exists(model_path)=}, {force_download_url=}")
+
+        # workaround for replicate since its entrypoint may contain invalid args
+        os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
+
+
+        # moved env preparation to build time to reduce the warm-up time
+        # from modules import launch_utils
+
+        # with launch_utils.startup_timer.subcategory("prepare environment"):
+        #     launch_utils.prepare_environment()
+
+        startup_timer = timer.startup_timer
+        startup_timer.record("launcher")
+
+        with catchtime(tag="Initialize.*"):
+            initialize.imports()
+            initialize.check_versions()
+            initialize.initialize()
+
+        # Импортируем shared после initialize.initialize()
+        from modules import shared
+
+        # Устанавливаем forge_preset на 'flux'
+        shared.opts.set('forge_preset', 'flux')
+        shared.opts.set('show_progress_every_n_steps', 1)
+        # shared.parallel_processing_allowed = False
+
+        # Устанавливаем чекпоинт
+        shared.opts.set('sd_model_checkpoint', 'flux_checkpoint.safetensors')
+
+        # Оптимизация памяти для лучшего качества и скорости с Flux
+        with catchtime(tag="Setup Memory Management"):
+            self._setup_memory_management()
+
+        with catchtime(tag="Setup API"):
+            self._setup_api()
 
     def predict(
         self,
