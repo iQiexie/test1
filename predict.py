@@ -203,8 +203,6 @@ class Predictor(BasePredictor):
         startup_timer.record("launcher")
 
         with catchtime(tag="Initialize.*"):
-            with catchtime(tag="Initialize.imports"):
-                initialize.imports()
             with catchtime(tag="Initialize.check_versions"):
                 initialize.check_versions()
             with catchtime(tag="Initialize.initialize"):
