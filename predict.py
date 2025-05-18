@@ -164,13 +164,13 @@ class Predictor(BasePredictor):
         startup_timer = timer.startup_timer
         startup_timer.record("launcher")
 
-        # with catchtime(tag="Initialize.*"):
-        #     with catchtime(tag="Initialize.imports"):
-        #         initialize.imports()
-        #     with catchtime(tag="Initialize.check_versions"):
-        #         initialize.check_versions()
-        #     with catchtime(tag="Initialize.initialize"):
-        #         initialize.initialize()
+        with catchtime(tag="Initialize.*"):
+            with catchtime(tag="Initialize.imports"):
+                initialize.imports()
+            with catchtime(tag="Initialize.check_versions"):
+                initialize.check_versions()
+            with catchtime(tag="Initialize.initialize"):
+                initialize.initialize()
 
         # Импортируем shared после initialize.initialize()
         from modules import shared
