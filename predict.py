@@ -133,70 +133,13 @@ class Predictor(BasePredictor):
             print(f"Предупреждение: Не удалось импортировать stream: {e}")
 
     def _setup_api(self) -> None:
-        app = FastAPI()
-        initialize_util.setup_middleware(app)
-
         from modules.api.api import Api
         from modules.call_queue import queue_lock
 
-        # Create a custom API class that patches the script handling functions
-        class CustomApi(Api):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
+        app = FastAPI()
+        initialize_util.setup_middleware(app)
 
-                # Patch the get_script function to handle LoRA scripts
-                original_get_script = self.get_script
-
-                def patched_get_script(script_name, script_runner):
-                    try:
-                        return original_get_script(script_name, script_runner)
-                    except Exception as e:
-                        # If the script is not found and it's the LoRA script, handle it specially
-                        if script_name in ["lora", "sd_forge_lora"]:
-                            print(
-                                f"LoRA script '{script_name}' not found in standard scripts, using extra_network_data instead"
-                            )
-                            return None
-                        raise e
-
-                self.get_script = patched_get_script
-
-                # Patch the init_script_args function to handle missing scripts
-                original_init_script_args = self.init_script_args
-
-                def patched_init_script_args(
-                    request, default_script_args, selectable_scripts, selectable_idx, script_runner, *,
-                    input_script_args=None
-                ):
-                    try:
-                        return original_init_script_args(
-                            request, default_script_args, selectable_scripts, selectable_idx, script_runner,
-                            input_script_args=input_script_args
-                        )
-                    except Exception as e:
-                        # If there's an error with alwayson_scripts, try to continue without them
-                        if hasattr(request, 'alwayson_scripts') and request.alwayson_scripts:
-                            print(f"Error initializing alwayson_scripts: {e}")
-                            # Remove problematic scripts
-                            for script_name in list(request.alwayson_scripts.keys()):
-                                if script_name in ["lora", "sd_forge_lora"]:
-                                    print(f"Removing problematic script: {script_name}")
-                                    del request.alwayson_scripts[script_name]
-
-                            # Try again without the problematic scripts
-                            if not request.alwayson_scripts:
-                                request.alwayson_scripts = None
-
-                            return original_init_script_args(
-                                request, default_script_args, selectable_scripts, selectable_idx,
-                                script_runner, input_script_args=input_script_args
-                            )
-                        raise e
-
-                self.init_script_args = patched_init_script_args
-
-        self.api = CustomApi(app, queue_lock)
-
+        self.api = Api(app, queue_lock)
 
     def setup(self, force_download_url: str = None) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
