@@ -12,27 +12,19 @@ build:
 
   # Python пакеты
   python_packages:
-    # Основные библиотеки
     - "fire==0.6.0"
-
-    # Hugging Face
     - "safetensors==0.4.3"
     - "sentencepiece==0.2.0"
-
-    # Дополнительные зависимости
     - "diffusers==0.32.2"
     - "loguru==0.7.2"
     - "pybase64==1.4.0"
     - "pydash==8.0.3"
     - "opencv-python==4.10.0.84"
     - "gguf==0.14.0"
-
-    # PyTorch и связанные пакеты
     - "https://download.pytorch.org/whl/nightly/cu124/torch-2.6.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
     - "https://download.pytorch.org/whl/nightly/cu124/torchaudio-2.5.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
     - "https://download.pytorch.org/whl/nightly/cu124/torchvision-0.20.0.dev20240918%2Bcu124-cp311-cp311-linux_x86_64.whl"
     - "https://download.pytorch.org/whl/nightly/pytorch_triton-3.1.0%2B5fe38ffd73-cp311-cp311-linux_x86_64.whl"
-
     - "setuptools==69.5.1"
     - "GitPython==3.1.32"
     - "Pillow==9.5.0"
@@ -80,16 +72,16 @@ build:
     - echo "Cache 126"
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-    - pget -f "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
-    - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors"
-    - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
+    - pget -f "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" "/root/test1/models/Stable-diffusion/flux_checkpoint.safetensors"
+    - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/root/test1/models/text_encoder/t5xxl_fp16.safetensors"
+    - wget --content-disposition -P /root/test1/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     - pip install https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip https://github.com/mlfoundations/open_clip/archive/bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b.zip
-    - git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-assets.git /src/stable-diffusion-webui-assets
-    - mkdir -p /src/repositories
-    - git clone https://github.com/lllyasviel/huggingface_guess.git /src/repositories/huggingface_guess
-    - git clone https://github.com/salesforce/BLIP.git /src/repositories/BLIP
+    - git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-assets.git /root/test1/repositories/stable-diffusion-webui-assets
+    - mkdir -p /root/test1/repositories
+    - git clone https://github.com/lllyasviel/huggingface_guess.git /root/test1/repositories/huggingface_guess
+    - git clone https://github.com/salesforce/BLIP.git /root/test1/repositories/BLIP
     - pip install torchvision==0.21
-    - wget --content-disposition -P /src/models/RealESRGAN/RealESRGAN_x4plus.pth "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+    - wget --content-disposition -P /root/test1/models/RealESRGAN/RealESRGAN_x4plus.pth "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
