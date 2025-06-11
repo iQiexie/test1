@@ -19,8 +19,6 @@ with catchtime(tag="Imports"):
     from modules import initialize
     from modules import timer
     from fastapi import FastAPI
-
-    from modules import initialize_util
     from cog import BasePredictor, Input, Path
     from weights import WeightsDownloadCache
 
@@ -73,6 +71,14 @@ class Predictor(BasePredictor):
                 lora_path = self.weights_cache.ensure(
                     url=url,
                     mv_from="output/flux_train_replicate/lora.safetensors",
+                )
+                print(f"{lora_path=}")
+                lora_paths.append(lora_path)
+            elif re.match(r"^https?://replicate.delivery/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/flux-lora.tar", url):
+                print(f"Downloading LoRA weights from - Replicate URL: {url}")
+                lora_path = self.weights_cache.ensure(
+                    url=url,
+                    mv_from="flux-lora/flux-lora.safetensors",
                 )
                 print(f"{lora_path=}")
                 lora_paths.append(lora_path)
@@ -356,10 +362,10 @@ class Predictor(BasePredictor):
             default=[1],
         ),
         ad_prompt: str = Input(
-            default="TOK masterpiece, best quality, best quality eyes",
+            default="",
         ),
         ad_hands_prompt: str = Input(
-            default="Perfect hand , high-quality nails, anatomically correct hands and fingers",
+            default="",
         ),
         postback_url: str = Input(
             default="",
