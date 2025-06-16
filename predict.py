@@ -248,7 +248,7 @@ class Predictor(BasePredictor):
             default="Simple",
         ),
         num_inference_steps: int = Input(
-            description="Number of denoising steps", ge=1, le=50, default=8
+            description="Number of denoising steps", ge=1, le=200, default=8
         ),
         guidance_scale: float = Input(
             description="CFG Scale (для Flux рекомендуется значение 1.0)", ge=1, le=50, default=1.0
