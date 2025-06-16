@@ -90,6 +90,8 @@ build:
     - git clone https://github.com/salesforce/BLIP.git /src/repositories/BLIP
     - pip install torchvision==0.21
     - wget --content-disposition -P /src/models/RealESRGAN/RealESRGAN_x4plus.pth "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
+    - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true" "/src/models/text_encoder/clip_l.safetensors"
+    - pget -f "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft" "/src/models/VAE/ae.safetensors"
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"
