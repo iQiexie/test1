@@ -476,73 +476,78 @@ class Predictor(BasePredictor):
             payload['init_images'] = [image]
             payload['resize_mode'] = 1
 
-        if adetailer:
-            payload["alwayson_scripts"] = {
-                "ADetailer": {
-                    "args": [
-                        {
-                            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
-                            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
-                            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
-                            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
-                            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
-                            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
-                            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
-                            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
-                            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
-                            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
-                            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
-                            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
-                            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
-                            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
-                            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
-                            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
-                            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
-                            "ad_steps": adetailer_args.get("ad_steps", 8),
-                            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
-                            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
-                            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
-                            "ad_vae": adetailer_args.get("ad_vae", False),
-                            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
-                            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
-                            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
-                            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
-                            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
-                        },
-                        {
-                            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
-                            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
-                            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
-                            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
-                            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
-                            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
-                            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
-                            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
-                            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
-                            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
-                            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
-                            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
-                            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
-                            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
-                            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
-                            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
-                            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
-                            "ad_steps": adetailer_args.get("ad_steps", 8),
-                            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
-                            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
-                            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
-                            "ad_vae": adetailer_args.get("ad_vae", False),
-                            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
-                            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
-                            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
-                            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
-                            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
-                        }
-                    ]
-                }
-            }
+        face_args = {
+            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
+            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
+            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
+            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
+            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
+            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
+            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
+            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
+            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
+            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
+            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
+            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
+            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
+            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
+            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
+            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
+            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
+            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
+            "ad_steps": adetailer_args.get("ad_steps", 8),
+            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
+            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
+            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
+            "ad_vae": adetailer_args.get("ad_vae", False),
+            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
+            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
+            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
+            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
+            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
+        }
+
+        hands_args = {
+            "ad_model": adetailer_args_hands.get("ad_model", "hand_yolov8s.pt"),
+            "ad_prompt": adetailer_args_hands.get("ad_prompt", ad_prompt),
+            "ad_confidence": adetailer_args_hands.get("ad_confidence", 0.5),
+            "ad_mask_filter_method": adetailer_args_hands.get("ad_mask_filter_method", "Area"),
+            "ad_mask_k": adetailer_args_hands.get("ad_mask_k", 0),
+            "ad_mask_min_ratio": adetailer_args_hands.get("ad_mask_min_ratio", 0),
+            "ad_mask_max_ratio": adetailer_args_hands.get("ad_mask_max_ratio", 1),
+            "ad_x_offset": adetailer_args_hands.get("ad_x_offset", 0),
+            "ad_y_offset": adetailer_args_hands.get("ad_y_offset", 0),
+            "ad_dilate_erode": adetailer_args_hands.get("ad_dilate_erode", 4),
+            "ad_mask_merge_invert": adetailer_args_hands.get("ad_mask_merge_invert", "None"),
+            "ad_mask_blur": adetailer_args_hands.get("ad_mask_blur", 4),
+            "ad_denoising_strength": adetailer_args_hands.get("ad_denoising_strength", 0.1),
+            "ad_inpaint_only_masked": adetailer_args_hands.get("ad_inpaint_only_masked", True),
+            "ad_inpaint_only_masked_padding": adetailer_args_hands.get("ad_inpaint_only_masked_padding", 32),
+            "ad_inpaint_width": adetailer_args_hands.get("ad_inpaint_width", 1024),
+            "ad_inpaint_height": adetailer_args_hands.get("ad_inpaint_height", 1024),
+            "ad_use_steps": adetailer_args_hands.get("ad_use_steps", True),
+            "ad_steps": adetailer_args_hands.get("ad_steps", 8),
+            "ad_use_cfg_scale": adetailer_args_hands.get("ad_use_cfg_scale", False),
+            "ad_cfg_scale": adetailer_args_hands.get("ad_cfg_scale", 7),
+            "ad_use_checkpoint": adetailer_args_hands.get("ad_use_checkpoint", False),
+            "ad_vae": adetailer_args_hands.get("ad_vae", False),
+            "ad_use_sampler": adetailer_args_hands.get("ad_use_sampler", False),
+            "ad_scheduler": adetailer_args_hands.get("ad_scheduler", "Use same scheduler"),
+            "ad_use_noise_multiplier": adetailer_args_hands.get("ad_use_noise_multiplier", False),
+            "ad_noise_multiplier": adetailer_args_hands.get("ad_noise_multiplier", 1),
+            "ad_use_clip_skip": adetailer_args_hands.get("ad_use_clip_skip", False),
+        }
+
+        final_ad_args = []
+
+        if adetailer_args.get("ad_disable") is not False:
+            final_ad_args.append(face_args)
+
+        if adetailer_args_hands.get("ad_disable") is not False:
+            final_ad_args.append(hands_args)
+
+        if final_ad_args:
+            payload["alwayson_scripts"] = {"ADetailer": {"args": final_ad_args}}
 
         print(f"Финальный пейлоад: {payload=}")
         print("Available scripts:", [script for script in scripts.scripts_txt2img.scripts])
