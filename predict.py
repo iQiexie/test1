@@ -74,6 +74,14 @@ class Predictor(BasePredictor):
                 )
                 print(f"{lora_path=}")
                 lora_paths.append(lora_path)
+            if ('digitaloceanspaces.com' in url) and ('/weights/' in url) and url.endswith('.tar'):
+                print(f"Downloading LoRA weights from - Replicate URL: {url}")
+                lora_path = self.weights_cache.ensure(
+                    url=url,
+                    mv_from="output/flux_train_replicate/lora.safetensors",
+                )
+                print(f"{lora_path=}")
+                lora_paths.append(lora_path)
             elif re.match(r"^https?://replicate.delivery/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+/flux-lora.tar", url):
                 print(f"Downloading LoRA weights from - Replicate URL: {url}")
                 lora_path = self.weights_cache.ensure(
