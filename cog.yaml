@@ -80,7 +80,7 @@ build:
     - echo "Cache 126"
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-    - pget -f "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
+    - pget -f "https://civitai.com/api/download/models/819165?type=Model&format=SafeTensor&size=full&fp=nf4&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
     - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors"
     - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     - pip install https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip https://github.com/mlfoundations/open_clip/archive/bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b.zip
