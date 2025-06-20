@@ -414,12 +414,15 @@ class LoraLoader:
                 weight = dequantize_tensor(weight)
 
             try:
-                weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
+                # Используем fp16 для LoRA чтобы экономить память на H100
+                computation_dtype = torch.float16 if weight.dtype == torch.float16 else torch.bfloat16
+                weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=computation_dtype)
             except:
                 print('Patching LoRA weights out of memory. Retrying by offloading models.')
                 set_parameter_devices(self.model, parameter_devices={k: offload_device for k in parameter_devices.keys()})
                 memory_management.soft_empty_cache()
-                weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=torch.float32)
+                computation_dtype = torch.float16 if weight.dtype == torch.float16 else torch.bfloat16
+                weight = merge_lora_to_weight(current_patches, weight, key, computation_dtype=computation_dtype)
 
             if bnb_layer is not None:
                 bnb_layer.reload_weight(weight)

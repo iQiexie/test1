@@ -9,6 +9,27 @@ def catchtime(tag: str) -> Callable[[], float]:
     print(f'[Timer: {tag}]: {perf_counter() - start:.3f} seconds')
 
 
+# Применяем патч аргументов командной строки в самом начале
+try:
+    from modules.cmdargs_patch import patch_cmdargs
+    patch_cmdargs()
+except Exception as e:
+    print(f"[Startup] Ошибка патча аргументов: {e}")
+
+# Применяем умный патч bitsandbytes (пропускает переустановку)
+try:
+    from modules.smart_bitsandbytes_patch import apply_smart_patch
+    apply_smart_patch()
+except Exception as e:
+    print(f"[Startup] Ошибка умного патча bitsandbytes: {e}")
+
+# Применяем патч Extension Optimizer как можно раньше
+try:
+    from modules.extension_optimizer_patch import apply_extension_optimizer_patch
+    apply_extension_optimizer_patch()
+except Exception as e:
+    print(f"[Startup] Ошибка патча Extension Optimizer: {e}")
+
 with catchtime(tag="Imports"):
     import json
     import os
@@ -21,6 +42,10 @@ with catchtime(tag="Imports"):
     from fastapi import FastAPI
     from cog import BasePredictor, Input, Path
     from weights import WeightsDownloadCache
+    from backend.model_cache_optimizer import apply_flux_optimizations, cache_optimizer, measure_model_loading
+    from modules.extension_optimizer import initialize_extension_optimizer
+    from modules.adetailer_patch import patch_adetailer_models
+    from modules.ultrasharp_upscaler import register_ultrasharp_upscaler
 
 
 FLUX_CHECKPOINT_URL = "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3"
@@ -114,29 +139,71 @@ class Predictor(BasePredictor):
 
         if not self.has_memory_management:
             print("[GPU Setting] memory_management не доступен, используются настройки по умолчанию")
+            return
 
-        # Выделяем больше памяти для загрузки весов модели (90% для весов, 10% для вычислений)
+        # Применяем оптимизации Flux
+        flux_optimizations_applied = apply_flux_optimizations()
+        
+        # Получаем настройки от оптимизатора
+        settings = cache_optimizer.optimize_memory_allocation()
         total_vram = memory_management.total_vram
-        inference_memory = int(total_vram * 0.6)  # 60% для вычислений
+        
+        # Устанавливаем память для инференса согласно оптимизатору
+        inference_memory = int(total_vram * settings['inference_memory_ratio'])
         model_memory = total_vram - inference_memory
 
         memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Конвертация в байты
         print(
-            f"[GPU Setting] Выделено {model_memory} MB для весов модели и {inference_memory} MB для вычислений"
+            f"[GPU Setting] Выделено {model_memory:.0f} MB для весов модели и {inference_memory:.0f} MB для вычислений"
         )
 
         # Настройка Swap Method на ASYNC для лучшей производительности
         try:
             from backend import stream
             # Для Flux рекомендуется ASYNC метод, который может быть до 30% быстрее
-            stream.stream_activated = True  # True = ASYNC, False = Queue
-            print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
+            if settings['async_loading']:
+                stream.stream_activated = True  # True = ASYNC, False = Queue
+                print("[GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности")
 
             # Настройка Swap Location на Shared для лучшей производительности
-            memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
-            print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
+            if settings['pin_memory']:
+                memory_management.PIN_SHARED_MEMORY = True  # True = Shared, False = CPU
+                print("[GPU Setting] Установлен Shared метод хранения для лучшей производительности")
+                
         except ImportError as e:
             print(f"Предупреждение: Не удалось импортировать stream: {e}")
+
+    def _check_preinstalled_models(self) -> None:
+        """Проверяет наличие предустановленных моделей"""
+        print("[Setup] Проверяем предустановленные модели...")
+        
+        # Проверяем основные модели
+        models_to_check = {
+            "Flux checkpoint": "/src/models/Stable-diffusion/flux_checkpoint.safetensors",
+            "CLIP-L": "/src/models/text_encoder/clip_l.safetensors",
+            "T5XXL": "/src/models/text_encoder/t5xxl_fp16.safetensors",
+            "VAE": "/src/models/VAE/ae.safetensors",
+            "ESRGAN": "/src/models/ESRGAN/ESRGAN_4x.pth",
+            "4x-UltraSharp": "/src/models/ESRGAN/4x-UltraSharp.pth"
+        }
+        
+        for model_name, model_path in models_to_check.items():
+            if os.path.exists(model_path):
+                size_mb = os.path.getsize(model_path) / (1024 * 1024)
+                print(f"[Setup] ✓ {model_name}: {model_path} ({size_mb:.1f} MB)")
+            else:
+                print(f"[Setup] ✗ {model_name}: {model_path} - НЕ НАЙДЕН")
+        
+        # Проверяем ADetailer модели
+        adetailer_dir = "/src/models/adetailer"
+        if os.path.exists(adetailer_dir):
+            adetailer_models = [f for f in os.listdir(adetailer_dir) if f.endswith('.pt')]
+            if adetailer_models:
+                print(f"[Setup] ✓ ADetailer модели ({len(adetailer_models)}): {adetailer_models}")
+            else:
+                print(f"[Setup] ✗ ADetailer модели: директория пуста")
+        else:
+            print(f"[Setup] ✗ ADetailer модели: директория не найдена")
 
     def _setup_api(self) -> None:
         from modules.api.api import Api
@@ -151,19 +218,29 @@ class Predictor(BasePredictor):
 
     def setup(self, force_download_url: str = None) -> None:
         """Load the model into memory to make running multiple predictions efficient"""
+        # Применяем быструю инициализацию в самом начале
+        try:
+            from modules.fast_startup import apply_fast_startup
+            apply_fast_startup()
+        except Exception as e:
+            print(f"[Setup] Ошибка быстрой инициализации: {e}")
+        
+        # Проверяем предустановленные модели
+        self._check_preinstalled_models()
+        
         # Загружаем модель Flux во время сборки, чтобы ускорить генерацию
         target_dir = "/src/models/Stable-diffusion"
         os.makedirs(target_dir, exist_ok=True)
         model_path = os.path.join(target_dir, "flux_checkpoint.safetensors")
 
         if not os.path.exists(model_path):
-            print(f"Загружаем модель Flux...")
+            print(f"[Setup] Модель Flux не найдена, загружаем...")
             download_base_weights(url=FLUX_CHECKPOINT_URL, dest=model_path)
         elif force_download_url:
-            print(f"Загружаем модель Flux... {force_download_url=}")
+            print(f"[Setup] Принудительная загрузка модели Flux... {force_download_url=}")
             download_base_weights(url=force_download_url, dest=model_path)
         else:
-            print(f"Модель Flux уже загружена: {model_path}, {os.path.exists(model_path)=}, {force_download_url=}")
+            print(f"[Setup] Модель Flux уже загружена: {model_path}")
 
         # workaround for replicate since its entrypoint may contain invalid args
         os.environ["IGNORE_CMD_ARGS_ERRORS"] = "1"
@@ -171,15 +248,39 @@ class Predictor(BasePredictor):
         startup_timer.record("launcher")
 
         with catchtime(tag="Initialize.*"):
+            # Инициализируем оптимизатор расширений перед загрузкой
+            with catchtime(tag="Initialize.extension_optimizer"):
+                try:
+                    initialize_extension_optimizer()
+                    patch_adetailer_models()
+                    register_ultrasharp_upscaler()
+                except Exception as e:
+                    print(f"Предупреждение: Не удалось инициализировать оптимизатор расширений: {e}")
+            
             with catchtime(tag="Initialize.imports"):
                 initialize.imports()
             with catchtime(tag="Initialize.check_versions"):
                 initialize.check_versions()
             with catchtime(tag="Initialize.initialize"):
                 initialize.initialize()
+            
+            # Применяем оптимизации Flux после инициализации
+            with catchtime(tag="Initialize.flux_optimizations"):
+                try:
+                    from modules.flux_memory_optimizer import apply_all_optimizations
+                    apply_all_optimizations()
+                except ImportError as e:
+                    print(f"Предупреждение: Не удалось применить Flux оптимизации: {e}")
 
         # Импортируем shared после initialize.initialize()
         from modules import shared
+
+        # Регистрируем 4x-UltraSharp апскейлер после инициализации shared
+        try:
+            register_ultrasharp_upscaler()
+            print("[Setup] 4x-UltraSharp апскейлер зарегистрирован после инициализации")
+        except Exception as e:
+            print(f"[Setup] Ошибка регистрации 4x-UltraSharp: {e}")
 
         # Устанавливаем forge_preset на 'flux'
         shared.opts.set('forge_preset', 'flux')
@@ -211,7 +312,6 @@ class Predictor(BasePredictor):
         sampler: str = Input(
             description="Sampling method для Flux моделей",
             choices=[
-                "[Forge] Flux Realistic",
                 "Euler",
                 "DEIS",
                 "Euler a",
@@ -235,10 +335,6 @@ class Predictor(BasePredictor):
                 "SGM Uniform",
                 "SGM Karras",
                 "SGM Exponential",
-                "Align Your Steps",
-                "Align Your Steps 11",
-                "Align Your Steps 32",
-                "Align Your Steps GITS",
                 "KL Optimal",
                 "Normal",
                 "DDIM",
@@ -277,6 +373,7 @@ class Predictor(BasePredictor):
                 "Lanczos",
                 "Nearest",
                 "ESRGAN_4x",
+                "4x-UltraSharp",
                 "LDSR",
                 "R-ESRGAN 4x+",
                 "R-ESRGAN 4x+ Anime6B",
@@ -285,7 +382,7 @@ class Predictor(BasePredictor):
                 "SwinIR 4x",
                 "debug",
             ],
-            default="R-ESRGAN 4x+",
+            default="4x-UltraSharp",
         ),
         hr_steps: int = Input(
             description="Inference steps for Hires. fix", ge=0, le=100, default=8
@@ -324,6 +421,10 @@ class Predictor(BasePredictor):
             choices=[
                 'Automatic',
                 'Automatic (fp16 LoRA)',
+                'FP16',
+                'FP16 (fp16 LoRA)',
+                'FP32',
+                'FP32 (fp16 LoRA)',
                 'bnb-nf4',
                 'bnb-nf4 (fp16 LoRA)',
                 'float8-e4m3fn',
@@ -333,7 +434,7 @@ class Predictor(BasePredictor):
                 'float8-e5m2',
                 'float8-e5m2 (fp16 LoRA)',
             ],
-            default="bnb-nf4 (fp16 LoRA)",
+            default="Automatic (fp16 LoRA)",
         ),
         image: str = Input(
             description="Input image for image to image mode. The aspect ratio of your output will match this image",
@@ -476,76 +577,111 @@ class Predictor(BasePredictor):
             payload['init_images'] = [image]
             payload['resize_mode'] = 1
 
-        if adetailer:
-            payload["alwayson_scripts"] = {
-                "ADetailer": {
-                    "args": [
-                        {
-                            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
-                            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
-                            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
-                            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
-                            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
-                            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
-                            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
-                            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
-                            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
-                            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
-                            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
-                            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
-                            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
-                            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
-                            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
-                            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
-                            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
-                            "ad_steps": adetailer_args.get("ad_steps", 8),
-                            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
-                            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
-                            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
-                            "ad_vae": adetailer_args.get("ad_vae", False),
-                            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
-                            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
-                            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
-                            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
-                            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
-                        },
-                        {
-                            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
-                            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
-                            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
-                            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
-                            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
-                            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
-                            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
-                            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
-                            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
-                            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
-                            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
-                            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
-                            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
-                            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
-                            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
-                            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
-                            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
-                            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
-                            "ad_steps": adetailer_args.get("ad_steps", 8),
-                            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
-                            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
-                            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
-                            "ad_vae": adetailer_args.get("ad_vae", False),
-                            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
-                            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
-                            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
-                            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
-                            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
-                        }
-                    ]
-                }
-            }
+        face_args = {
+            "ad_model": adetailer_args.get("ad_model", "face_yolov8n.pt"),
+            "ad_prompt": adetailer_args.get("ad_prompt", ad_prompt),
+            "ad_confidence": adetailer_args.get("ad_confidence", 0.5),
+            "ad_mask_filter_method": adetailer_args.get("ad_mask_filter_method", "Area"),
+            "ad_mask_k": adetailer_args.get("ad_mask_k", 0),
+            "ad_mask_min_ratio": adetailer_args.get("ad_mask_min_ratio", 0),
+            "ad_mask_max_ratio": adetailer_args.get("ad_mask_max_ratio", 1),
+            "ad_x_offset": adetailer_args.get("ad_x_offset", 0),
+            "ad_y_offset": adetailer_args.get("ad_y_offset", 0),
+            "ad_dilate_erode": adetailer_args.get("ad_dilate_erode", 4),
+            "ad_mask_merge_invert": adetailer_args.get("ad_mask_merge_invert", "None"),
+            "ad_mask_blur": adetailer_args.get("ad_mask_blur", 4),
+            "ad_denoising_strength": adetailer_args.get("ad_denoising_strength", 0.1),
+            "ad_inpaint_only_masked": adetailer_args.get("ad_inpaint_only_masked", True),
+            "ad_inpaint_only_masked_padding": adetailer_args.get("ad_inpaint_only_masked_padding", 32),
+            "ad_inpaint_width": adetailer_args.get("ad_inpaint_width", 1024),
+            "ad_inpaint_height": adetailer_args.get("ad_inpaint_height", 1024),
+            "ad_use_steps": adetailer_args.get("ad_use_steps", True),
+            "ad_steps": adetailer_args.get("ad_steps", 8),
+            "ad_use_cfg_scale": adetailer_args.get("ad_use_cfg_scale", False),
+            "ad_cfg_scale": adetailer_args.get("ad_cfg_scale", 7),
+            "ad_use_checkpoint": adetailer_args.get("ad_use_checkpoint", False),
+            "ad_vae": adetailer_args.get("ad_vae", False),
+            "ad_use_sampler": adetailer_args.get("ad_use_sampler", False),
+            "ad_scheduler": adetailer_args.get("ad_scheduler", "Use same scheduler"),
+            "ad_use_noise_multiplier": adetailer_args.get("ad_use_noise_multiplier", False),
+            "ad_noise_multiplier": adetailer_args.get("ad_noise_multiplier", 1),
+            "ad_use_clip_skip": adetailer_args.get("ad_use_clip_skip", False),
+        }
+
+        hands_args = {
+            "ad_model": adetailer_args_hands.get("ad_model", "hand_yolov8s.pt"),
+            "ad_prompt": adetailer_args_hands.get("ad_prompt", ad_hands_prompt),
+            "ad_confidence": adetailer_args_hands.get("ad_confidence", 0.5),
+            "ad_mask_filter_method": adetailer_args_hands.get("ad_mask_filter_method", "Area"),
+            "ad_mask_k": adetailer_args_hands.get("ad_mask_k", 0),
+            "ad_mask_min_ratio": adetailer_args_hands.get("ad_mask_min_ratio", 0),
+            "ad_mask_max_ratio": adetailer_args_hands.get("ad_mask_max_ratio", 1),
+            "ad_x_offset": adetailer_args_hands.get("ad_x_offset", 0),
+            "ad_y_offset": adetailer_args_hands.get("ad_y_offset", 0),
+            "ad_dilate_erode": adetailer_args_hands.get("ad_dilate_erode", 4),
+            "ad_mask_merge_invert": adetailer_args_hands.get("ad_mask_merge_invert", "None"),
+            "ad_mask_blur": adetailer_args_hands.get("ad_mask_blur", 4),
+            "ad_denoising_strength": adetailer_args_hands.get("ad_denoising_strength", 0.1),
+            "ad_inpaint_only_masked": adetailer_args_hands.get("ad_inpaint_only_masked", True),
+            "ad_inpaint_only_masked_padding": adetailer_args_hands.get("ad_inpaint_only_masked_padding", 32),
+            "ad_inpaint_width": adetailer_args_hands.get("ad_inpaint_width", 1024),
+            "ad_inpaint_height": adetailer_args_hands.get("ad_inpaint_height", 1024),
+            "ad_use_steps": adetailer_args_hands.get("ad_use_steps", True),
+            "ad_steps": adetailer_args_hands.get("ad_steps", 8),
+            "ad_use_cfg_scale": adetailer_args_hands.get("ad_use_cfg_scale", False),
+            "ad_cfg_scale": adetailer_args_hands.get("ad_cfg_scale", 7),
+            "ad_use_checkpoint": adetailer_args_hands.get("ad_use_checkpoint", False),
+            "ad_vae": adetailer_args_hands.get("ad_vae", False),
+            "ad_use_sampler": adetailer_args_hands.get("ad_use_sampler", False),
+            "ad_scheduler": adetailer_args_hands.get("ad_scheduler", "Use same scheduler"),
+            "ad_use_noise_multiplier": adetailer_args_hands.get("ad_use_noise_multiplier", False),
+            "ad_noise_multiplier": adetailer_args_hands.get("ad_noise_multiplier", 1),
+            "ad_use_clip_skip": adetailer_args_hands.get("ad_use_clip_skip", False),
+        }
+
+        final_ad_args = []
+
+        # Включаем ADetailer только если явно включен параметр adetailer
+        if adetailer and adetailer_args.get("ad_disable") is not False:
+            final_ad_args.append(face_args)
+
+        if adetailer and adetailer_args_hands.get("ad_disable") is not False:
+            final_ad_args.append(hands_args)
+
+        if final_ad_args:
+            payload["alwayson_scripts"] = {"ADetailer": {"args": final_ad_args}}
 
         print(f"Финальный пейлоад: {payload=}")
         print("Available scripts:", [script for script in scripts.scripts_txt2img.scripts])
+
+        # Проверяем и подготавливаем дополнительные модули
+        additional_modules = {}
+        if enable_clip_l:
+            clip_path = "/src/models/text_encoder/clip_l.safetensors"
+            if os.path.exists(clip_path):
+                additional_modules["clip_l.safetensors"] = True
+                print(f"[Additional modules] Используем локальный clip_l: {clip_path}")
+            else:
+                additional_modules["clip_l.safetensors"] = True
+                print(f"[Additional modules] clip_l не найден локально, будет загружен")
+        
+        if enable_t5xxl_fp16:
+            t5_path = "/src/models/text_encoder/t5xxl_fp16.safetensors"
+            if os.path.exists(t5_path):
+                additional_modules["t5xxl_fp16.safetensors"] = True
+                print(f"[Additional modules] Используем локальный t5xxl: {t5_path}")
+            else:
+                additional_modules["t5xxl_fp16.safetensors"] = True
+                print(f"[Additional modules] t5xxl не найден локально, будет загружен")
+        
+        if enable_ae:
+            ae_path = "/src/models/VAE/ae.safetensors"
+            if os.path.exists(ae_path):
+                additional_modules["ae.safetensors"] = True
+                print(f"[Additional modules] Используем локальный VAE: {ae_path}")
+            else:
+                additional_modules["ae.safetensors"] = True
+                print(f"[Additional modules] VAE не найден локально, будет загружен")
 
         req = dict(
             forge_unet_storage_dtype=forge_unet_storage_dtype,
@@ -561,11 +697,7 @@ class Predictor(BasePredictor):
                     for lora_path, lora_scale in zip(lora_paths, lora_scales)
                 ]
             },
-            additional_modules={
-                "clip_l.safetensors": enable_clip_l,
-                "t5xxl_fp16.safetensors": enable_t5xxl_fp16,
-                "ae.safetensors": enable_ae,
-            },
+            additional_modules=additional_modules,
         )
 
         for lora in req['extra_network_data']['lora']:
@@ -578,6 +710,9 @@ class Predictor(BasePredictor):
             else:
                 req['txt2imgreq'] = StableDiffusionTxt2ImgProcessingAPI(**payload)
                 resp = self.api.text2imgapi(**req)
+        
+        # Выводим статистику оптимизации после генерации
+        print(f"[Cache Optimizer] {cache_optimizer.get_optimization_stats()}")
 
         info = json.loads(resp.info)
         outputs = []

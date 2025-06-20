@@ -1,0 +1,544 @@
+2025-06-18T14:06:53.812550897Z [WARN  tini (31)] Tini is not running as PID 1 and isn't registered as a child subreaper.
+2025-06-18T14:06:53.812625240Z Zombie processes will not be re-parented to Tini, so zombie reaping won't work.
+2025-06-18T14:06:53.812631090Z To fix the problem, use the -s option or set the environment variable TINI_SUBREAPER to register Tini as a child subreaper, or run Tini as PID 1.
+2025-06-18T14:06:55.838403061Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.040637265Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.242474865Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.445173065Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.647361280Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.849505356Z Service not ready yet. Retrying...
+2025-06-18T14:06:56.930707088Z {"logger": "cog.config", "timestamp": "2025-06-18T14:06:56.930496Z", "severity": "INFO", "message": "[predict] fast loader failed: name 'WeightsDownloadCache' is not defined"}
+2025-06-18T14:06:57.051754754Z Service not ready yet. Retrying...
+2025-06-18T14:06:57.254478477Z Service not ready yet. Retrying...
+2025-06-18T14:06:57.455549178Z Service not ready yet. Retrying...
+2025-06-18T14:06:57.656555142Z Service not ready yet. Retrying...
+2025-06-18T14:06:57.859017550Z Service not ready yet. Retrying...
+2025-06-18T14:06:58.061119950Z Service not ready yet. Retrying...
+2025-06-18T14:06:58.263262960Z Service not ready yet. Retrying...
+2025-06-18T14:06:58.465305013Z Service not ready yet. Retrying...
+2025-06-18T14:06:58.602885859Z [Stream] Автоматически включен асинхронный режим для оптимизации производительности
+2025-06-18T14:06:58.620863687Z Total VRAM 81106 MB, total RAM 1031519 MB
+2025-06-18T14:06:58.620881788Z pytorch version: 2.6.0+cu124
+2025-06-18T14:06:58.621052434Z Set vram state to: NORMAL_VRAM
+2025-06-18T14:06:58.621067104Z Device: cuda:0 NVIDIA H100 80GB HBM3 : native
+2025-06-18T14:06:58.621090204Z VAE dtype preferences: [torch.bfloat16, torch.float32] -> torch.bfloat16
+2025-06-18T14:06:58.624908198Z [ADetailer Patch] Модели не найдены в /src/models/adetailer
+2025-06-18T14:06:58.624927308Z [Timer: Imports]: 1.691 seconds
+2025-06-18T14:06:58.645299687Z /root/.pyenv/versions/3.11.10/lib/python3.11/site-packages/cog/server/http.py:314: DeprecationWarning:
+2025-06-18T14:06:58.645312022Z         on_event is deprecated, use lifespan event handlers instead.
+2025-06-18T14:06:58.645320896Z         Read more about it in the
+2025-06-18T14:06:58.645325227Z         [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+2025-06-18T14:06:58.645334502Z   @app.on_event("startup")
+2025-06-18T14:06:58.645339031Z /root/.pyenv/versions/3.11.10/lib/python3.11/site-packages/cog/server/http.py:328: DeprecationWarning:
+2025-06-18T14:06:58.645343692Z         on_event is deprecated, use lifespan event handlers instead.
+2025-06-18T14:06:58.645350791Z         Read more about it in the
+2025-06-18T14:06:58.645354580Z         [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+2025-06-18T14:06:58.645362301Z   @app.on_event("shutdown")
+2025-06-18T14:06:58.667260197Z Service not ready yet. Retrying...
+2025-06-18T14:06:58.771631560Z {"logger": "uvicorn.error", "timestamp": "2025-06-18T14:06:58.771528Z", "severity": "INFO", "message": "Started server process [44]"}
+2025-06-18T14:06:58.771676743Z {"logger": "uvicorn.error", "timestamp": "2025-06-18T14:06:58.771623Z", "severity": "INFO", "message": "Waiting for application startup."}
+2025-06-18T14:06:58.771912569Z {"logger": "cog.server.runner", "timestamp": "2025-06-18T14:06:58.771771Z", "severity": "INFO", "message": "starting setup"}
+2025-06-18T14:06:58.774108499Z {"logger": "cog.server.runner", "timestamp": "2025-06-18T14:06:58.773949Z", "severity": "INFO", "message": "started setup"}
+2025-06-18T14:06:58.774198282Z {"logger": "uvicorn.error", "timestamp": "2025-06-18T14:06:58.774136Z", "severity": "INFO", "message": "Application startup complete."}
+2025-06-18T14:06:58.774737948Z {"logger": "uvicorn.error", "timestamp": "2025-06-18T14:06:58.774669Z", "severity": "INFO", "message": "Uvicorn running on http://0.0.0.0:5000 (Press CTRL+C to quit)"}
+2025-06-18T14:07:00.718558422Z [Stream] Автоматически включен асинхронный режим для оптимизации производительности
+2025-06-18T14:07:00.732642107Z Total VRAM 81106 MB, total RAM 1031519 MB
+2025-06-18T14:07:00.732700760Z pytorch version: 2.6.0+cu124
+2025-06-18T14:07:00.733298814Z Set vram state to: NORMAL_VRAM
+2025-06-18T14:07:00.733354033Z Device: cuda:0 NVIDIA H100 80GB HBM3 : native
+2025-06-18T14:07:00.733432247Z VAE dtype preferences: [torch.bfloat16, torch.float32] -> torch.bfloat16
+2025-06-18T14:07:00.735338867Z [ADetailer Patch] Модели не найдены в /src/models/adetailer
+2025-06-18T14:07:00.735415366Z [Timer: Imports]: 1.296 seconds
+2025-06-18T14:07:00.735938941Z Загружаем модель Flux...
+2025-06-18T14:07:00.736017577Z downloading url:  https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3
+2025-06-18T14:07:00.736124828Z downloading to:  /src/models/Stable-diffusion/flux_checkpoint.safetensors
+2025-06-18T14:07:00.743738332Z 2025-06-18T14:07:00Z | INFO  | [ Initiating ] chunk_size=125M dest=/src/models/Stable-diffusion/flux_checkpoint.safetensors url=https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3
+2025-06-18T14:07:01.642286291Z 2025-06-18T14:07:01Z | INFO  | [ Redirect ] redirect_url=https://civitai-delivery-worker-prod.5ac0637cfd0766c97916cefa3764fbdf.r2.cloudflarestorage.com/model/3/flux1Dev.ojBw.safetensors?X-Amz-Expires=86400&response-content-disposition=attachment%3B%20filename%3D%22flux_dev.safetensors%22&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=e01358d793ad6966166af8b3064953ad/20250618/us-east-1/s3/aws4_request&X-Amz-Date=20250618T140701Z&X-Amz-SignedHeaders=host&X-Amz-Signature=770dd453d474a4b144940380815d36581f85ae67373270e3e5950d91369e7e26 url=https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3
+2025-06-18T14:07:48.308502722Z 2025-06-18T14:07:48Z | INFO  | [ Complete ] dest=/src/models/Stable-diffusion/flux_checkpoint.safetensors size="24 GB" total_elapsed=47.320s url=https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3
+2025-06-18T14:07:49.669657295Z downloading took:  48.93345069885254
+2025-06-18T14:07:49.669688602Z launcher: done in 50.230 seconds
+2025-06-18T14:07:49.669691732Z [Extension Optimizer] Запуск оптимизации расширений...
+2025-06-18T14:07:49.669726081Z [Extension Optimizer] Установлен путь к моделям ADetailer: /src/models/adetailer
+2025-06-18T14:07:49.669886656Z [Extension Optimizer] Найдено 0 предустановленных моделей ADetailer
+2025-06-18T14:07:50.365983172Z Installing bitsandbytes==0.45.3
+2025-06-18T14:07:53.142736489Z CUDA Using Stream: True
+2025-06-18T14:07:54.931577307Z Using pytorch cross attention
+2025-06-18T14:07:54.931626668Z Using pytorch attention for VAE
+2025-06-18T14:07:56.103016309Z [Extension Optimizer] Оптимизация завершена
+2025-06-18T14:07:56.103483856Z [ADetailer Patch] Модели не найдены в /src/models/adetailer
+2025-06-18T14:07:56.103616379Z [Timer: Initialize.extension_optimizer]: 6.434 seconds
+2025-06-18T14:07:56.103704233Z import torch: done in 6.434 seconds
+2025-06-18T14:07:56.963778171Z import torch: done in 0.860 seconds
+2025-06-18T14:07:56.963852309Z import gradio: done in 0.000 seconds
+2025-06-18T14:07:56.964265402Z setup paths: done in 0.001 seconds
+2025-06-18T14:07:56.987157225Z initialize shared: done in 0.023 seconds
+2025-06-18T14:07:57.286165640Z other imports: done in 0.298 seconds
+2025-06-18T14:07:57.286253864Z [Timer: Initialize.imports]: 1.182 seconds
+2025-06-18T14:07:57.286319336Z [Timer: Initialize.check_versions]: 0.000 seconds
+2025-06-18T14:07:57.288130339Z opts onchange: done in 0.003 seconds
+2025-06-18T14:07:57.288327244Z setup SD model: done in 0.000 seconds
+2025-06-18T14:07:57.290612727Z setup codeformer: done in 0.002 seconds
+2025-06-18T14:07:57.295372766Z setup gfpgan: done in 0.005 seconds
+2025-06-18T14:07:57.295462459Z set samplers: done in 0.000 seconds
+2025-06-18T14:07:57.298621485Z list extensions: done in 0.003 seconds
+2025-06-18T14:07:57.298860517Z restore config state file: done in 0.000 seconds
+2025-06-18T14:07:59.515290767Z list SD models: done in 2.216 seconds
+2025-06-18T14:07:59.516852323Z list localizations: done in 0.002 seconds
+2025-06-18T14:07:59.516986541Z load scripts:
+2025-06-18T14:07:59.517005175Z [Extension Optimizer] Запуск оптимизации расширений...
+2025-06-18T14:07:59.517148808Z [Extension Optimizer] Установлен путь к моделям ADetailer: /src/models/adetailer
+2025-06-18T14:07:59.517522827Z [Extension Optimizer] Найдено 0 предустановленных моделей ADetailer
+2025-06-18T14:07:59.517569321Z [Extension Optimizer] Оптимизация завершена
+2025-06-18T14:07:59.517648475Z extension_optimizer: done in 0.001 seconds
+2025-06-18T14:07:59.517715547Z [Extension Optimizer] Применяем оптимизацию загрузки скриптов...
+2025-06-18T14:07:59.517783455Z [Extension Optimizer] Применяем оптимизацию загрузки скриптов...
+2025-06-18T14:07:59.525822583Z custom_code.py: done in 0.008 seconds
+2025-06-18T14:07:59.530669839Z img2imgalt.py: done in 0.005 seconds
+2025-06-18T14:07:59.533304591Z loopback.py: done in 0.003 seconds
+2025-06-18T14:07:59.538785685Z outpainting_mk_2.py: done in 0.005 seconds
+2025-06-18T14:07:59.541108553Z poor_mans_outpainting.py: done in 0.002 seconds
+2025-06-18T14:07:59.541950241Z postprocessing_codeformer.py: done in 0.001 seconds
+2025-06-18T14:07:59.547998559Z postprocessing_focal_crop.py: done in 0.006 seconds
+2025-06-18T14:07:59.548758071Z postprocessing_gfpgan.py: done in 0.001 seconds
+2025-06-18T14:07:59.551126772Z postprocessing_upscale.py: done in 0.002 seconds
+2025-06-18T14:07:59.552719159Z prompt_matrix.py: done in 0.002 seconds
+2025-06-18T14:07:59.554598044Z prompts_from_file.py: done in 0.002 seconds
+2025-06-18T14:07:59.555652864Z sd_upscale.py: done in 0.001 seconds
+2025-06-18T14:07:59.564377034Z xyz_grid.py: done in 0.009 seconds
+2025-06-18T14:07:59.770069823Z scunet_model.py: done in 0.205 seconds
+2025-06-18T14:07:59.798966142Z swinir_model.py: done in 0.030 seconds
+2025-06-18T14:07:59.800335990Z extra_options_section.py: done in 0.001 seconds
+2025-06-18T14:07:59.816486517Z legacy_preprocessors.py: done in 0.016 seconds
+2025-06-18T14:07:59.958308525Z preprocessor_inpaint.py: done in 0.141 seconds
+2025-06-18T14:07:59.964843975Z preprocessor_marigold.py: done in 0.007 seconds
+2025-06-18T14:07:59.970139912Z preprocessor_normalbae.py: done in 0.005 seconds
+2025-06-18T14:07:59.971040555Z preprocessor_recolor.py: done in 0.001 seconds
+2025-06-18T14:07:59.972837107Z forge_reference.py: done in 0.002 seconds
+2025-06-18T14:07:59.973973292Z preprocessor_revision.py: done in 0.001 seconds
+2025-06-18T14:07:59.975154255Z preprocessor_tile.py: done in 0.001 seconds
+2025-06-18T14:07:59.988452074Z forge_controllllite.py: done in 0.013 seconds
+2025-06-18T14:08:00.173920186Z ControlNet preprocessor location: /src/models/ControlNetPreprocessor
+2025-06-18T14:08:00.349610561Z controlnet.py: done in 0.361 seconds
+2025-06-18T14:08:00.352416839Z xyz_grid_support.py: done in 0.003 seconds
+2025-06-18T14:08:00.355705718Z forge_dynamic_thresholding.py: done in 0.003 seconds
+2025-06-18T14:08:00.357375871Z forge_fooocus_inpaint.py: done in 0.002 seconds
+2025-06-18T14:08:00.359353225Z forge_freeu.py: done in 0.002 seconds
+2025-06-18T14:08:00.370645888Z forge_ipadapter.py: done in 0.011 seconds
+2025-06-18T14:08:00.371873550Z kohya_hrfix.py: done in 0.001 seconds
+2025-06-18T14:08:00.381495297Z forge_latent_modifier.py: done in 0.010 seconds
+2025-06-18T14:08:00.494549420Z lora_script.py: done in 0.113 seconds
+2025-06-18T14:08:00.500082968Z forge_multidiffusion.py: done in 0.006 seconds
+2025-06-18T14:08:00.501451208Z forge_never_oom.py: done in 0.001 seconds
+2025-06-18T14:08:00.501881040Z forge_perturbed_attention.py: done in 0.001 seconds
+2025-06-18T14:08:00.503684452Z forge_sag.py: done in 0.002 seconds
+2025-06-18T14:08:00.504683488Z forge_stylealign.py: done in 0.001 seconds
+2025-06-18T14:08:00.507728732Z soft_inpainting.py: done in 0.003 seconds
+2025-06-18T14:08:00.720012531Z person_yolov8n-seg.pt:   0%|          | 0.00/6.78M [00:00<?, ?B/s]
+2025-06-18T14:08:00.721461893Z yolov8x-worldv2.pt:   0%|          | 0.00/146M [00:00<?, ?B/s][A
+2025-06-18T14:08:00.729598099Z person_yolov8s-seg.pt:   0%|          | 0.00/23.9M [00:00<?, ?B/s][A[A
+2025-06-18T14:08:00.731891247Z face_yolov8s.pt:   0%|          | 0.00/22.5M [00:00<?, ?B/s][A[A[A
+2025-06-18T14:08:00.734314504Z hand_yolov8n.pt:   0%|          | 0.00/6.24M [00:00<?, ?B/s][A[A[A[A
+2025-06-18T14:08:00.783259570Z face_yolov8n.pt:   0%|          | 0.00/6.23M [00:00<?, ?B/s][A[A[A[A[A
+2025-06-18T14:08:00.783338169Z person_yolov8n-seg.pt: 100%|██████████| 6.78M/6.78M [00:00<00:00, 95.1MB/s]
+2025-06-18T14:08:00.814171480Z face_yolov8n.pt: 100%|██████████| 6.23M/6.23M [00:00<00:00, 78.2MB/s]
+2025-06-18T14:08:00.820761284Z hand_yolov8n.pt: 100%|██████████| 6.24M/6.24M [00:00<00:00, 70.4MB/s]
+2025-06-18T14:08:00.865740960Z yolov8x-worldv2.pt:   7%|▋         | 10.5M/146M [00:00<00:01, 81.7MB/s][A
+2025-06-18T14:08:00.886077821Z person_yolov8s-seg.pt:  44%|████▍     | 10.5M/23.9M [00:00<00:00, 73.1MB/s][A[A
+2025-06-18T14:08:00.995433795Z face_yolov8s.pt:  47%|████▋     | 10.5M/22.5M [00:00<00:00, 67.1MB/s][A[A[A
+2025-06-18T14:08:00.998989234Z person_yolov8s-seg.pt: 100%|██████████| 23.9M/23.9M [00:00<00:00, 89.8MB/s][A[A
+2025-06-18T14:08:00.999041909Z person_yolov8s-seg.pt: 100%|██████████| 23.9M/23.9M [00:00<00:00, 86.1MB/s]
+2025-06-18T14:08:01.007570462Z face_yolov8s.pt: 100%|██████████| 22.5M/22.5M [00:00<00:00, 84.5MB/s][A[A[A
+2025-06-18T14:08:01.007796532Z face_yolov8s.pt: 100%|██████████| 22.5M/22.5M [00:00<00:00, 81.0MB/s]
+2025-06-18T14:08:01.126507725Z yolov8x-worldv2.pt:  21%|██▏       | 31.5M/146M [00:00<00:01, 106MB/s] [A
+2025-06-18T14:08:01.232666075Z yolov8x-worldv2.pt:  57%|█████▋    | 83.9M/146M [00:00<00:00, 251MB/s][A
+2025-06-18T14:08:01.238867921Z yolov8x-worldv2.pt: 100%|██████████| 146M/146M [00:00<00:00, 367MB/s] [A
+2025-06-18T14:08:01.238974733Z yolov8x-worldv2.pt: 100%|██████████| 146M/146M [00:00<00:00, 283MB/s]
+2025-06-18T14:08:01.248601960Z [-] ADetailer initialized. version: 25.3.0, num models: 10
+2025-06-18T14:08:01.421610769Z !adetailer.py: done in 0.914 seconds
+2025-06-18T14:08:01.421890654Z comments.py: done in 0.000 seconds
+2025-06-18T14:08:01.422863975Z refiner.py: done in 0.001 seconds
+2025-06-18T14:08:01.423873552Z sampler.py: done in 0.001 seconds
+2025-06-18T14:08:01.425293155Z seed.py: done in 0.001 seconds
+2025-06-18T14:08:01.425431932Z [Extension Optimizer] Отключено 8 неиспользуемых скриптов
+2025-06-18T14:08:01.425484817Z [Extension Optimizer] Отключено 8 неиспользуемых скриптов
+2025-06-18T14:08:01.428691658Z load upscalers: done in 0.003 seconds
+2025-06-18T14:08:01.429366819Z refresh VAE: done in 0.001 seconds
+2025-06-18T14:08:01.429418744Z scripts list_unets: done in 0.000 seconds
+2025-06-18T14:08:01.438706618Z reload hypernetworks: done in 0.009 seconds
+2025-06-18T14:08:01.453708022Z Calculating sha256 for /src/embeddings/EasyNegative.safetensors: c74b4e810b030f6b75fde959e2db678c268d07115b85356d3c0138ba5eb42340
+2025-06-18T14:08:01.456545683Z initialize extra networks: done in 0.018 seconds
+2025-06-18T14:08:01.456648293Z [Timer: Initialize.initialize]: 4.171 seconds
+2025-06-18T14:08:01.457381374Z [Flux Memory Optimizer] Начинаем применение оптимизаций...
+2025-06-18T14:08:01.457706147Z [Flux Memory Optimizer] Применяем оптимизации для большого GPU
+2025-06-18T14:08:01.459968068Z [Flux Memory Optimizer] HIGH_VRAM режим активирован
+2025-06-18T14:08:01.460048164Z [Flux Memory Optimizer] Принудительная выгрузка отключена
+2025-06-18T14:08:01.460120563Z [Flux Memory Optimizer] Пинирование памяти включено
+2025-06-18T14:08:01.460180518Z [Flux Memory Optimizer] CUDA memory fraction установлена в 95%
+2025-06-18T14:08:01.460243512Z [Flux Memory Optimizer] Flash Attention оптимизации включены
+2025-06-18T14:08:01.460325695Z [Flux Memory Optimizer] PyTorch оптимизации применены
+2025-06-18T14:08:01.460391933Z [Flux Memory Optimizer] Патч загрузки чекпоинта применен
+2025-06-18T14:08:01.460465371Z [Flux Memory Optimizer] Все оптимизации для большого GPU применены успешно
+2025-06-18T14:08:01.465678747Z [Timer: Initialize.flux_optimizations]: 0.001 seconds
+2025-06-18T14:08:01.465739330Z [Timer: Initialize.*]: 11.788 seconds
+2025-06-18T14:08:01.470896015Z [Flux Optimizer] Применяем агрессивные оптимизации для большого GPU
+2025-06-18T14:08:01.471024917Z [Flux Optimizer] Память для инференса: 20276 MB
+2025-06-18T14:08:01.471079502Z [Flux Optimizer] Режим VRAM: HIGH_VRAM
+2025-06-18T14:08:01.471137681Z [Flux Optimizer] Пинирование памяти: True
+2025-06-18T14:08:01.471228329Z [GPU Setting] Выделено 60830 MB для весов модели и 20276 MB для вычислений
+2025-06-18T14:08:01.471297313Z [GPU Setting] Установлен ASYNC метод загрузки для лучшей производительности
+2025-06-18T14:08:01.471345156Z [GPU Setting] Установлен Shared метод хранения для лучшей производительности
+2025-06-18T14:08:01.471417606Z [Timer: Setup Memory Management]: 0.000 seconds
+2025-06-18T14:08:01.471481860Z [Timer: init fastapi]: 0.000 seconds
+2025-06-18T14:08:01.476681268Z [Timer: init queue]: 0.000 seconds
+2025-06-18T14:08:02.541897187Z 2025-06-18 14:08:02,501 - ControlNet - [0;32mINFO[0m - ControlNet UI callback registered.
+2025-06-18T14:08:03.249176465Z fatal: not a git repository (or any of the parent directories): .git
+2025-06-18T14:08:03.254132468Z fatal: not a git repository (or any of the parent directories): .git
+2025-06-18T14:08:03.261175179Z Model selected: {'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': [], 'unet_storage_dtype': None}
+2025-06-18T14:08:03.261278682Z Using online LoRAs in FP16: True
+2025-06-18T14:08:05.012417426Z [Timer: Setup API]: 3.553 seconds
+2025-06-18T14:08:05.013642394Z {"logger": "cog.server.runner", "timestamp": "2025-06-18T14:08:05.013095Z", "severity": "INFO", "message": "setup succeeded"}
+2025-06-18T14:08:05.014127015Z {"logger": "cog.server.probes", "timestamp": "2025-06-18T14:08:05.013984Z", "severity": "INFO", "message": "Not running in Kubernetes: disabling probe helpers."}
+2025-06-18T14:08:06.216500085Z Cog API Service is ready. Starting RunPod serverless handler...
+2025-06-18T14:08:06.216553699Z --- Starting Serverless Worker |  Version 1.7.12 ---
+2025-06-18T14:08:06.556306580Z {"requestId": null, "message": "Jobs in queue: 1", "level": "INFO"}
+2025-06-18T14:08:06.556362808Z {"requestId": null, "message": "Jobs in progress: 1", "level": "INFO"}
+2025-06-18T14:08:06.556527289Z {"requestId": "44bed907-2270-4046-aeb5-fedc3ab87943-e2", "message": "Started.", "level": "INFO"}
+2025-06-18T14:08:06.556716432Z [Handler] Got event={'delayTime': 79690, 'id': '44bed907-2270-4046-aeb5-fedc3ab87943-e2', 'input': {'input': {'adetailer': True, 'adetailer_args': '{"ad_model":"face_yolov8n.pt","ad_model_classes":"","ad_tab_enable":true,"ad_prompt":"","ad_negative_prompt":"","ad_confidence":0.3,"ad_mask_filter_method":"Area","ad_mask_k":0,"ad_mask_min_ratio":0,"ad_mask_max_ratio":1,"ad_dilate_erode":4,"ad_x_offset":0,"ad_y_offset":0,"ad_mask_merge_invert":"None","ad_mask_blur":4,"ad_denoising_strength":0.07,"ad_inpaint_only_masked":true,"ad_inpaint_only_masked_padding":32,"ad_use_inpaint_width_height":false,"ad_inpaint_width":512,"ad_inpaint_height":512,"ad_use_steps":false,"ad_steps":28,"ad_use_cfg_scale":false,"ad_cfg_scale":7,"ad_use_checkpoint":false,"ad_checkpoint":null,"ad_use_vae":false,"ad_vae":null,"ad_use_sampler":false,"ad_sampler":"DPM++ 2M Karras","ad_scheduler":"Use same scheduler","ad_use_noise_multiplier":false,"ad_noise_multiplier":1,"ad_use_clip_skip":false,"ad_clip_skip":1,"ad_restore_face":false,"ad_controlnet_model":"None","ad_controlnet_module":"None","ad_controlnet_weight":1,"ad_controlnet_guidance_start":0,"ad_controlnet_guidance_end":1}', 'adetailer_args_hands': '{"ad_model":"hand_yolov8n.pt","ad_model_classes":"","ad_tab_enable":true,"ad_prompt":"","ad_negative_prompt":"","ad_confidence":0.3,"ad_mask_filter_method":"Confidence","ad_mask_k":0,"ad_mask_min_ratio":0,"ad_mask_max_ratio":1,"ad_dilate_erode":8,"ad_x_offset":0,"ad_y_offset":0,"ad_mask_merge_invert":"None","ad_mask_blur":4,"ad_denoising_strength":0.2,"ad_inpaint_only_masked":true,"ad_inpaint_only_masked_padding":48,"ad_use_inpaint_width_height":false,"ad_inpaint_width":512,"ad_inpaint_height":512,"ad_use_steps":false,"ad_steps":28,"ad_use_cfg_scale":false,"ad_cfg_scale":7,"ad_use_checkpoint":false,"ad_checkpoint":null,"ad_use_vae":false,"ad_vae":null,"ad_use_sampler":false,"ad_sampler":"DPM++ 2M Karras","ad_scheduler":"Use same scheduler","ad_use_noise_multiplier":false,"ad_noise_multiplier":1,"ad_use_clip_skip":false,"ad_clip_skip":1,"ad_restore_face":false,"ad_controlnet_model":"None","ad_controlnet_module":"None","ad_controlnet_weight":1,"ad_controlnet_guidance_start":0,"ad_controlnet_guidance_end":1}', 'aspect_ratio': '9:16', 'denoising_strength': 0.002, 'distilled_guidance_scale': 3.7, 'enable_ae': True, 'enable_clip_l': True, 'enable_hr': True, 'enable_t5xxl_fp16': True, 'force_model_reload': True, 'forge_unet_storage_dtype': 'bnb-nf4 (fp16 LoRA)', 'guidance_scale': 1, 'hr_scale': 1.1, 'hr_steps': 2, 'hr_upscaler': 'ESRGAN_4x', 'lora_scales': [1], 'lora_urls': ['https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors'], 'num_inference_steps': 50, 'num_outputs': 1, 'postback_url': 'https://back-dev.recrea.ai/api/v1/callbacks/live_preview?photo_id=35327&user_id=6994&retry=1', 'prediction_type': 'photo', 'prompt': 'Waist-up composition only. A high-resolution editorial photograph captured in RAW format with a DSLR and a 50mm lens at wide aperture, delivering shallow depth of field and vivid subject clarity. The scene unfolds on the sunlit sands of Diani Beach, with palm shadows flickering in the bright heat of early afternoon. The model is positioned in a three-quarter angle, her round, sculpted glutes turned visibly toward the camera, creating a commanding curve that defines the composition. Her hips are angled outward, emphasizing depth and lift, while her spine arches upward into an elegant S-line. She gently rotates her torso, bringing her head over her right shoulder, gaze steady and focused. Her arms are lowered and hang straight down, fully relaxed. She wears a golden bikini bottom embellished with subtle beading — tied at the sides, shimmering in the light — and a minimalist bandeau top in matching fabric. The sunlight reflects off her skin, enhancing every highlight and line across her lower back and glutes. The background blurs into a wash of bright ocean and warm tropical haze, grounding the portrait in richness and sensual heat.', 'sampler': 'Euler', 'scheduler': 'Simple', 'seed': 4353456235, 'started_at': '2025-06-18T14:06:46.368242'}, 'webhook': 'https://back-dev.recrea.ai/api/v1/callbacks/photo?user_id=6994&photo_id=35327&task_id=1d4a7ed379ef4a009b3ab1bfb044e7e7&retry=1', 'webhook_events_filter': ['output', 'logs', 'completed']}, 'status': 'IN_PROGRESS'}
+2025-06-18T14:08:06.556758086Z [Run Interface] Got inference_request={'input': {'adetailer': True, 'adetailer_args': '{"ad_model":"face_yolov8n.pt","ad_model_classes":"","ad_tab_enable":true,"ad_prompt":"","ad_negative_prompt":"","ad_confidence":0.3,"ad_mask_filter_method":"Area","ad_mask_k":0,"ad_mask_min_ratio":0,"ad_mask_max_ratio":1,"ad_dilate_erode":4,"ad_x_offset":0,"ad_y_offset":0,"ad_mask_merge_invert":"None","ad_mask_blur":4,"ad_denoising_strength":0.07,"ad_inpaint_only_masked":true,"ad_inpaint_only_masked_padding":32,"ad_use_inpaint_width_height":false,"ad_inpaint_width":512,"ad_inpaint_height":512,"ad_use_steps":false,"ad_steps":28,"ad_use_cfg_scale":false,"ad_cfg_scale":7,"ad_use_checkpoint":false,"ad_checkpoint":null,"ad_use_vae":false,"ad_vae":null,"ad_use_sampler":false,"ad_sampler":"DPM++ 2M Karras","ad_scheduler":"Use same scheduler","ad_use_noise_multiplier":false,"ad_noise_multiplier":1,"ad_use_clip_skip":false,"ad_clip_skip":1,"ad_restore_face":false,"ad_controlnet_model":"None","ad_controlnet_module":"None","ad_controlnet_weight":1,"ad_controlnet_guidance_start":0,"ad_controlnet_guidance_end":1}', 'adetailer_args_hands': '{"ad_model":"hand_yolov8n.pt","ad_model_classes":"","ad_tab_enable":true,"ad_prompt":"","ad_negative_prompt":"","ad_confidence":0.3,"ad_mask_filter_method":"Confidence","ad_mask_k":0,"ad_mask_min_ratio":0,"ad_mask_max_ratio":1,"ad_dilate_erode":8,"ad_x_offset":0,"ad_y_offset":0,"ad_mask_merge_invert":"None","ad_mask_blur":4,"ad_denoising_strength":0.2,"ad_inpaint_only_masked":true,"ad_inpaint_only_masked_padding":48,"ad_use_inpaint_width_height":false,"ad_inpaint_width":512,"ad_inpaint_height":512,"ad_use_steps":false,"ad_steps":28,"ad_use_cfg_scale":false,"ad_cfg_scale":7,"ad_use_checkpoint":false,"ad_checkpoint":null,"ad_use_vae":false,"ad_vae":null,"ad_use_sampler":false,"ad_sampler":"DPM++ 2M Karras","ad_scheduler":"Use same scheduler","ad_use_noise_multiplier":false,"ad_noise_multiplier":1,"ad_use_clip_skip":false,"ad_clip_skip":1,"ad_restore_face":false,"ad_controlnet_model":"None","ad_controlnet_module":"None","ad_controlnet_weight":1,"ad_controlnet_guidance_start":0,"ad_controlnet_guidance_end":1}', 'aspect_ratio': '9:16', 'denoising_strength': 0.002, 'distilled_guidance_scale': 3.7, 'enable_ae': True, 'enable_clip_l': True, 'enable_hr': True, 'enable_t5xxl_fp16': True, 'force_model_reload': True, 'forge_unet_storage_dtype': 'bnb-nf4 (fp16 LoRA)', 'guidance_scale': 1, 'hr_scale': 1.1, 'hr_steps': 2, 'hr_upscaler': 'ESRGAN_4x', 'lora_scales': [1], 'lora_urls': ['https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors'], 'num_inference_steps': 50, 'num_outputs': 1, 'postback_url': 'https://back-dev.recrea.ai/api/v1/callbacks/live_preview?photo_id=35327&user_id=6994&retry=1', 'prediction_type': 'photo', 'prompt': 'Waist-up composition only. A high-resolution editorial photograph captured in RAW format with a DSLR and a 50mm lens at wide aperture, delivering shallow depth of field and vivid subject clarity. The scene unfolds on the sunlit sands of Diani Beach, with palm shadows flickering in the bright heat of early afternoon. The model is positioned in a three-quarter angle, her round, sculpted glutes turned visibly toward the camera, creating a commanding curve that defines the composition. Her hips are angled outward, emphasizing depth and lift, while her spine arches upward into an elegant S-line. She gently rotates her torso, bringing her head over her right shoulder, gaze steady and focused. Her arms are lowered and hang straight down, fully relaxed. She wears a golden bikini bottom embellished with subtle beading — tied at the sides, shimmering in the light — and a minimalist bandeau top in matching fabric. The sunlight reflects off her skin, enhancing every highlight and line across her lower back and glutes. The background blurs into a wash of bright ocean and warm tropical haze, grounding the portrait in richness and sensual heat.', 'sampler': 'Euler', 'scheduler': 'Simple', 'seed': 4353456235, 'started_at': '2025-06-18T14:06:46.368242'}, 'webhook': 'https://back-dev.recrea.ai/api/v1/callbacks/photo?user_id=6994&photo_id=35327&task_id=1d4a7ed379ef4a009b3ab1bfb044e7e7&retry=1', 'webhook_events_filter': ['output', 'logs', 'completed']}
+2025-06-18T14:08:06.560000636Z {"prediction_id": null, "logger": "cog.server.runner", "timestamp": "2025-06-18T14:08:06.559633Z", "severity": "INFO", "message": "starting prediction"}
+2025-06-18T14:08:06.577888222Z {"prediction_id": null, "logger": "cog.server.runner", "timestamp": "2025-06-18T14:08:06.577509Z", "severity": "INFO", "message": "started prediction"}
+2025-06-18T14:08:06.582764697Z Starting kek
+2025-06-18T14:08:06.582830366Z Running kek
+2025-06-18T14:08:06.592391505Z Cache version 106
+2025-06-18T14:08:06.592523568Z Setting forge_unet_storage_dtype='nf4', online_lora=True
+2025-06-18T14:08:06.592540346Z Downloading LoRA weights from - safetensor URL: https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors
+2025-06-18T14:08:06.593985141Z Ensuring enough disk space...
+2025-06-18T14:08:06.594541215Z Downloading weights: https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors
+2025-06-18T14:08:06.607507536Z 2025-06-18T14:08:06Z | INFO  | [ Initiating ] chunk_size=125M dest=/src/models/Lora/f2815cf73244df66.safetensors url=https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors
+2025-06-18T14:08:07.791380038Z 2025-06-18T14:08:07Z | INFO  | [ Complete ] dest=/src/models/Lora/f2815cf73244df66.safetensors size="172 MB" total_elapsed=0.932s url=https://recrea-lora-users.tor1.cdn.digitaloceanspaces.com/vita-fast-2400%20(1).safetensors
+2025-06-18T14:08:07.829204571Z b''
+2025-06-18T14:08:07.829264609Z Downloaded weights in 1.2348511219024658 seconds to dest='/src/models/Lora/f2815cf73244df66.safetensors'
+2025-06-18T14:08:07.829418087Z lora_path='/src/models/Lora/f2815cf73244df66'
+2025-06-18T14:08:07.829911242Z Available loras: ['/src/models/Lora/f2815cf73244df66.safetensors']
+2025-06-18T14:08:07.830120293Z Финальный пейлоад: payload={'prompt': 'Waist-up composition only. A high-resolution editorial photograph captured in RAW format with a DSLR and a 50mm lens at wide aperture, delivering shallow depth of field and vivid subject clarity. The scene unfolds on the sunlit sands of Diani Beach, with palm shadows flickering in the bright heat of early afternoon. The model is positioned in a three-quarter angle, her round, sculpted glutes turned visibly toward the camera, creating a commanding curve that defines the composition. Her hips are angled outward, emphasizing depth and lift, while her spine arches upward into an elegant S-line. She gently rotates her torso, bringing her head over her right shoulder, gaze steady and focused. Her arms are lowered and hang straight down, fully relaxed. She wears a golden bikini bottom embellished with subtle beading — tied at the sides, shimmering in the light — and a minimalist bandeau top in matching fabric. The sunlight reflects off her skin, enhancing every highlight and line across her lower back and glutes. The background blurs into a wash of bright ocean and warm tropical haze, grounding the portrait in richness and sensual heat.', 'width': 768, 'height': 1344, 'batch_size': 1, 'steps': 50, 'cfg_scale': 1.0, 'seed': 4353456235, 'do_not_save_samples': True, 'sampler_name': 'Euler', 'scheduler': 'Simple', 'enable_hr': True, 'hr_upscaler': 'ESRGAN_4x', 'hr_second_pass_steps': 2, 'denoising_strength': 0.002, 'hr_scale': 1.1, 'distilled_cfg_scale': 3.7, 'hr_additional_modules': [], 'alwayson_scripts': {'ADetailer': {'args': [{'ad_model': 'face_yolov8n.pt', 'ad_prompt': '', 'ad_confidence': 0.3, 'ad_mask_filter_method': 'Area', 'ad_mask_k': 0, 'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0, 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.07, 'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512, 'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7, 'ad_use_checkpoint': False, 'ad_vae': None, 'ad_use_sampler': False, 'ad_scheduler': 'Use same scheduler', 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_use_clip_skip': False}, {'ad_model': 'face_yolov8n.pt', 'ad_prompt': '', 'ad_confidence': 0.3, 'ad_mask_filter_method': 'Area', 'ad_mask_k': 0, 'ad_mask_min_ratio': 0, 'ad_mask_max_ratio': 1, 'ad_x_offset': 0, 'ad_y_offset': 0, 'ad_dilate_erode': 4, 'ad_mask_merge_invert': 'None', 'ad_mask_blur': 4, 'ad_denoising_strength': 0.07, 'ad_inpaint_only_masked': True, 'ad_inpaint_only_masked_padding': 32, 'ad_inpaint_width': 512, 'ad_inpaint_height': 512, 'ad_use_steps': False, 'ad_steps': 28, 'ad_use_cfg_scale': False, 'ad_cfg_scale': 7, 'ad_use_checkpoint': False, 'ad_vae': None, 'ad_use_sampler': False, 'ad_scheduler': 'Use same scheduler', 'ad_use_noise_multiplier': False, 'ad_noise_multiplier': 1, 'ad_use_clip_skip': False}]}}}
+2025-06-18T14:08:07.831584316Z Available scripts: [<prompt_matrix.py.Script object at 0x7dcfb81b8990>, <prompts_from_file.py.Script object at 0x7dcfbd31fd10>, <xyz_grid.py.Script object at 0x7dcfbd6e1a10>, <extra_options_section.py.ExtraOptionsSection object at 0x7dcfb823ba50>, <controlnet.py.ControlNetForForgeOfficial object at 0x7dcfbcdf4ed0>, <forge_dynamic_thresholding.py.DynamicThresholdingForForge object at 0x7dcfbab2b090>, <forge_freeu.py.FreeUForForge object at 0x7dcfbcdf7590>, <kohya_hrfix.py.KohyaHRFixForForge object at 0x7dd0b0231610>, <forge_latent_modifier.py.LatentModifierForForge object at 0x7dcfbab60710>, <forge_multidiffusion.py.MultiDiffusionForForge object at 0x7dcfbab41750>, <forge_never_oom.py.NeverOOMForForge object at 0x7dcfbab420d0>, <forge_perturbed_attention.py.PerturbedAttentionGuidanceForForge object at 0x7dcfba97f190>, <forge_sag.py.SAGForForge object at 0x7dcfb8248190>, <forge_stylealign.py.StyleAlignForForge object at 0x7dcfbab41e10>, AfterDetailerScript(version=25.3.0), <refiner.py.ScriptRefiner object at 0x7dcfb8238810>, <sampler.py.ScriptSampler object at 0x7dcfbcdd0890>, <seed.py.ScriptSeed object at 0x7dcfb8210d50>]
+2025-06-18T14:08:07.831652455Z LOOK HEREitems=['f2815cf73244df66', '1.0']
+2025-06-18T14:08:07.831726405Z LoRA: lora.items=['f2815cf73244df66', '1.0']
+2025-06-18T14:08:07.831922596Z [Additional modules] Downloading module clip_l.safetensors ...
+2025-06-18T14:08:07.832123347Z downloading url:  https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
+2025-06-18T14:08:07.832338883Z downloading to: /src/models/text_encoder/clip_l.safetensors
+2025-06-18T14:08:07.843149653Z 2025-06-18T14:08:07Z | INFO  | [ Initiating ] chunk_size=125M dest=/src/models/text_encoder/clip_l.safetensors url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
+2025-06-18T14:08:08.158321830Z 2025-06-18T14:08:08Z | INFO  | [ Redirect ] redirect_url=https://cdn-lfs-us-1.hf.co/repos/f0/72/f072b3fc381065339926f6194e8ae71b6a464d596c9495100c3c8730729ec94e/660c6f5b1abae9dc498ac2d21e1347d2abdb0cf6c0c0c8576cd796491d9a6cdd?response-content-disposition=attachment%3B+filename*%3DUTF-8%27%27clip_l.safetensors%3B+filename%3D%22clip_l.safetensors%22%3B&Expires=1750259283&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc1MDI1OTI4M319LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy11cy0xLmhmLmNvL3JlcG9zL2YwLzcyL2YwNzJiM2ZjMzgxMDY1MzM5OTI2ZjYxOTRlOGFlNzFiNmE0NjRkNTk2Yzk0OTUxMDBjM2M4NzMwNzI5ZWM5NGUvNjYwYzZmNWIxYWJhZTlkYzQ5OGFjMmQyMWUxMzQ3ZDJhYmRiMGNmNmMwYzBjODU3NmNkNzk2NDkxZDlhNmNkZD9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPSoifV19&Signature=gO93VjoMWULohcIZMlUA8vO1XBhlq7XXcTL7MpMqbzRDoIBXvPvgA-FaAMmdhNrakfA88MFaUxM0VqKgJ6tB2OaJqGDwY6vfLAGSJnu9MgqNO1pWFbjwIjv-O89AixffevLNxQj2UKa4el3fiElvCtO7kFpsKH3uL9RvCYHn8JI5POsmptGMSH8GPTREnLYZCs1uCQpQYB01jvJtuaWd2VvtPUihTJYlroPJf3BBhPBGoKBsFSTqy%7EolQHyDecJ3j9Sao8AYVpFzLtnVbM3witXycaj0S0d6LKJzUvLUwxoQVuC5Rf0MHk%7Ek4HN-ct8hAmGX1qOGgFKEJCPjK1lv3A__&Key-Pair-Id=K24J24Z295AEI9 url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
+2025-06-18T14:08:08.577450105Z 2025-06-18T14:08:08Z | INFO  | [ Complete ] dest=/src/models/text_encoder/clip_l.safetensors size="246 MB" total_elapsed=0.496s url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true
+2025-06-18T14:08:08.627510792Z downloading took:  0.7950482368469238
+2025-06-18T14:08:08.627567031Z [Additional modules]: Module clip_l.safetensors is downloaded
+2025-06-18T14:08:08.627815641Z [Additional modules] Downloading module t5xxl_fp16.safetensors ...
+2025-06-18T14:08:08.628029227Z downloading url:  https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
+2025-06-18T14:08:08.628172535Z downloading to:  /src/models/text_encoder/t5xxl_fp16.safetensors
+2025-06-18T14:08:08.639661574Z 2025-06-18T14:08:08Z | INFO  | [ Initiating ] chunk_size=125M dest=/src/models/text_encoder/t5xxl_fp16.safetensors url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
+2025-06-18T14:08:08.954957654Z 2025-06-18T14:08:08Z | INFO  | [ Redirect ] redirect_url=https://cdn-lfs-us-1.hf.co/repos/f0/72/f072b3fc381065339926f6194e8ae71b6a464d596c9495100c3c8730729ec94e/6e480b09fae049a72d2a8c5fbccb8d3e92febeb233bbe9dfe7256958a9167635?response-content-disposition=attachment%3B+filename*%3DUTF-8%27%27t5xxl_fp16.safetensors%3B+filename%3D%22t5xxl_fp16.safetensors%22%3B&Expires=1750257989&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTc1MDI1Nzk4OX19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy11cy0xLmhmLmNvL3JlcG9zL2YwLzcyL2YwNzJiM2ZjMzgxMDY1MzM5OTI2ZjYxOTRlOGFlNzFiNmE0NjRkNTk2Yzk0OTUxMDBjM2M4NzMwNzI5ZWM5NGUvNmU0ODBiMDlmYWUwNDlhNzJkMmE4YzVmYmNjYjhkM2U5MmZlYmViMjMzYmJlOWRmZTcyNTY5NThhOTE2NzYzNT9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPSoifV19&Signature=g7ebHNNQrsntRm-3AgR5yr2TvHjTOxHdwYM-RcYqcpb-sHuoopPYhJuba8j-yu-n0ThLgfhNEMTzVs2AMPyLMDraIlNEx-h9xElQYWKatJzIq7H4oEm4LTHwSnZjBGn-uM4JDuklubub3-otrUWg9QS12e6W4hxrRy%7Ey22Ai-aQIhrdMhEQtwrJ%7E-MJfKIL9w%7E1gyYFKB7krJlLZPOHVsv2NWv3OL1rQeRAaPFHO4Pn-NsYllDrmWmTyIUxucHTADJIrBg6BWlPJrLVRXqsx6ige2x5AmewgbHs%7EgaTPS9asmYk9cGI02AGfECWsH%7EIiJST16P6McAwMkI3DFx%7E9BA__&Key-Pair-Id=K24J24Z295AEI9 url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
+2025-06-18T14:08:14.335264870Z 2025-06-18T14:08:14Z | INFO  | [ Complete ] dest=/src/models/text_encoder/t5xxl_fp16.safetensors size="9.8 GB" total_elapsed=5.451s url=https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true
+2025-06-18T14:08:14.802956538Z downloading took:  6.174421548843384
+2025-06-18T14:08:14.803137043Z [Additional modules]: Module t5xxl_fp16.safetensors is downloaded
+2025-06-18T14:08:14.803183352Z [Additional modules] Downloading module ae.safetensors ...
+2025-06-18T14:08:14.803374769Z downloading url:  https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft
+2025-06-18T14:08:14.803701774Z downloading to:  /src/models/VAE/ae.safetensors
+2025-06-18T14:08:14.814620382Z 2025-06-18T14:08:14Z | INFO  | [ Initiating ] chunk_size=125M dest=/src/models/VAE/ae.safetensors url=https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft
+2025-06-18T14:08:15.427263599Z 2025-06-18T14:08:15Z | INFO  | [ Redirect ] redirect_url=https://public-weights.replicate.delivery/official-models/flux/ae/ae.sft url=https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft
+2025-06-18T14:08:17.868833373Z 2025-06-18T14:08:17Z | INFO  | [ Complete ] dest=/src/models/VAE/ae.safetensors size="335 MB" total_elapsed=2.809s url=https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft
+2025-06-18T14:08:17.929939721Z downloading took:  3.124410629272461
+2025-06-18T14:08:18.496259533Z [Additional modules]: Module ae.safetensors is downloaded
+2025-06-18T14:08:18.496521402Z [Additional modules] Proceeding with these modules: resp=['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors']
+2025-06-18T14:08:18.496556371Z loading Flux model...
+2025-06-18T14:08:18.498592058Z [Timer: Set the checkpoint to the Flux model specifically]: 0.000 seconds
+2025-06-18T14:08:18.498647723Z [Timer: Find the Flux checkpoint]: 0.000 seconds
+2025-06-18T14:08:18.498738687Z forge_unet_storage_dtype='nf4'
+2025-06-18T14:08:18.498872233Z Loading Model: {'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:18.498949847Z [Unload] Trying to free all memory for cuda:0 with 0 models keep loaded ... Done in 0.000499 seconds
+2025-06-18T14:08:18.498985756Z Loading model with dynamic_args['forge_unet_storage_dtype']='nf4'
+2025-06-18T14:08:18.499029550Z Loading model with additional_state_dicts=['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors']
+2025-06-18T14:08:18.527114638Z StateDict Keys: {'transformer': 780, 'vae': 244, 'text_encoder': 196, 'text_encoder_2': 220, 'ignore': 0}
+2025-06-18T14:08:18.636822313Z Using Default T5 Data Type: torch.float16
+2025-06-18T14:08:18.816100049Z [Huggingface component] Got storage_dtype=torch.bfloat16
+2025-06-18T14:08:18.818733075Z [Huggingface component] Got unet_storage_dtype_overwrite='nf4'
+2025-06-18T14:08:18.819725991Z [Huggingface component] Final storage_dtype='nf4'
+2025-06-18T14:08:23.270751471Z Working with z of shape (1, 16, 32, 32) = 16384 dimensions.
+2025-06-18T14:08:23.308911656Z K-Model Created: {'storage_dtype': 'nf4', 'computation_dtype': torch.bfloat16}
+2025-06-18T14:08:23.350427095Z Model loaded in 5.4 seconds (unload existing model: 0.6 seconds, forge model load: 4.9 seconds).
+2025-06-18T14:08:23.350472313Z Flux model loaded: <class 'backend.diffusion_engine.flux.Flux'>
+2025-06-18T14:08:23.350479046Z [Timer: Set up forge loading parameters - don't use string for dtype]: 5.422 seconds
+2025-06-18T14:08:23.350516329Z [Timer: load_flux first time]: 15.518 seconds
+2025-06-18T14:08:23.522512496Z Calculating sha256 for /src/models/Lora/f2815cf73244df66.safetensors: 2cd425988d54a5513af96d0b2a84815496db1e7bccfe84c3820c7abf27059716
+2025-06-18T14:08:23.525070460Z [Load Networks] using online_mode=True
+2025-06-18T14:08:23.575009965Z [LORA] Loaded /src/models/Lora/f2815cf73244df66.safetensors for KModel-UNet with 494 keys at weight 1.0 (skipped 0 keys) with on_the_fly = True
+2025-06-18T14:08:23.575336829Z Processing images. p.extra_network_data=None
+2025-06-18T14:08:23.575374002Z Applied before_process before
+2025-06-18T14:08:23.576435153Z Applied before_process after. Processing images. p.extra_network_data=None
+2025-06-18T14:08:23.576512277Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:23.576597030Z [Unload] Trying to free all memory for cuda:0 with 0 models keep loaded ... Done in 5.5e-05 seconds
+2025-06-18T14:08:23.576647725Z fix_p_invalid_sampler_and_scheduler before Processing images. p.extra_network_data=None
+2025-06-18T14:08:23.576752431Z fix_p_invalid_sampler_and_scheduler after Processing images. p.extra_network_data=None
+2025-06-18T14:08:23.576807914Z Running process_images_inner
+2025-06-18T14:08:23.582158788Z Doing some torch.inference_mode():
+2025-06-18T14:08:23.582285145Z Total progress: 0it [00:00, ?it/s][ANot loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:23.582341389Z Must call extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:23.582383114Z Calling extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:23.582656643Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:23.582722096Z Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.
+2025-06-18T14:08:23.584968446Z [Unload] Trying to free 32716.34 MB for cuda:0 with 0 models keep loaded ... Done in 2.9e-05 seconds
+2025-06-18T14:08:25.512252117Z All loaded to GPU.
+2025-06-18T14:08:25.512322469Z Moving model(s) has taken 1.93 seconds
+2025-06-18T14:08:26.010453715Z Distilled CFG Scale: 3.7
+2025-06-18T14:08:26.010646912Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:26.011638448Z Skipping unconditional conditioning (HR pass) when CFG = 1. Negative Prompts are ignored.
+2025-06-18T14:08:26.011764226Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 37476.33 MB ... Done in 0.000522 seconds
+2025-06-18T14:08:26.141923038Z Distilled CFG Scale: 3.5
+2025-06-18T14:08:26.142004026Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:26.153076097Z [Unload] Trying to free 22470.17 MB for cuda:0 with 0 models keep loaded ... Current free memory is 34302.96 MB ... Done in 0.000275 seconds
+2025-06-18T14:08:26.321562198Z All loaded to GPU.
+2025-06-18T14:08:26.324943401Z Moving model(s) has taken 0.18 seconds
+2025-06-18T14:08:26.874632158Z   0%|          | 0/50 [00:00<?, ?it/s]
+2025-06-18T14:08:27.172121821Z Total progress:   2%|▏         | 1/52 [00:03<02:48,  3.30s/it][A
+2025-06-18T14:08:27.172361667Z   2%|▏         | 1/50 [00:00<00:23,  2.09it/s]
+2025-06-18T14:08:27.468731521Z Total progress:   4%|▍         | 2/52 [00:03<01:16,  1.53s/it][A
+2025-06-18T14:08:27.468981441Z   4%|▍         | 2/50 [00:00<00:17,  2.68it/s]
+2025-06-18T14:08:27.765420580Z Total progress:   6%|▌         | 3/52 [00:03<00:47,  1.03it/s][A
+2025-06-18T14:08:27.765658190Z   6%|▌         | 3/50 [00:01<00:15,  2.96it/s]
+2025-06-18T14:08:28.064801994Z Total progress:   8%|▊         | 4/52 [00:04<00:33,  1.42it/s][A
+2025-06-18T14:08:28.065087968Z   8%|▊         | 4/50 [00:01<00:14,  3.11it/s]
+2025-06-18T14:08:28.363546093Z Total progress:  10%|▉         | 5/52 [00:04<00:26,  1.79it/s][A
+2025-06-18T14:08:28.363789820Z  10%|█         | 5/50 [00:01<00:14,  3.19it/s]
+2025-06-18T14:08:28.664503359Z Total progress:  12%|█▏        | 6/52 [00:04<00:21,  2.13it/s][A
+2025-06-18T14:08:28.664766788Z  12%|█▏        | 6/50 [00:01<00:13,  3.24it/s]
+2025-06-18T14:08:28.961614435Z Total progress:  13%|█▎        | 7/52 [00:05<00:18,  2.41it/s][A
+2025-06-18T14:08:28.961820930Z  14%|█▍        | 7/50 [00:02<00:13,  3.27it/s]
+2025-06-18T14:08:29.260917494Z Total progress:  15%|█▌        | 8/52 [00:05<00:16,  2.65it/s][A
+2025-06-18T14:08:29.261215184Z  16%|█▌        | 8/50 [00:02<00:12,  3.30it/s]
+2025-06-18T14:08:29.560234109Z Total progress:  17%|█▋        | 9/52 [00:05<00:15,  2.84it/s][A
+2025-06-18T14:08:29.560474065Z  18%|█▊        | 9/50 [00:02<00:12,  3.31it/s]
+2025-06-18T14:08:29.858991770Z Total progress:  19%|█▉        | 10/52 [00:05<00:14,  2.97it/s][A
+2025-06-18T14:08:29.859204360Z  20%|██        | 10/50 [00:03<00:12,  3.32it/s]
+2025-06-18T14:08:30.156657709Z Total progress:  21%|██        | 11/52 [00:06<00:13,  3.08it/s][A
+2025-06-18T14:08:30.156846086Z  22%|██▏       | 11/50 [00:03<00:11,  3.33it/s]
+2025-06-18T14:08:30.455228438Z Total progress:  23%|██▎       | 12/52 [00:06<00:12,  3.16it/s][A
+2025-06-18T14:08:30.455493979Z  24%|██▍       | 12/50 [00:03<00:11,  3.34it/s]
+2025-06-18T14:08:30.752816091Z Total progress:  25%|██▌       | 13/52 [00:06<00:12,  3.22it/s][A
+2025-06-18T14:08:30.753066187Z  26%|██▌       | 13/50 [00:04<00:11,  3.34it/s]
+2025-06-18T14:08:31.049656288Z Total progress:  27%|██▋       | 14/52 [00:07<00:11,  3.26it/s][A
+2025-06-18T14:08:31.049841645Z  28%|██▊       | 14/50 [00:04<00:10,  3.35it/s]
+2025-06-18T14:08:31.346558021Z Total progress:  29%|██▉       | 15/52 [00:07<00:11,  3.29it/s][A
+2025-06-18T14:08:31.346764882Z  30%|███       | 15/50 [00:04<00:10,  3.35it/s]
+2025-06-18T14:08:31.643701196Z Total progress:  31%|███       | 16/52 [00:07<00:10,  3.31it/s][A
+2025-06-18T14:08:31.643915971Z  32%|███▏      | 16/50 [00:04<00:10,  3.36it/s]
+2025-06-18T14:08:31.941103891Z Total progress:  33%|███▎      | 17/52 [00:08<00:10,  3.33it/s][A
+2025-06-18T14:08:31.941349667Z  34%|███▍      | 17/50 [00:05<00:09,  3.36it/s]
+2025-06-18T14:08:32.238882724Z Total progress:  35%|███▍      | 18/52 [00:08<00:10,  3.34it/s][A
+2025-06-18T14:08:32.239113545Z  36%|███▌      | 18/50 [00:05<00:09,  3.36it/s]
+2025-06-18T14:08:32.536059765Z Total progress:  37%|███▋      | 19/52 [00:08<00:09,  3.34it/s][A
+2025-06-18T14:08:32.536247646Z  38%|███▊      | 19/50 [00:05<00:09,  3.36it/s]
+2025-06-18T14:08:32.833454485Z Total progress:  38%|███▊      | 20/52 [00:08<00:09,  3.35it/s][A
+2025-06-18T14:08:32.833651845Z  40%|████      | 20/50 [00:06<00:08,  3.36it/s]
+2025-06-18T14:08:33.130752027Z Total progress:  40%|████      | 21/52 [00:09<00:09,  3.35it/s][A
+2025-06-18T14:08:33.130930419Z  42%|████▏     | 21/50 [00:06<00:08,  3.36it/s]
+2025-06-18T14:08:33.429152214Z Total progress:  42%|████▏     | 22/52 [00:09<00:08,  3.36it/s][A
+2025-06-18T14:08:33.429341055Z  44%|████▍     | 22/50 [00:06<00:08,  3.36it/s]
+2025-06-18T14:08:33.727001941Z Total progress:  44%|████▍     | 23/52 [00:09<00:08,  3.36it/s][A
+2025-06-18T14:08:33.727192491Z  46%|████▌     | 23/50 [00:07<00:08,  3.36it/s]
+2025-06-18T14:08:34.024834094Z Total progress:  46%|████▌     | 24/52 [00:10<00:08,  3.36it/s][A
+2025-06-18T14:08:34.025014990Z  48%|████▊     | 24/50 [00:07<00:07,  3.36it/s]
+2025-06-18T14:08:34.322247273Z Total progress:  48%|████▊     | 25/52 [00:10<00:08,  3.36it/s][A
+2025-06-18T14:08:34.322446309Z  50%|█████     | 25/50 [00:07<00:07,  3.36it/s]
+2025-06-18T14:08:34.619880624Z Total progress:  50%|█████     | 26/52 [00:10<00:07,  3.36it/s][A
+2025-06-18T14:08:34.620047311Z  52%|█████▏    | 26/50 [00:07<00:07,  3.36it/s]
+2025-06-18T14:08:34.916820918Z Total progress:  52%|█████▏    | 27/52 [00:11<00:07,  3.36it/s][A
+2025-06-18T14:08:34.917007010Z  54%|█████▍    | 27/50 [00:08<00:06,  3.36it/s]
+2025-06-18T14:08:35.214561031Z Total progress:  54%|█████▍    | 28/52 [00:11<00:07,  3.36it/s][A
+2025-06-18T14:08:35.214768082Z  56%|█████▌    | 28/50 [00:08<00:06,  3.36it/s]
+2025-06-18T14:08:35.511477471Z Total progress:  56%|█████▌    | 29/52 [00:11<00:06,  3.36it/s][A
+2025-06-18T14:08:35.511753510Z  58%|█████▊    | 29/50 [00:08<00:06,  3.36it/s]
+2025-06-18T14:08:35.808817228Z Total progress:  58%|█████▊    | 30/52 [00:11<00:06,  3.36it/s][A
+2025-06-18T14:08:35.809063423Z  60%|██████    | 30/50 [00:09<00:05,  3.36it/s]
+2025-06-18T14:08:36.105931578Z Total progress:  60%|█████▉    | 31/52 [00:12<00:06,  3.36it/s][A
+2025-06-18T14:08:36.106127095Z  62%|██████▏   | 31/50 [00:09<00:05,  3.36it/s]
+2025-06-18T14:08:36.402415730Z Total progress:  62%|██████▏   | 32/52 [00:12<00:05,  3.36it/s][A
+2025-06-18T14:08:36.402614976Z  64%|██████▍   | 32/50 [00:09<00:05,  3.36it/s]
+2025-06-18T14:08:36.698873423Z Total progress:  63%|██████▎   | 33/52 [00:12<00:05,  3.37it/s][A
+2025-06-18T14:08:36.699085574Z  66%|██████▌   | 33/50 [00:10<00:05,  3.37it/s]
+2025-06-18T14:08:36.996923804Z Total progress:  65%|██████▌   | 34/52 [00:13<00:05,  3.37it/s][A
+2025-06-18T14:08:36.997166221Z  68%|██████▊   | 34/50 [00:10<00:04,  3.37it/s]
+2025-06-18T14:08:37.295384282Z Total progress:  67%|██████▋   | 35/52 [00:13<00:05,  3.36it/s][A
+2025-06-18T14:08:37.295586019Z  70%|███████   | 35/50 [00:10<00:04,  3.36it/s]
+2025-06-18T14:08:37.592198599Z Total progress:  69%|██████▉   | 36/52 [00:13<00:04,  3.36it/s][A
+2025-06-18T14:08:37.592417673Z  72%|███████▏  | 36/50 [00:10<00:04,  3.36it/s]
+2025-06-18T14:08:37.890124068Z Total progress:  71%|███████   | 37/52 [00:14<00:04,  3.36it/s][A
+2025-06-18T14:08:37.890336024Z  74%|███████▍  | 37/50 [00:11<00:03,  3.36it/s]
+2025-06-18T14:08:38.188159246Z Total progress:  73%|███████▎  | 38/52 [00:14<00:04,  3.36it/s][A
+2025-06-18T14:08:38.188318580Z  76%|███████▌  | 38/50 [00:11<00:03,  3.36it/s]
+2025-06-18T14:08:38.485807148Z Total progress:  75%|███████▌  | 39/52 [00:14<00:03,  3.36it/s][A
+2025-06-18T14:08:38.485991519Z  78%|███████▊  | 39/50 [00:11<00:03,  3.36it/s]
+2025-06-18T14:08:38.783067755Z Total progress:  77%|███████▋  | 40/52 [00:14<00:03,  3.36it/s][A
+2025-06-18T14:08:38.783276092Z  80%|████████  | 40/50 [00:12<00:02,  3.36it/s]
+2025-06-18T14:08:39.079724819Z Total progress:  79%|███████▉  | 41/52 [00:15<00:03,  3.36it/s][A
+2025-06-18T14:08:39.079947796Z  82%|████████▏ | 41/50 [00:12<00:02,  3.36it/s]
+2025-06-18T14:08:39.376582961Z Total progress:  81%|████████  | 42/52 [00:15<00:02,  3.36it/s][A
+2025-06-18T14:08:39.376762196Z  84%|████████▍ | 42/50 [00:12<00:02,  3.36it/s]
+2025-06-18T14:08:39.673673020Z Total progress:  83%|████████▎ | 43/52 [00:15<00:02,  3.36it/s][A
+2025-06-18T14:08:39.673858998Z  86%|████████▌ | 43/50 [00:12<00:02,  3.37it/s]
+2025-06-18T14:08:39.970285930Z Total progress:  85%|████████▍ | 44/52 [00:16<00:02,  3.37it/s][A
+2025-06-18T14:08:39.970479592Z  88%|████████▊ | 44/50 [00:13<00:01,  3.37it/s]
+2025-06-18T14:08:40.268584215Z Total progress:  87%|████████▋ | 45/52 [00:16<00:02,  3.37it/s][A
+2025-06-18T14:08:40.268743153Z  90%|█████████ | 45/50 [00:13<00:01,  3.37it/s]
+2025-06-18T14:08:40.566353859Z Total progress:  88%|████████▊ | 46/52 [00:16<00:01,  3.36it/s][A
+2025-06-18T14:08:40.566567455Z  92%|█████████▏| 46/50 [00:13<00:01,  3.36it/s]
+2025-06-18T14:08:40.863546583Z Total progress:  90%|█████████ | 47/52 [00:16<00:01,  3.36it/s][A
+2025-06-18T14:08:40.863750704Z  94%|█████████▍| 47/50 [00:14<00:00,  3.36it/s]
+2025-06-18T14:08:41.161232688Z Total progress:  92%|█████████▏| 48/52 [00:17<00:01,  3.36it/s][A
+2025-06-18T14:08:41.161464057Z  96%|█████████▌| 48/50 [00:14<00:00,  3.36it/s]
+2025-06-18T14:08:41.458351427Z Total progress:  94%|█████████▍| 49/52 [00:17<00:00,  3.36it/s][A
+2025-06-18T14:08:41.458873528Z  98%|█████████▊| 49/50 [00:14<00:00,  3.36it/s]
+2025-06-18T14:08:41.458932187Z 100%|██████████| 50/50 [00:15<00:00,  3.36it/s]
+2025-06-18T14:08:41.459054635Z 100%|██████████| 50/50 [00:15<00:00,  3.32it/s]
+2025-06-18T14:08:41.486663805Z Total progress:  96%|█████████▌| 50/52 [00:17<00:00,  3.36it/s][A[Unload] Trying to free 20483.84 MB for cuda:0 with 0 models keep loaded ... Current free memory is 63451.22 MB ... Done in 0.000245 seconds
+2025-06-18T14:08:41.579379938Z All loaded to GPU.
+2025-06-18T14:08:41.579428413Z Moving model(s) has taken 0.10 seconds
+2025-06-18T14:08:42.178066102Z [Unload] Trying to free 20276.00 MB for cuda:0 with 0 models keep loaded ... Current free memory is 63280.32 MB ... Done in 0.000315 seconds
+2025-06-18T14:08:42.178977641Z Cleanup minimal inference memory.
+2025-06-18T14:08:42.179079669Z Downloading: "https://github.com/cszn/KAIR/releases/download/v1.0/ESRGAN.pth" to /src/models/ESRGAN/ESRGAN_4x.pth
+2025-06-18T14:08:42.519865070Z ESRGAN_4x.pth:   0%|          | 0.00/66.9M [00:00<?, ?B/s]
+2025-06-18T14:08:42.620058967Z ESRGAN_4x.pth:  22%|██▏       | 15.0M/66.9M [00:00<00:00, 150MB/s]
+2025-06-18T14:08:42.719922637Z ESRGAN_4x.pth:  45%|████▍     | 30.0M/66.9M [00:00<00:00, 150MB/s]
+2025-06-18T14:08:42.820051988Z ESRGAN_4x.pth:  68%|██████▊   | 45.6M/66.9M [00:00<00:00, 153MB/s]
+2025-06-18T14:08:42.857968705Z ESRGAN_4x.pth:  91%|█████████ | 61.0M/66.9M [00:00<00:00, 153MB/s]
+2025-06-18T14:08:42.858030034Z ESRGAN_4x.pth: 100%|██████████| 66.9M/66.9M [00:00<00:00, 153MB/s]
+2025-06-18T14:08:43.288329490Z tiled upscale:   0%|          | 0/40 [00:00<?, ?it/s]
+2025-06-18T14:08:43.425640505Z tiled upscale:   2%|▎         | 1/40 [00:00<00:05,  6.72it/s]
+2025-06-18T14:08:43.562349455Z tiled upscale:  10%|█         | 4/40 [00:00<00:02, 15.33it/s]
+2025-06-18T14:08:43.698595820Z tiled upscale:  18%|█▊        | 7/40 [00:00<00:01, 18.28it/s]
+2025-06-18T14:08:43.835393771Z tiled upscale:  25%|██▌       | 10/40 [00:00<00:01, 19.73it/s]
+2025-06-18T14:08:43.974264712Z tiled upscale:  32%|███▎      | 13/40 [00:00<00:01, 20.52it/s]
+2025-06-18T14:08:44.111921524Z tiled upscale:  40%|████      | 16/40 [00:00<00:01, 20.90it/s]
+2025-06-18T14:08:44.250548905Z tiled upscale:  48%|████▊     | 19/40 [00:00<00:00, 21.19it/s]
+2025-06-18T14:08:44.393042996Z tiled upscale:  55%|█████▌    | 22/40 [00:01<00:00, 21.33it/s]
+2025-06-18T14:08:44.532012209Z tiled upscale:  62%|██████▎   | 25/40 [00:01<00:00, 21.24it/s]
+2025-06-18T14:08:44.673538487Z tiled upscale:  70%|███████   | 28/40 [00:01<00:00, 21.35it/s]
+2025-06-18T14:08:44.814592882Z tiled upscale:  78%|███████▊  | 31/40 [00:01<00:00, 21.29it/s]
+2025-06-18T14:08:44.956171294Z tiled upscale:  85%|████████▌ | 34/40 [00:01<00:00, 21.29it/s]
+2025-06-18T14:08:45.096317687Z tiled upscale:  92%|█████████▎| 37/40 [00:01<00:00, 21.26it/s]
+2025-06-18T14:08:45.096422636Z tiled upscale: 100%|██████████| 40/40 [00:01<00:00, 21.30it/s]
+2025-06-18T14:08:45.096477004Z tiled upscale: 100%|██████████| 40/40 [00:01<00:00, 20.44it/s]
+2025-06-18T14:08:45.389118396Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63251.77 MB ... Done in 0.000349 seconds
+2025-06-18T14:08:45.646865050Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:45.647305253Z [Unload] Trying to free 20439.88 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63261.46 MB ... Done in 0.000755 seconds
+2025-06-18T14:08:46.010534352Z   0%|          | 0/2 [00:00<?, ?it/s]
+2025-06-18T14:08:46.351631857Z Total progress:  98%|█████████▊| 51/52 [00:22<00:01,  1.57s/it][A
+2025-06-18T14:08:46.352338539Z  50%|█████     | 1/2 [00:00<00:00,  2.91it/s]
+2025-06-18T14:08:46.352809662Z 100%|██████████| 2/2 [00:00<00:00,  2.92it/s]
+2025-06-18T14:08:46.352923799Z 100%|██████████| 2/2 [00:00<00:00,  2.92it/s]
+2025-06-18T14:08:46.373017364Z Total progress: 100%|██████████| 52/52 [00:22<00:00,  1.20s/it][A[Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63255.37 MB ... Done in 0.000226 seconds
+2025-06-18T14:08:46.948185116Z Creating new Ultralytics Settings v0.0.6 file ✅
+2025-06-18T14:08:46.948235059Z View Ultralytics Settings with 'yolo settings' or at '/root/.config/Ultralytics/settings.json'
+2025-06-18T14:08:46.948282699Z Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/quickstart/#ultralytics-settings.
+2025-06-18T14:08:48.966431969Z 0: 640x384 1 face, 136.0ms
+2025-06-18T14:08:48.966488643Z Speed: 1.6ms preprocess, 136.0ms inference, 16.4ms postprocess per image at shape (1, 3, 640, 384)
+2025-06-18T14:08:48.976092746Z Processing images. p.extra_network_data=None
+2025-06-18T14:08:48.976135926Z Applied before_process before
+2025-06-18T14:08:48.976142140Z Applied before_process after. Processing images. p.extra_network_data=None
+2025-06-18T14:08:48.976156754Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:48.976162179Z fix_p_invalid_sampler_and_scheduler before Processing images. p.extra_network_data=None
+2025-06-18T14:08:48.976169259Z fix_p_invalid_sampler_and_scheduler after Processing images. p.extra_network_data=None
+2025-06-18T14:08:48.976173330Z Running process_images_inner
+2025-06-18T14:08:48.976900091Z Doing some torch.inference_mode():
+2025-06-18T14:08:49.039838402Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63241.46 MB ... Done in 0.000268 seconds
+2025-06-18T14:08:49.183434515Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:49.183481795Z Must call extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:49.183493550Z Calling extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:49.183529029Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:49.185513772Z Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.
+2025-06-18T14:08:49.185560561Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63263.72 MB ... Done in 0.000251 seconds
+2025-06-18T14:08:49.321784012Z Distilled CFG Scale: 3.5
+2025-06-18T14:08:49.330685342Z [Unload] Trying to free 20439.88 MB for cuda:0 with 1 models keep loaded ... Current free memory is 53370.36 MB ... Done in 0.000206 seconds
+2025-06-18T14:08:49.631288449Z   0%|          | 0/4 [00:00<?, ?it/s]
+2025-06-18T14:08:49.928780407Z  25%|██▌       | 1/4 [00:00<00:00,  3.34it/s]
+2025-06-18T14:08:50.225746226Z  50%|█████     | 2/4 [00:00<00:00,  3.35it/s]
+2025-06-18T14:08:50.524680357Z  75%|███████▌  | 3/4 [00:00<00:00,  3.36it/s]
+2025-06-18T14:08:50.527601824Z 100%|██████████| 4/4 [00:01<00:00,  3.36it/s]
+2025-06-18T14:08:50.527634099Z 100%|██████████| 4/4 [00:01<00:00,  3.36it/s]
+2025-06-18T14:08:50.544291362Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63255.41 MB ... Done in 0.000243 seconds
+2025-06-18T14:08:51.040360721Z 0: 640x384 1 face, 6.0ms
+2025-06-18T14:08:51.040417316Z Speed: 2.1ms preprocess, 6.0ms inference, 1.5ms postprocess per image at shape (1, 3, 640, 384)
+2025-06-18T14:08:51.047360953Z Processing images. p.extra_network_data=None
+2025-06-18T14:08:51.047412027Z Applied before_process before
+2025-06-18T14:08:51.047622538Z Applied before_process after. Processing images. p.extra_network_data=None
+2025-06-18T14:08:51.047696075Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:51.047701866Z fix_p_invalid_sampler_and_scheduler before Processing images. p.extra_network_data=None
+2025-06-18T14:08:51.047706375Z fix_p_invalid_sampler_and_scheduler after Processing images. p.extra_network_data=None
+2025-06-18T14:08:51.047785910Z Running process_images_inner
+2025-06-18T14:08:51.048473867Z Doing some torch.inference_mode():
+2025-06-18T14:08:51.128352150Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63231.73 MB ... Done in 0.000371 seconds
+2025-06-18T14:08:51.196619768Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:51.196701321Z Must call extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:51.199593723Z Calling extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:51.201266972Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:51.201330964Z Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.
+2025-06-18T14:08:51.201362130Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63253.98 MB ... Done in 0.000329 seconds
+2025-06-18T14:08:51.363797691Z Distilled CFG Scale: 3.5
+2025-06-18T14:08:51.372025959Z [Unload] Trying to free 20439.88 MB for cuda:0 with 1 models keep loaded ... Current free memory is 54608.62 MB ... Done in 0.000217 seconds
+2025-06-18T14:08:51.673022023Z   0%|          | 0/4 [00:00<?, ?it/s]
+2025-06-18T14:08:51.970224993Z  25%|██▌       | 1/4 [00:00<00:00,  3.34it/s]
+2025-06-18T14:08:52.267276851Z  50%|█████     | 2/4 [00:00<00:00,  3.35it/s]
+2025-06-18T14:08:52.564794083Z  75%|███████▌  | 3/4 [00:00<00:00,  3.36it/s]
+2025-06-18T14:08:52.564971630Z 100%|██████████| 4/4 [00:01<00:00,  3.36it/s]
+2025-06-18T14:08:52.565292339Z 100%|██████████| 4/4 [00:01<00:00,  3.36it/s]
+2025-06-18T14:08:52.585892533Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63257.49 MB ... Done in 0.000359 seconds
+2025-06-18T14:08:53.079384331Z 0: 640x384 1 face, 6.0ms
+2025-06-18T14:08:53.079440946Z Speed: 2.2ms preprocess, 6.0ms inference, 1.6ms postprocess per image at shape (1, 3, 640, 384)
+2025-06-18T14:08:53.085008337Z Processing images. p.extra_network_data=None
+2025-06-18T14:08:53.085056352Z Applied before_process before
+2025-06-18T14:08:53.085065332Z Applied before_process after. Processing images. p.extra_network_data=None
+2025-06-18T14:08:53.085084457Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:53.085097850Z fix_p_invalid_sampler_and_scheduler before Processing images. p.extra_network_data=None
+2025-06-18T14:08:53.085105470Z fix_p_invalid_sampler_and_scheduler after Processing images. p.extra_network_data=None
+2025-06-18T14:08:53.085114646Z Running process_images_inner
+2025-06-18T14:08:53.085927031Z Doing some torch.inference_mode():
+2025-06-18T14:08:53.165596828Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63222.59 MB ... Done in 0.00032 seconds
+2025-06-18T14:08:53.231450290Z Not loading model, because it is cached force=False, model_data.forge_loading_parameters={'checkpoint_info': {'filename': '/src/models/Stable-diffusion/flux_checkpoint.safetensors', 'hash': 'b04b3ba1'}, 'additional_modules': ['/src/models/text_encoder/clip_l.safetensors', '/src/models/text_encoder/t5xxl_fp16.safetensors', '/src/models/VAE/ae.safetensors'], 'unet_storage_dtype': 'nf4'}
+2025-06-18T14:08:53.231512568Z Must call extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:53.233652530Z Calling extra_networks.activate(p, p.extra_network_data)
+2025-06-18T14:08:53.233741453Z Failed to log lora: extra_network_data=defaultdict(<class 'list'>, {0: []}), e=AttributeError("'list' object has no attribute 'items'")
+2025-06-18T14:08:53.233849811Z Skipping unconditional conditioning when CFG = 1. Negative Prompts are ignored.
+2025-06-18T14:08:53.238535109Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63245.57 MB ... Done in 0.000281 seconds
+2025-06-18T14:08:53.392778279Z Distilled CFG Scale: 3.5
+2025-06-18T14:08:53.397597814Z [Unload] Trying to free 20439.88 MB for cuda:0 with 1 models keep loaded ... Current free memory is 53352.21 MB ... Done in 0.000188 seconds
+2025-06-18T14:08:53.701437290Z   0%|          | 0/21 [00:00<?, ?it/s]
+2025-06-18T14:08:53.998621216Z   5%|▍         | 1/21 [00:00<00:05,  3.35it/s]
+2025-06-18T14:08:54.298215995Z  10%|▉         | 2/21 [00:00<00:05,  3.36it/s]
+2025-06-18T14:08:54.595295636Z  14%|█▍        | 3/21 [00:00<00:05,  3.35it/s]
+2025-06-18T14:08:54.893102393Z  19%|█▉        | 4/21 [00:01<00:05,  3.36it/s]
+2025-06-18T14:08:55.190592107Z  24%|██▍       | 5/21 [00:01<00:04,  3.36it/s]
+2025-06-18T14:08:55.488092995Z  29%|██▊       | 6/21 [00:01<00:04,  3.36it/s]
+2025-06-18T14:08:55.785603614Z  33%|███▎      | 7/21 [00:02<00:04,  3.36it/s]
+2025-06-18T14:08:56.082604906Z  38%|███▊      | 8/21 [00:02<00:03,  3.36it/s]
+2025-06-18T14:08:56.379507205Z  43%|████▎     | 9/21 [00:02<00:03,  3.36it/s]
+2025-06-18T14:08:56.676148419Z  48%|████▊     | 10/21 [00:02<00:03,  3.36it/s]
+2025-06-18T14:08:56.974072681Z  52%|█████▏    | 11/21 [00:03<00:02,  3.37it/s]
+2025-06-18T14:08:57.272153994Z  57%|█████▋    | 12/21 [00:03<00:02,  3.36it/s]
+2025-06-18T14:08:57.569885113Z  62%|██████▏   | 13/21 [00:03<00:02,  3.36it/s]
+2025-06-18T14:08:57.870509779Z  67%|██████▋   | 14/21 [00:04<00:02,  3.36it/s]
+2025-06-18T14:08:58.167015596Z  71%|███████▏  | 15/21 [00:04<00:01,  3.36it/s]
+2025-06-18T14:08:58.463992093Z  76%|███████▌  | 16/21 [00:04<00:01,  3.35it/s]
+2025-06-18T14:08:58.760879993Z  81%|████████  | 17/21 [00:05<00:01,  3.36it/s]
+2025-06-18T14:08:59.058016752Z  86%|████████▌ | 18/21 [00:05<00:00,  3.36it/s]
+2025-06-18T14:08:59.355324716Z  90%|█████████ | 19/21 [00:05<00:00,  3.36it/s]
+2025-06-18T14:08:59.654105295Z  95%|█████████▌| 20/21 [00:05<00:00,  3.36it/s]
+2025-06-18T14:08:59.654217864Z 100%|██████████| 21/21 [00:06<00:00,  3.36it/s]
+2025-06-18T14:08:59.654264602Z 100%|██████████| 21/21 [00:06<00:00,  3.36it/s]
+2025-06-18T14:08:59.674543687Z [Unload] Trying to free 20276.00 MB for cuda:0 with 1 models keep loaded ... Current free memory is 63248.68 MB ... Done in 0.000256 seconds
+2025-06-18T14:08:59.870949640Z [Timer: processed = process_images(p)]: 36.295 seconds
+2025-06-18T14:08:59.871005001Z [Timer: process_extra_images(processed)]: 0.000 seconds
+2025-06-18T14:08:59.871046768Z Total progress: 100%|██████████| 52/52 [00:36<00:00,  1.20s/it][A
+2025-06-18T14:08:59.871092161Z Total progress: 100%|██████████| 52/52 [00:36<00:00,  1.43it/s]
+2025-06-18T14:09:00.346350066Z [Timer: Total Prediction Time]: 52.513 seconds
+2025-06-18T14:09:00.346389410Z [Cache Optimizer] Загружено моделей: 0, Общее время: 0.00s, Среднее: 0.00s
+2025-06-18T14:09:00.526612574Z [Timer: Total Encode Time]: 0.182 seconds
+2025-06-18T14:09:00.742843300Z {"prediction_id": null, "logger": "cog.server.runner", "timestamp": "2025-06-18T14:09:00.742423Z", "severity": "INFO", "message": "prediction succeeded"}
+2025-06-18T14:09:02.062335650Z {"requestId": "44bed907-2270-4046-aeb5-fedc3ab87943-e2", "message": "Finished.", "level": "INFO"}

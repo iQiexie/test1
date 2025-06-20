@@ -1,0 +1,61 @@
+{
+  "disabled_extensions": [
+    "controlnet",
+    "forge_dynamic_thresholding",
+    "forge_freeu", 
+    "forge_multidiffusion",
+    "forge_never_oom",
+    "forge_perturbed_attention",
+    "forge_sag",
+    "forge_stylealign",
+    "soft_inpainting",
+    "postprocessing_codeformer",
+    "postprocessing_gfpgan",
+    "postprocessing_focal_crop",
+    "scunet_model",
+    "swinir_model",
+    "legacy_preprocessors",
+    "preprocessor_inpaint",
+    "preprocessor_marigold",
+    "preprocessor_normalbae",
+    "preprocessor_recolor",
+    "forge_reference",
+    "preprocessor_revision",
+    "preprocessor_tile",
+    "forge_controllllite",
+    "xyz_grid_support",
+    "forge_fooocus_inpaint",
+    "forge_ipadapter",
+    "kohya_hrfix",
+    "forge_latent_modifier",
+    "lora_script"
+  ],
+  "disabled_scripts": [
+    "prompt_matrix",
+    "prompts_from_file", 
+    "xyz_grid",
+    "img2imgalt",
+    "loopback",
+    "outpainting_mk_2",
+    "poor_mans_outpainting",
+    "sd_upscale"
+  ],
+  "adetailer_model_paths": {
+    "face_yolov8n.pt": "models/adetailer/face_yolov8n.pt",
+    "hand_yolov8n.pt": "models/adetailer/hand_yolov8n.pt",
+    "face_yolov8s.pt": "models/adetailer/face_yolov8s.pt",
+    "person_yolov8n-seg.pt": "models/adetailer/person_yolov8n-seg.pt",
+    "person_yolov8s-seg.pt": "models/adetailer/person_yolov8s-seg.pt",
+    "yolov8x-worldv2.pt": "models/adetailer/yolov8x-worldv2.pt"
+  },
+  "esrgan_model_path": "models/ESRGAN/ESRGAN_4x.pth",
+  "optimization_settings": {
+    "skip_model_hash_calculation": true,
+    "disable_safe_unpickle": true,
+    "disable_extension_access_control": true,
+    "skip_version_check": true,
+    "disable_console_progressbars": false,
+    "enable_batch_cond_uncond": true,
+    "use_cpu_for_conditioning": false
+  }
+}

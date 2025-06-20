@@ -1,6 +1,6 @@
 # Configuration for Cog ⚙️
 # Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
-# Build timestamp: 2025-03-08:18-49 (обновляйте эту строку при каждой сборке, чтобы избежать кэширования)
+# Build timestamp: 2025-06-18:20-26у (обновляйте эту строку при каждой сборке, чтобы избежать кэширования)
 
 build:
   # Настройки GPU и CUDA
@@ -77,21 +77,83 @@ build:
 
   # commands run after the environment is setup
   run:
-    - echo "Cache 126"
+    - echo "Cache 133 - Added comprehensive ADetailer models for realistic photos"
     - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.8.2/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
     - curl -L https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-    - pget -f "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors"
-    - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors"
+    
+    # Создаем все необходимые директории включая ADetailer модели
+    - mkdir -p /src/models/Stable-diffusion /src/models/text_encoder /src/models/VAE /src/models/RealESRGAN /src/models/ESRGAN /src/models/adetailer /src/embeddings /src/repositories
+    
+    # СТАБИЛЬНЫЕ МОДЕЛИ (кэшируются в Docker слое, не меняются)
+    - echo "=== ЗАГРУЖАЕМ СТАБИЛЬНЫЕ МОДЕЛИ (КЭШИРУЮТСЯ) ==="
+    - echo "Загружаем Flux checkpoint (24GB)..." && pget -f "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors" && echo "✓ Flux checkpoint загружен"
+    - echo "Загружаем T5XXL (9.8GB)..." && pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors" && echo "✓ T5XXL загружен"
+    - echo "Загружаем CLIP-L (246MB)..." && pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true" "/src/models/text_encoder/clip_l.safetensors" && echo "✓ CLIP-L загружен"
+    - echo "Загружаем VAE (335MB)..." && pget -f "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft" "/src/models/VAE/ae.safetensors" && echo "✓ VAE загружен"
+    - echo "=== СТАБИЛЬНЫЕ МОДЕЛИ ЗАГРУЖЕНЫ ==="
+    
+    # ОБНОВЛЯЕМЫЕ МОДЕЛИ (обновляются при каждом cog push)
+    - echo "Cache 133-UPDATABLE - Обновляемые модели и ADetailer"
+    - echo "=== ЗАГРУЖАЕМ ОБНОВЛЯЕМЫЕ МОДЕЛИ ==="
+    - echo "Загружаем ESRGAN (67MB)..." && wget -O /src/models/ESRGAN/ESRGAN_4x.pth "https://github.com/cszn/KAIR/releases/download/v1.0/ESRGAN.pth" && echo "✓ ESRGAN загружен"
+    - echo "Загружаем RealESRGAN (67MB)..." && wget --content-disposition -P /src/models/RealESRGAN "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth" && echo "✓ RealESRGAN загружен"
+    - echo "Загружаем 4x-UltraSharp (рекомендуемый для HiRes.fix)..." && wget -O /src/models/ESRGAN/4x-UltraSharp.pth "https://huggingface.co/lokCX/4x-Ultrasharp/resolve/main/4x-UltraSharp.pth?download=true" && echo "✓ 4x-UltraSharp загружен"
+    
+    # Загружаем все ADetailer модели для реалистичных фото
+    - echo "Загружаем ADetailer модели для лиц..."
+    - wget -O /src/models/adetailer/face_yolov8n.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n-human.pt" && echo "✓ face_yolov8n.pt (human nano) загружен"
+    - wget -O /src/models/adetailer/face_yolov8s.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8s-human.pt" && echo "✓ face_yolov8s.pt (human small) загружен"
+    - wget -O /src/models/adetailer/face_yolov8m.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8m-human.pt" && echo "✓ face_yolov8m.pt (human medium) загружен"
+    - wget -O /src/models/adetailer/face_yolov8l.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8l-human.pt" && echo "✓ face_yolov8l.pt (human large) загружен"
+    
+    - echo "Загружаем ADetailer модели для рук и поз..."
+    - wget -O /src/models/adetailer/hand_yolov8n.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n-pose.pt" && echo "✓ hand_yolov8n.pt (pose nano) загружен"
+    - wget -O /src/models/adetailer/hand_yolov8s.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8s-pose.pt" && echo "✓ hand_yolov8s.pt (pose small) загружен"
+    - wget -O /src/models/adetailer/hand_yolov8m.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8m-pose.pt" && echo "✓ hand_yolov8m.pt (pose medium) загружен"
+    - wget -O /src/models/adetailer/hand_yolov8l.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8l-pose.pt" && echo "✓ hand_yolov8l.pt (pose large) загружен"
+    
+    - echo "Загружаем ADetailer модели для сегментации людей..."
+    - wget -O /src/models/adetailer/person_yolov8n-seg.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n-seg.pt" && echo "✓ person_yolov8n-seg.pt загружен"
+    - wget -O /src/models/adetailer/person_yolov8s-seg.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8s-seg.pt" && echo "✓ person_yolov8s-seg.pt загружен"
+    - wget -O /src/models/adetailer/person_yolov8m-seg.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8m-seg.pt" && echo "✓ person_yolov8m-seg.pt загружен"
+    - wget -O /src/models/adetailer/person_yolov8l-seg.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8l-seg.pt" && echo "✓ person_yolov8l-seg.pt загружен"
+    
+    - echo "Загружаем универсальные YOLO модели..."
+    - wget -O /src/models/adetailer/yolov8n.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8n.pt" && echo "✓ yolov8n.pt (универсальная nano) загружен"
+    - wget -O /src/models/adetailer/yolov8s.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8s.pt" && echo "✓ yolov8s.pt (универсальная small) загружен"
+    - wget -O /src/models/adetailer/yolov8m.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8m.pt" && echo "✓ yolov8m.pt (универсальная medium) загружен"
+    
+    - echo "Загружаем YOLO11 модели (новейшие)..."
+    - wget -O /src/models/adetailer/yolo11n.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n.pt" && echo "✓ yolo11n.pt (новейшая nano) загружен"
+    - wget -O /src/models/adetailer/yolo11s.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11s.pt" && echo "✓ yolo11s.pt (новейшая small) загружен"
+    - wget -O /src/models/adetailer/yolo11m.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11m.pt" && echo "✓ yolo11m.pt (новейшая medium) загружен"
+    
+    - echo "Загружаем World модели (универсальные детекторы)..."
+    - wget -O /src/models/adetailer/yolov8x-worldv2.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8x-worldv2.pt" && echo "✓ yolov8x-worldv2.pt загружен"
+    - wget -O /src/models/adetailer/yolov8s-worldv2.pt "https://github.com/ultralytics/assets/releases/download/v8.3.0/yolov8s-worldv2.pt" && echo "✓ yolov8s-worldv2.pt загружен"
+    - echo "✓ Все ADetailer модели загружены"
+    
+    # Проверяем что модели действительно загрузились
+    - echo "=== ПРОВЕРКА ЗАГРУЖЕННЫХ МОДЕЛЕЙ ==="
+    - echo "Flux checkpoint:" && ls -la /src/models/Stable-diffusion/ || echo "❌ Flux checkpoint НЕ НАЙДЕН!"
+    - echo "Text encoders:" && ls -la /src/models/text_encoder/ || echo "❌ Text encoders НЕ НАЙДЕНЫ!"
+    - echo "VAE:" && ls -la /src/models/VAE/ || echo "❌ VAE НЕ НАЙДЕН!"
+    - echo "ADetailer модели:" && ls -la /src/models/adetailer/ || echo "❌ ADetailer модели НЕ НАЙДЕНЫ!"
+    - echo "ESRGAN:" && ls -la /src/models/ESRGAN/ || echo "❌ ESRGAN НЕ НАЙДЕН!"
+    - echo "Общий размер моделей:" && du -sh /src/models || echo "❌ Директория моделей не найдена!"
+    - echo "=== КОНЕЦ ПРОВЕРКИ ==="
+    
+    # Остальные компоненты
     - wget --content-disposition -P /src/embeddings "https://huggingface.co/datasets/gsdf/EasyNegative/resolve/main/EasyNegative.safetensors?download=true"
     - pip install https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip https://github.com/mlfoundations/open_clip/archive/bb6e834e9c70d9c27d0dc3ecedeebeaeb1ffad6b.zip
     - git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-assets.git /src/stable-diffusion-webui-assets
-    - mkdir -p /src/repositories
     - git clone https://github.com/lllyasviel/huggingface_guess.git /src/repositories/huggingface_guess
     - git clone https://github.com/salesforce/BLIP.git /src/repositories/BLIP
     - pip install torchvision==0.21
-    - wget --content-disposition -P /src/models/RealESRGAN/RealESRGAN_x4plus.pth "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
-    - pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true" "/src/models/text_encoder/clip_l.safetensors"
-    - pget -f "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft" "/src/models/VAE/ae.safetensors"
+    
+    # Предварительная настройка для оптимизации памяти
+    - echo "export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512,expandable_segments:True" >> /etc/environment
+    - echo "export CUDA_LAUNCH_BLOCKING=0" >> /etc/environment
 
 # predict.py defines how predictions are run on your model
 predict: "predict.py:Predictor"

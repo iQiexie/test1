@@ -27,6 +27,10 @@ ui_forge_inference_memory: gr.Slider = None
 forge_unet_storage_dtype_options = {
     'Automatic': (None, False),
     'Automatic (fp16 LoRA)': (None, True),
+    'FP16': (torch.float16, False),
+    'FP16 (fp16 LoRA)': (torch.float16, True),
+    'FP32': (torch.float32, False),
+    'FP32 (fp16 LoRA)': (torch.float32, True),
     'bnb-nf4': ('nf4', False),
     'bnb-nf4 (fp16 LoRA)': ('nf4', True),
     'float8-e4m3fn': (torch.float8_e4m3fn, False),

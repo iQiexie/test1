@@ -8,6 +8,13 @@ from modules.timer import startup_timer
 
 
 def imports():
+    # Применяем быструю инициализацию в самом начале
+    try:
+        from modules.fast_startup import apply_fast_startup
+        apply_fast_startup()
+    except Exception as e:
+        print(f"[Initialize] Ошибка быстрой инициализации: {e}")
+    
     logging.getLogger("torch.distributed.nn").setLevel(logging.ERROR)  # sshh...
     logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
 
@@ -78,6 +85,9 @@ def initialize_rest(*, reload_script_modules=False):
     sd_samplers.set_samplers()
     startup_timer.record("set samplers")
 
+    # Google Blockly отключен для ускорения инициализации
+    # startup_timer.record("google blockly initialization")
+
     from modules import extensions
     extensions.list_extensions()
     startup_timer.record("list extensions")
@@ -101,6 +111,20 @@ def initialize_rest(*, reload_script_modules=False):
     startup_timer.record("list localizations")
 
     with startup_timer.subcategory("load scripts"):
+        # Инициализируем оптимизатор расширений перед загрузкой скриптов
+        try:
+            from modules import extension_optimizer
+            from modules.fast_startup import is_optimization_applied
+            
+            # Применяем быструю инициализацию если она не была применена
+            if not is_optimization_applied("extensions_disabled"):
+                extension_optimizer.initialize_extension_optimizer()
+            else:
+                print("[Fast Startup] Пропущена инициализация Extension Optimizer")
+            startup_timer.record("extension_optimizer")
+        except Exception as e:
+            print(f"[Extension Optimizer] Ошибка инициализации: {e}")
+        
         scripts.load_scripts()
 
     if reload_script_modules and shared.opts.enable_reloading_ui_scripts:
