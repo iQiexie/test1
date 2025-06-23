@@ -413,6 +413,7 @@ class Predictor(BasePredictor):
                     requests.post(
                         url=postback_url or "https://back-dev.recrea.ai/api/v1/live_preview",
                         json=response.dict(),
+                        timeout=3,
                     )
                     time.sleep(1)
                 except Exception as e:
