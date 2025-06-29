@@ -158,13 +158,15 @@ class State:
         import modules.sd_samplers
 
         try:
-            if shared.opts.show_progress_grid:
-                self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
-            else:
-                self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
-                self.assign_current_images(
-                    [modules.sd_samplers.single_sample_to_image(i, None) for i in self.current_latent]
-                )
+            # if shared.opts.show_progress_grid:
+            #     print("[progress] Generating image grid from latent")
+            #     self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
+            # else:
+            # self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
+            print("[progress] Generating image from latent")
+            self.assign_current_images(
+                [modules.sd_samplers.single_sample_to_image(i, None) for i in self.current_latent]
+            )
 
             # self.current_image_sampling_step = self.sampling_step
             # if len(self.current_latent) > 1 or self.id_live_preview < 2:
