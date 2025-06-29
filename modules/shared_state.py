@@ -159,8 +159,10 @@ class State:
 
         try:
             if shared.opts.show_progress_grid:
+                print(f"[progress] Sampling step {self.sampling_step}, generating image grid")
                 self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
             else:
+                print(f"[progress] Sampling step {self.sampling_step}, generating current_images")
                 self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
 
             self.current_image_sampling_step = self.sampling_step
