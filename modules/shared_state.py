@@ -162,10 +162,13 @@ class State:
                 self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
             else:
                 self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
+                self.assign_current_images(
+                    [modules.sd_samplers.single_sample_to_image(i, None) for i in self.current_latent]
+                )
 
-            self.current_image_sampling_step = self.sampling_step
-            if len(self.current_latent) > 1 or self.id_live_preview < 2:
-                self.current_images = [modules.sd_samplers.sample_to_image(self.current_latent, i) for i in range(len(self.current_latent))]
+            # self.current_image_sampling_step = self.sampling_step
+            # if len(self.current_latent) > 1 or self.id_live_preview < 2:
+            #     self.current_images = [modules.sd_samplers.sample_to_image(self.current_latent, i) for i in range(len(self.current_latent))]
 
         except Exception as e:
             # traceback.print_exc()
@@ -180,3 +183,14 @@ class State:
             image = image.convert('RGB')
         self.current_image = image
         self.id_live_preview += 1
+
+    @torch.inference_mode()
+    def assign_current_images(self, images):
+        new_images = []
+
+        for image in images:
+            if shared.opts.live_previews_image_format == 'jpeg' and image.mode in ('RGBA', 'P'):
+                image = image.convert('RGB')
+            new_images.append(image)
+
+        self.current_images = new_images
