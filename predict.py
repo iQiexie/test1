@@ -505,13 +505,13 @@ class Predictor(BasePredictor):
                     response = self.api.progressapi(ProgressRequest(skip_current_image=False))
                     data = response.dict()
 
-                    if data.get("current_images"):
+                    if data.get("current_image") or data.get("current_images"):
                         requests.post(
                             url=postback_url or "https://back-dev.recrea.ai/api/v1/live_preview",
                             json=data,
                             verify=False,
                         )
-                    time.sleep(1)
+                    time.sleep(5)
                 except Exception as e:
                     print(f"[progress] got: {e=}")
 
