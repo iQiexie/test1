@@ -145,10 +145,11 @@ class State:
     def set_current_image(self):
         """if enough sampling steps have been made after the last call to this, sets self.current_image from self.current_latent, and modifies self.id_live_preview accordingly"""
         if not shared.parallel_processing_allowed:
+            print("[progress] Skipping current image generation, parallel processing is not allowed")
             return
 
-        if self.sampling_step - self.current_image_sampling_step >= shared.opts.show_progress_every_n_steps and shared.opts.live_previews_enable and shared.opts.show_progress_every_n_steps != -1:
-            self.do_set_current_image()
+        print("[progress] Setting current image")
+        self.do_set_current_image()
 
     @torch.inference_mode()
     def do_set_current_image(self):
