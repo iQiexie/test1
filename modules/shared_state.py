@@ -166,10 +166,25 @@ class State:
                 self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
 
             self.current_image_sampling_step = self.sampling_step
-            # if len(self.current_latent) > 1 or self.id_live_preview < 2:
             new_images = [modules.sd_samplers.sample_to_image(self.current_latent, i) for i in range(len(self.current_latent))]
-            if new_images:
-                self.current_images = new_images
+            print(f"[progress] {new_images=}")
+
+            import requests
+            import io
+            import base64
+            from PIL import Image
+            new_images_bytes = []
+            for image in new_images:
+                buffered = io.BytesIO()
+                image.save(buffered, format="JPEG")
+                img_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+                new_images_bytes.append(img_base64)
+
+            if new_images_bytes:
+                print(f"[progress] set current_images")
+                self.current_images = new_images_bytes
+            else:
+                print(f"[progress] set current_images FAILED")
 
         except Exception as e:
             traceback.print_exc()
