@@ -153,8 +153,10 @@ class State:
     @torch.inference_mode()
     def do_set_current_image(self):
         if self.current_latent is None:
+            print(f"[progress] Skipping current image generation, current_latent is None")
             return
 
+        print(f"[progress] Generating current image")
         import modules.sd_samplers
 
         try:
@@ -188,7 +190,7 @@ class State:
 
         except Exception as e:
             traceback.print_exc()
-            print(e)
+            print(f"[progress] Error while generating current image: {e}")
             # when switching models during genration, VAE would be on CPU, so creating an image will fail.
             # we silently ignore this error
             errors.record_exception()
