@@ -815,8 +815,6 @@ class AfterDetailerScript(scripts.Script):
             return False
 
         i = get_i(p)
-        shared.state.current_image_index = i
-        print(f"[progress] set {shared.state.current_image_index=}")
 
         i2i = self.get_i2i_p(p, args, pp.image)
         ad_prompts, ad_negatives = self.get_prompt(p, args)
@@ -844,8 +842,6 @@ class AfterDetailerScript(scripts.Script):
             return False
 
         masks = self.pred_preprocessing(p, pred, args)
-
-        print(f"[progress] assigning current image {shared.state.current_image_index=}")
         shared.state.assign_current_image(pred.preview)
 
         self.save_image(
