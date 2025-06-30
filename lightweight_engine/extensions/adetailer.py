@@ -50,10 +50,6 @@ class ADetailer:
             
         results = []
         for i, image in enumerate(images):
-            print(f"Processing images. p.extra_network_data=None")
-            print("Applied before_process before")
-            print("Applied before_process after. Processing images. p.extra_network_data=None")
-            
             processed_image = image
             
             # Детекция и обработка лиц (из логов)

@@ -816,11 +816,8 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     print(f"Processing images. {p.extra_network_data=}")
     """applies settings overrides (if any) before processing images, then restores settings as applicable."""
     if p.scripts is not None:
-        print("Applied before_process before")
         p.scripts.before_process(p)
 
-    print(f"Applied before_process after. Processing images. {p.extra_network_data=}")
-        
     stored_opts = {k: opts.data[k] if k in opts.data else opts.get_default(k) for k in p.override_settings.keys() if k in opts.data}
 
     try:
@@ -840,12 +837,9 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             manage_model_and_prompt_cache(p)
 
         # backwards compatibility, fix sampler and scheduler if invalid
-        print(f"fix_p_invalid_sampler_and_scheduler before Processing images. {p.extra_network_data=}")
         sd_samplers.fix_p_invalid_sampler_and_scheduler(p)
-        print(f"fix_p_invalid_sampler_and_scheduler after Processing images. {p.extra_network_data=}")
 
         with profiling.Profiler():
-            print("Running process_images_inner")
             res = process_images_inner(p)
 
     finally:
@@ -914,7 +908,6 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     infotexts = []
     output_images = []
-    print("Doing some torch.inference_mode():")
     with torch.inference_mode():
         with devices.autocast():
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
@@ -958,9 +951,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             p.parse_extra_network_prompts()
 
-            print(f"Must call extra_networks.activate(p, p.extra_network_data)")
             if not p.disable_extra_networks:
-                print("Calling extra_networks.activate(p, p.extra_network_data)")
                 extra_networks.activate(p, p.extra_network_data)
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()

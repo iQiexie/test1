@@ -486,8 +486,12 @@ class Predictor(BasePredictor):
     ) -> list[Path]:
         import threading
         import time
-        import traceback
         import requests
+        import warnings
+        from urllib3.exceptions import InsecureRequestWarning
+
+        # Suppress only the specific InsecureRequestWarning from urllib3
+        warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
         adetailer_args = json.loads(adetailer_args)
         adetailer_args_hands = json.loads(adetailer_args_hands)
