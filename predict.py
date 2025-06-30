@@ -511,7 +511,7 @@ class Predictor(BasePredictor):
                             json=data,
                             verify=False,
                         )
-                    time.sleep(5)
+                    time.sleep(1)
                 except Exception as e:
                     print(f"[progress] got: {e=}")
 
