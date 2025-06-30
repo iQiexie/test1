@@ -145,27 +145,21 @@ class State:
     def set_current_image(self):
         """if enough sampling steps have been made after the last call to this, sets self.current_image from self.current_latent, and modifies self.id_live_preview accordingly"""
         if not shared.parallel_processing_allowed:
-            print("[progress] Skipping current image generation, parallel processing is not allowed")
             return
 
-        print("[progress] Setting current image")
         self.do_set_current_image()
 
     @torch.inference_mode()
     def do_set_current_image(self):
         if self.current_latent is None:
-            print(f"[progress] Skipping current image generation, current_latent is None")
             return
 
-        print(f"[progress] Generating current image")
         import modules.sd_samplers
 
         try:
             if shared.opts.show_progress_grid:
-                print(f"[progress] Sampling step {self.sampling_step}, generating image grid")
                 self.assign_current_image(modules.sd_samplers.samples_to_image_grid(self.current_latent))
             else:
-                print(f"[progress] Sampling step {self.sampling_step}, generating current_images")
                 self.assign_current_image(modules.sd_samplers.sample_to_image(self.current_latent))
 
             self.current_image_sampling_step = self.sampling_step
@@ -184,7 +178,6 @@ class State:
                 new_images_bytes.append(img_base64)
 
             if new_images_bytes:
-                print(f"[progress] set current_images")
                 self.current_images = new_images_bytes
             else:
                 print(f"[progress] set current_images FAILED")

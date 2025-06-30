@@ -783,7 +783,6 @@ class Api:
 
         progress = min(progress, 1)
 
-        print("[progress] Setting current image")
         shared.state.set_current_image()
 
         current_image = None
