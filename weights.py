@@ -124,12 +124,13 @@ class WeightsDownloadCache:
             output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
             print(output)
         except subprocess.TimeoutExpired:
-            print(f"Download timed out after {timeout} seconds.")
+            error = f"Download timed out after {timeout} seconds."
+            print(error)
             self._rm_disk(dest)
-            raise
+            quit(error)
         except subprocess.CalledProcessError as e:
             # If download fails, clean up and re-raise exception
             print(e.output)
             self._rm_disk(dest)
-            raise e
+            quit(e.output)
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
