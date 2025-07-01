@@ -98,15 +98,16 @@ class WeightsDownloadCache:
         short_hash = hashed_url[:16]  # Use the first 16 characters of the hash
         return os.path.join(self.base_dir, short_hash)
 
-    def download_weights(self, url: str, dest: str, file: bool = False) -> None:
+    def download_weights(self, url: str, dest: str, file: bool = False, timeout: int = 30) -> None:
         """
         Download weights file from a URL, ensuring there's enough disk space.
 
         :param url: URL to download weights file from.
         :param dest: Path to store weights file.
         :param file: If True, download the file as is, otherwise extract it.
+        :param timeout: Maximum time in seconds to allow the download process.
         """
-        print("Ensuring enough disk space...")
+        print("Ensuring enough disk space ....")
         while not self._has_enough_space() and len(self.lru_paths) > 0:
             self._remove_least_recent()
 
@@ -120,8 +121,12 @@ class WeightsDownloadCache:
         st = time.time()
         # maybe retry with the real url if this doesn't work
         try:
-            output = subprocess.check_output(call_args, close_fds=True)
+            output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
             print(output)
+        except subprocess.TimeoutExpired:
+            print(f"Download timed out after {timeout} seconds.")
+            self._rm_disk(dest)
+            raise
         except subprocess.CalledProcessError as e:
             # If download fails, clean up and re-raise exception
             print(e.output)

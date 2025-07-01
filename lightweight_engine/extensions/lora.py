@@ -31,7 +31,7 @@ class LoRAManager:
             
     def _download_lora(self, url: str) -> str:
         """Загрузка LoRA файла как в логах"""
-        print("Ensuring enough disk space...")
+        print("[Lightweight] Ensuring enough disk space...")
         print(f"Downloading weights: {url}")
         
         # Генерируем имя файла на основе URL
