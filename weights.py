@@ -121,16 +121,21 @@ class WeightsDownloadCache:
         st = time.time()
         # maybe retry with the real url if this doesn't work
         try:
-            output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
+            output = subprocess.check_output(call_args, close_fds=True, timeout=10)
             print(output)
         except subprocess.TimeoutExpired:
-            error = f"Download timed out after {timeout} seconds."
-            print(error)
-            self._rm_disk(dest)
-            quit(error)
-        except subprocess.CalledProcessError as e:
+            try:
+                output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
+                print(output)
+            except subprocess.TimeoutExpired:
+                error = f"Download timed out after {timeout} seconds."
+                print(error)
+                self._rm_disk(dest)
+                quit(error)
+        except Exception as e:
             # If download fails, clean up and re-raise exception
-            print(e.output)
+            print(e)
             self._rm_disk(dest)
-            quit(e.output)
+            quit(e)
+
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
