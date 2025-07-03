@@ -116,7 +116,7 @@ class WeightsDownloadCache:
         call_args = ["pget", "-x", url, dest]
         if file:
             dest = f"{dest}.safetensors"
-            call_args = ["pget", url, dest]
+            call_args = ["pget", "-f", url, dest]
 
         st = time.time()
         # maybe retry with the real url if this doesn't work
