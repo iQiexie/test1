@@ -132,11 +132,10 @@ class WeightsDownloadCache:
                 print(error)
                 self._rm_disk(dest)
                 quit(error)
-        except Exception as e:
-            if 'already exists' not in str(e):
+            except subprocess.CalledProcessError as e:
                 # If download fails, clean up and re-raise exception
-                print(e)
+                print(e.output)
                 self._rm_disk(dest)
-                quit(e)
+                quit(e.output)
 
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
