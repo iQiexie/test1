@@ -180,7 +180,8 @@ class Predictor(BasePredictor):
         # Проверяем основные модели
         models_to_check = {
             "Flux checkpoint": "/src/models/Stable-diffusion/flux_checkpoint.safetensors",
-            "CLIP-L": "/src/models/text_encoder/clipLCLIPGFullFP32_zer0intVisionCLIPL.safetensors",
+            "CLIP-L": "/src/models/text_encoder/clip_l.safetensors",
+            "VIT-L": "/src/models/text_encoder/vit_l.safetensors",
             "T5XXL": "/src/models/text_encoder/t5xxl_fp16.safetensors",
             "VAE": "/src/models/VAE/ae.safetensors",
             "ESRGAN": "/src/models/ESRGAN/ESRGAN_4x.pth",
