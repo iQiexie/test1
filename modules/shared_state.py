@@ -164,7 +164,6 @@ class State:
 
             self.current_image_sampling_step = self.sampling_step
             new_images = [modules.sd_samplers.sample_to_image(self.current_latent, i) for i in range(len(self.current_latent))]
-            print(f"[progress] {new_images=}")
 
             import requests
             import io
