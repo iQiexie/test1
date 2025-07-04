@@ -180,7 +180,7 @@ class Predictor(BasePredictor):
         # Проверяем основные модели
         models_to_check = {
             "Flux checkpoint": "/src/models/Stable-diffusion/flux_checkpoint.safetensors",
-            "CLIP-L": "/src/models/text_encoder/clip_l.safetensors",
+            "CLIP-L": "/src/models/text_encoder/clipLCLIPGFullFP32_zer0intVisionCLIPL.safetensors",
             "T5XXL": "/src/models/text_encoder/t5xxl_fp16.safetensors",
             "VAE": "/src/models/VAE/ae.safetensors",
             "ESRGAN": "/src/models/ESRGAN/ESRGAN_4x.pth",
@@ -663,7 +663,7 @@ class Predictor(BasePredictor):
         print("Available scripts:", [script for script in scripts.scripts_txt2img.scripts])
 
         # Проверяем и подготавливаем дополнительные модули
-        additional_modules = {}
+        additional_modules = {'vit_l.safetensors': True}
         if enable_clip_l:
             clip_path = "/src/models/text_encoder/clip_l.safetensors"
             if os.path.exists(clip_path):

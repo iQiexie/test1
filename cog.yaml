@@ -88,8 +88,9 @@ build:
     - echo "=== ЗАГРУЖАЕМ СТАБИЛЬНЫЕ МОДЕЛИ (КЭШИРУЮТСЯ) ==="
     - echo "Загружаем Flux checkpoint (24GB)..." && pget -f "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=full&fp=fp32&&token=18b51174c4d9ae0451a3dedce1946ce3" "/src/models/Stable-diffusion/flux_checkpoint.safetensors" && echo "✓ Flux checkpoint загружен"
     - echo "Загружаем T5XXL (9.8GB)..." && pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true" "/src/models/text_encoder/t5xxl_fp16.safetensors" && echo "✓ T5XXL загружен"
-    - echo "Загружаем CLIP-L (246MB)..." && pget -f "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true" "/src/models/text_encoder/clip_l.safetensors" && echo "✓ CLIP-L загружен"
+    - echo "Загружаем CLIP-L (246MB)..." && pget -f "https://ai-photo.fra1.cdn.digitaloceanspaces.com/text-encoder/clipLCLIPGFullFP32_zer0intVisionCLIPL.safetensors" "/src/models/text_encoder/clip_l.safetensors" && echo "✓ clipLCLIPGFullFP32_zer0intVisionCLIPL загружен"
     - echo "Загружаем VAE (335MB)..." && pget -f "https://weights.replicate.delivery/default/official-models/flux/ae/ae.sft" "/src/models/VAE/ae.safetensors" && echo "✓ VAE загружен"
+    - echo "Загружаем ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF (335MB)..." && pget -f "https://ai-photo.fra1.cdn.digitaloceanspaces.com/text-encoder/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors" "/src/models/text_encoder/vit_l.safetensors" && echo "✓ ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF загружен"
     - echo "=== СТАБИЛЬНЫЕ МОДЕЛИ ЗАГРУЖЕНЫ ==="
     
     # ОБНОВЛЯЕМЫЕ МОДЕЛИ (обновляются при каждом cog push)

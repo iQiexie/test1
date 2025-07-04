@@ -308,6 +308,10 @@ class Api:
                 self.text_encoder_dir,
                 "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors?download=true",
             ],
+            "vit_l.safetensors": [
+                self.text_encoder_dir,
+                "https://ai-photo.fra1.cdn.digitaloceanspaces.com/text-encoder/ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors",
+            ],
             "t5xxl_fp16.safetensors": [
                 self.text_encoder_dir,
                 "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors?download=true",
