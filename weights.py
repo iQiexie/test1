@@ -119,23 +119,21 @@ class WeightsDownloadCache:
             call_args = ["pget", "-f", url, dest]
 
         st = time.time()
-        # maybe retry with the real url if this doesn't work
-        try:
-            output = subprocess.check_output(call_args, close_fds=True, timeout=10)
-            print(output)
-        except subprocess.TimeoutExpired:
+        output = None
+
+        for i in range(6):
             try:
-                output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
+                output = subprocess.check_output(call_args, close_fds=True, timeout=10)
                 print(output)
             except subprocess.TimeoutExpired:
-                error = f"Download timed out after {timeout} seconds."
-                print(error)
-                self._rm_disk(dest)
-                quit(error)
+                print(f"Download timed out after 10 seconds, retrying ({i+1}/6)...")
             except subprocess.CalledProcessError as e:
                 # If download fails, clean up and re-raise exception
                 print(e.output)
                 self._rm_disk(dest)
                 quit(e.output)
+
+            if output:
+                break
 
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
