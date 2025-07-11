@@ -138,6 +138,7 @@ class WeightsDownloadCache:
                 break
 
         if not output:
-            raise RuntimeError(f"Failed to download weights from {url} after multiple attempts.")
+            print("Failed to download weights after 6 attempts, exiting.")
+            quit()
 
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
