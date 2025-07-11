@@ -119,13 +119,14 @@ class WeightsDownloadCache:
             call_args = ["pget", "-f", url, dest]
 
         st = time.time()
-        output = None
+        downloaded = None
 
         for i in range(6):
             timeout = 30 + (i*10)
             try:
                 output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
                 print(output)
+                downloaded = True
                 break
             except subprocess.TimeoutExpired:
                 print(f"Download timed out after {timeout} seconds, retrying ({i+1}/6)...")
@@ -135,10 +136,10 @@ class WeightsDownloadCache:
                 self._rm_disk(dest)
                 quit(e.output)
 
-            if output:
+            if downloaded:
                 break
 
-        if not output:
+        if not downloaded:
             print("Failed to download weights after 6 attempts, exiting.")
             quit()
 
