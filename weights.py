@@ -122,11 +122,12 @@ class WeightsDownloadCache:
         output = None
 
         for i in range(6):
+            timeout = 30 + (i*10)
             try:
-                output = subprocess.check_output(call_args, close_fds=True, timeout=10)
+                output = subprocess.check_output(call_args, close_fds=True, timeout=timeout)
                 print(output)
             except subprocess.TimeoutExpired:
-                print(f"Download timed out after 10 seconds, retrying ({i+1}/6)...")
+                print(f"Download timed out after {timeout} seconds, retrying ({i+1}/6)...")
             except subprocess.CalledProcessError as e:
                 # If download fails, clean up and re-raise exception
                 print(e.output)
@@ -135,5 +136,8 @@ class WeightsDownloadCache:
 
             if output:
                 break
+
+        if not output:
+            raise RuntimeError(f"Failed to download weights from {url} after multiple attempts.")
 
         print(f"Downloaded weights in {time.time() - st} seconds to {dest=}")
