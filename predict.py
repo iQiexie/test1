@@ -499,9 +499,8 @@ class Predictor(BasePredictor):
 
         def kek():
             print("Running kek")
-            while True:
+            for _ in range(3600):
                 try:
-
                     from modules.api.models import (
                         StableDiffusionTxt2ImgProcessingAPI,
                         StableDiffusionImg2ImgProcessingAPI,
@@ -519,6 +518,8 @@ class Predictor(BasePredictor):
                     time.sleep(1)
                 except Exception as e:
                     print(f"[progress] got: {e=}")
+
+            print(f"[progress] Finished live_preview for {postback_url=} ")
 
         print("Starting kek")
         thread = threading.Thread(target=kek, daemon=True)
