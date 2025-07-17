@@ -499,7 +499,7 @@ class Predictor(BasePredictor):
 
         def kek():
             print("Running kek")
-            for _ in range(3600):
+            for _ in range(600):
                 try:
                     from modules.api.models import (
                         StableDiffusionTxt2ImgProcessingAPI,
