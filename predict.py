@@ -652,10 +652,10 @@ class Predictor(BasePredictor):
         final_ad_args = []
 
         # Включаем ADetailer только если явно включен параметр adetailer
-        if adetailer_args.get("ad_disable") is not False:
+        if adetailer_args:
             final_ad_args.append(face_args)
 
-        if adetailer_args_hands.get("ad_disable") is not False:
+        if adetailer_args_hands:
             final_ad_args.append(hands_args)
 
         if final_ad_args:
