@@ -285,8 +285,8 @@ class Api:
         txt2img_script_runner = scripts.scripts_txt2img
         img2img_script_runner = scripts.scripts_img2img
 
-        if not txt2img_script_runner.scripts or not img2img_script_runner.scripts:
-            ui.create_ui()
+        # if not txt2img_script_runner.scripts or not img2img_script_runner.scripts:
+        #     ui.create_ui()
 
         if not txt2img_script_runner.scripts:
             txt2img_script_runner.initialize_scripts(False)
